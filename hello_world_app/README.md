@@ -31,5 +31,4 @@ Aquí se observa cómo el contador aumenta y muestra valores positivos en color 
 En esta captura se muestra la disminución del contador con valores negativos en color rojo, evidenciando el decremento del número.
 
 ## Liga
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Flutter Get Started](https://docs.flutter.dev/get-started/install)
+- [Diagrama](https://docs.flutter.dev/)
