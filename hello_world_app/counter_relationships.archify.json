@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Relaciones del contador Flutter",
+    "quality_profile": "showcase",
+    "viewBox": [960, 480]
+  },
+  "components": [
+    {
+      "id": "main",
+      "type": "frontend",
+      "label": "main.dart / MyApp",
+      "sublabel": "Configura MaterialApp",
+      "pos": [80, 190],
+      "size": [190, 86]
+    },
+    {
+      "id": "counter-function-screen",
+      "type": "frontend",
+      "label": "CounterFunctionScreen",
+      "sublabel": "Pantalla con estado del contador",
+      "pos": [380, 190],
+      "size": [210, 86]
+    },
+    {
+      "id": "custom-button",
+      "type": "frontend",
+      "label": "CustomButton",
+      "sublabel": "Botón flotante reutilizable",
+      "pos": [700, 190],
+      "size": [180, 86]
+    }
+  ],
+  "connections": [
+    {
+      "id": "sets-home-screen",
+      "from": "main",
+      "to": "counter-function-screen",
+      "label": "home: const CounterFunctionScreen()",
+      "variant": "emphasis",
+      "labelDy": 67
+    },
+    {
+      "id": "uses-buttons",
+      "from": "counter-function-screen",
+      "to": "custom-button",
+      "label": "crea 3 botones: reiniciar, −1, +1",
+      "variant": "emphasis",
+      "labelDy": 67
+    }
+  ]
+}
