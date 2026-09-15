@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura — hello_world_app (Flutter)",
+    "quality_profile": "showcase",
+    "viewBox": [1390, 640],
+    "repository": {"url": "https://github.com/KouDionicio/Practicas_DMI_230237", "provider": "github", "link_mode": "web", "revision": "26e7028394710cf4c1f2113597d5b8e613925c8e"},
+    "views": [
+      {"id": "arranque", "label": "Arranque", "focus": ["main", "app", "screen"], "note": "main() inicia MyApp y selecciona la pantalla activa."},
+      {"id": "estado", "label": "Estado", "focus": ["screen", "state", "display", "color"], "note": "El estado local reconstruye la interfaz y deriva el color."},
+      {"id": "eventos", "label": "Eventos", "focus": ["actions", "button", "state"], "note": "Las tres acciones modifican clickCounter dentro de setState."},
+      {"id": "recursos", "label": "Recursos", "focus": ["pubspec", "font", "platforms", "quality"], "note": "Manifiesto, fuente, runners nativos y controles de calidad."}
+    ]
+  },
+  "components": [
+    {"id": "main", "type": "frontend", "label": "main()", "sublabel": "runApp(MyApp)", "tag": "entrada", "pos": [60, 60], "size": [220, 85], "sources": [{"path": "hello_world_app/lib/main.dart", "line": 3}]},
+    {"id": "app", "type": "frontend", "label": "MyApp", "sublabel": "StatelessWidget · MaterialApp", "tag": "raíz", "pos": [350, 60], "size": [250, 85], "sources": [{"path": "hello_world_app/lib/main.dart", "line": 7}]},
+    {"id": "screen", "type": "frontend", "label": "CounterFunctionScreen", "sublabel": "StatefulWidget · home", "tag": "pantalla activa", "pos": [680, 60], "size": [270, 85], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 3}]},
+    {"id": "state", "type": "backend", "label": "Estado del contador", "sublabel": "clickCounter: int · setState()", "tag": "_CounterFunctionScreenState", "pos": [1030, 60], "size": [280, 85], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 10}]},
+    {"id": "display", "type": "frontend", "label": "Árbol de widgets", "sublabel": "Scaffold · AppBar · Column · Text", "tag": "build()", "pos": [680, 200], "size": [270, 90], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 13}]},
+    {"id": "color", "type": "frontend", "label": "Color derivado", "sublabel": "0 azul · >0 verde · <0 rojo", "tag": "counterColor", "pos": [1030, 200], "size": [280, 90], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 14}]},
+    {"id": "actions", "type": "frontend", "label": "Acciones", "sublabel": "reset 0 · menos −1 · más +1", "tag": "onPressed", "pos": [680, 340], "size": [270, 90], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 52}]},
+    {"id": "button", "type": "frontend", "label": "CustomButton", "sublabel": "FloatingActionButton reutilizable", "tag": "icon + callback", "pos": [1030, 340], "size": [280, 90], "sources": [{"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 90}]},
+    {"id": "pubspec", "type": "cloud", "label": "pubspec.yaml", "sublabel": "SDK, dependencias y fuentes", "tag": "manifiesto", "pos": [60, 480], "size": [250, 85], "sources": [{"path": "hello_world_app/pubspec.yaml", "line": 25}]},
+    {"id": "font", "type": "external", "label": "Lugo Rockwell Demo", "sublabel": "TTF registrado como fontFamily", "tag": "fuente", "pos": [380, 480], "size": [260, 85], "sources": [{"path": "hello_world_app/pubspec.yaml", "line": 48}, {"path": "hello_world_app/lib/presentation/screens/counter/counter_function_screen.dart", "line": 39}]},
+    {"id": "platforms", "type": "cloud", "label": "Runners Flutter", "sublabel": "Android · iOS · Web · Desktop", "tag": "plataformas", "pos": [710, 480], "size": [250, 85], "sources": [{"path": "hello_world_app/android/app/src/main/AndroidManifest.xml", "line": 1}, {"path": "hello_world_app/web/index.html", "line": 1}]},
+    {"id": "quality", "type": "security", "label": "Calidad", "sublabel": "widget_test.dart · flutter_lints", "tag": "prueba y análisis", "pos": [1030, 480], "size": [280, 85], "sources": [{"path": "hello_world_app/test/widget_test.dart", "line": 12}, {"path": "hello_world_app/analysis_options.yaml", "line": 9}]}
+  ],
+  "connections": [
+    {"from": "main", "to": "app", "label": "runApp()", "variant": "emphasis", "route": "straight"},
+    {"from": "app", "to": "screen", "label": "home", "variant": "emphasis", "route": "straight"},
+    {"from": "screen", "to": "state", "label": "createState()", "route": "straight"},
+    {"from": "state", "to": "color", "label": "evalúa valor", "route": "straight", "labelAt": [1240, 170]},
+    {"from": "state", "to": "display", "label": "build()", "route": "orthogonal-v", "fromSide": "bottom", "toSide": "top", "labelDx": -100},
+    {"from": "color", "to": "display", "label": "Text.color", "route": "straight"},
+    {"from": "display", "to": "actions", "label": "FAB Column", "route": "straight", "labelAt": [815, 310]},
+    {"from": "actions", "to": "button", "label": "icon + callback", "route": "straight"},
+    {"from": "button", "to": "state", "label": "setState: 0 / −1 / +1", "variant": "emphasis", "route": "orthogonal-v", "fromSide": "right", "toSide": "right", "via": [[1370, 385], [1370, 102.5]], "labelAt": [1280, 315]},
+    {"from": "pubspec", "to": "font", "label": "declara asset", "route": "straight"},
+    {"from": "font", "to": "display", "label": "fontFamily", "route": "orthogonal-v", "fromSide": "top", "toSide": "top", "via": [[510, 170], [815, 170]], "labelAt": [650, 170]}
+  ]
+}
