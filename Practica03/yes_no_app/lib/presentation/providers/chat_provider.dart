@@ -1,55 +1,84 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:yes_no_app/domain/entities/message.dart';
+
 import 'package:yes_no_app/config/helpers/get_yes_no_answer.dart';
+import 'package:yes_no_app/domain/entities/message.dart';
 
 class ChatProvider extends ChangeNotifier {
+  ChatProvider({Random? random}) : _random = random ?? Random();
 
-  final chatScrollController  = ScrollController();
-  final getYesNoAnswer  = GetYesNoAnswer();
+  final ScrollController chatScrollController = ScrollController();
+  final GetYesNoAnswer getYesNoAnswer = GetYesNoAnswer();
+  final Random _random;
 
-  List<Message> messageList = [
+  final List<Message> messageList = [
     Message(
-      text: 'Hola, ¿cómo estás?',
-      fromWho: FromWho.me
-    ),
-    Message(
-      text: 'Hola, estoy bien, ¿y tú?',
-      fromWho: FromWho.me
+      text: '¡Hola! Pregúntame algo y te responderé con un sí, un no o un tal vez.',
+      fromWho: FromWho.hers,
     ),
   ];
+  bool isReplying = false;
 
   Future<void> sendMessage(String text) async {
-    
-    if (text.isEmpty) return;
+    final cleanText = text.trim();
+    if (cleanText.isEmpty) return;
 
-    final newMessage = Message(
-      text: text,
-      fromWho: FromWho.me
-    );
-    messageList.add(newMessage);
+    messageList.add(Message(text: cleanText, fromWho: FromWho.me));
+    notifyListeners();
+    _scrollToBottom();
 
-    if (text.endsWith('?')) {
+    if (cleanText.endsWith('?')) {
       await herReply();
     }
-
-    notifyListeners();
-    moveScrollToBottom();
   }
-  
+
   Future<void> herReply() async {
-    final herMessage = await getYesNoAnswer.getAnswer();
-    messageList.add(herMessage);
+    isReplying = true;
     notifyListeners();
-    moveScrollToBottom();
+
+    try {
+      final herMessage = await getYesNoAnswer.getAnswer(_selectAnswer());
+      messageList.add(herMessage);
+    } catch (_) {
+      messageList.add(
+        Message(
+          text: 'No pude consultar la API. Inténtalo de nuevo en un momento.',
+          fromWho: FromWho.hers,
+        ),
+      );
+    } finally {
+      isReplying = false;
+      notifyListeners();
+      _scrollToBottom();
+    }
   }
 
-  Future<void> moveScrollToBottom() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    chatScrollController.animateTo(
-      chatScrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+  AnswerKind _selectAnswer() {
+    return weightedAnswerForRoll(_random.nextInt(100));
   }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!chatScrollController.hasClients) return;
+      chatScrollController.animateTo(
+        chatScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    chatScrollController.dispose();
+    super.dispose();
+  }
+}
+
+AnswerKind weightedAnswerForRoll(int roll) {
+  assert(roll >= 0 && roll < 100);
+  if (roll < 40) return AnswerKind.yes;
+  if (roll < 80) return AnswerKind.no;
+  return AnswerKind.maybe;
 }

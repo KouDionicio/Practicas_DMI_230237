@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => ChatProvider())],
       child: MaterialApp(
-        title: 'Yes No App',
+        title: 'Sí, No, Maybe',
         debugShowCheckedModeBanner: false,
         theme: AppTheme(selectedColor: 0).theme(),
         home: const ChatScreen(),

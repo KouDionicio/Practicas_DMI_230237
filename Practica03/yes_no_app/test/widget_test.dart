@@ -1,30 +1,43 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:yes_no_app/domain/entities/message.dart';
+import 'package:yes_no_app/infrastructure/models/yes_no_model.dart';
 import 'package:yes_no_app/main.dart';
+import 'package:yes_no_app/presentation/providers/chat_provider.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('muestra el chat de respuestas automáticas', (tester) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Sí, No, Maybe'), findsOneWidget);
+    expect(find.text('Escribe una pregunta…'), findsOneWidget);
+    expect(find.textContaining('Pregúntame algo'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('la selección respeta exactamente 40/40/20 en 100 resultados', () {
+    final results = List.generate(100, weightedAnswerForRoll);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(results.where((answer) => answer == AnswerKind.yes), hasLength(40));
+    expect(results.where((answer) => answer == AnswerKind.no), hasLength(40));
+    expect(
+      results.where((answer) => answer == AnswerKind.maybe),
+      hasLength(20),
+    );
+  });
+
+  test('el modelo de la API convierte las tres respuestas', () {
+    final messages = ['yes', 'no', 'maybe'].map(
+      (answer) => YesNoModel.fromJson({
+        'answer': answer,
+        'image': 'https://yesno.wtf/assets/$answer/1.gif',
+        'forced': true,
+      }).toMessageEntity(),
+    );
+
+    expect(messages.map((message) => message.text), ['Sí', 'No', 'Tal vez']);
+    expect(messages.map((message) => message.answerKind), [
+      AnswerKind.yes,
+      AnswerKind.no,
+      AnswerKind.maybe,
+    ]);
   });
 }
