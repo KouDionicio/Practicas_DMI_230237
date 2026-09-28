@@ -14,20 +14,43 @@ class MyMessageBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          padding: const EdgeInsets.fromLTRB(16, 11, 12, 7),
           decoration: BoxDecoration(
             color: colors.primary,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              message.text,
-              style: const TextStyle(color: Colors.white),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(5),
             ),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(message.text, style: const TextStyle(color: Colors.white)),
+              const SizedBox(height: 3),
+              _MessageTime(message: message, color: Colors.white70),
+            ],
+          ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 10),
       ],
     );
+  }
+}
+
+class _MessageTime extends StatelessWidget {
+  const _MessageTime({required this.message, required this.color});
+
+  final Message message;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = message.sentAt;
+    final formatted =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    return Text(formatted, style: TextStyle(fontSize: 10, color: color));
   }
 }

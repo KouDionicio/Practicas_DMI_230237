@@ -13,23 +13,48 @@ class HerMessageBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          padding: const EdgeInsets.fromLTRB(16, 11, 12, 7),
           decoration: BoxDecoration(
-              color: colors.secondary, borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              message.text,
-              style: const TextStyle(color: Colors.white),
+            color: colors.surfaceContainerHighest,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(20),
             ),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(message.text, style: TextStyle(color: colors.onSurface)),
+              const SizedBox(height: 3),
+              _MessageTime(message: message, color: colors.onSurfaceVariant),
+            ],
+          ),
         ),
-        const SizedBox(height: 5),
-
-        _ImageBubble(message.imageUrl!),
-
-        const SizedBox(height: 10),
+        if (message.imageUrl != null) ...[
+          const SizedBox(height: 6),
+          _ImageBubble(message.imageUrl!),
+        ],
+        const SizedBox(height: 12),
       ],
     );
+  }
+}
+
+class _MessageTime extends StatelessWidget {
+  const _MessageTime({required this.message, required this.color});
+
+  final Message message;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = message.sentAt;
+    final formatted =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    return Text(formatted, style: TextStyle(fontSize: 10, color: color));
   }
 }
 
@@ -39,25 +64,31 @@ class _ImageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Image.network(
-          imageUrl,
-          width: size.width * 0.7,
-          height: 150,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-
-            return Container(
-              width: size.width * 0.7,
-              height: 150,
-              padding: const EdgeInsets.symmetric( horizontal: 10, vertical: 5),
-              child: const Text('Mi amorcito esta pensando...'),
-            );
-          },
-        ));
+      borderRadius: BorderRadius.circular(18),
+      child: Image.network(
+        imageUrl,
+        width: 260,
+        height: 170,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 260,
+            height: 170,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: 260,
+          height: 100,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          alignment: Alignment.center,
+          child: const Text('No se pudo cargar el GIF'),
+        ),
+      ),
+    );
   }
 }
