@@ -32,3 +32,5 @@ En esta captura se muestra la disminución del contador con valores negativos en
 
 ## Liga
 - [Diagrama](https://koudionicio.github.io/Practicas_DMI_230237/)
+
+

@@ -13,7 +13,7 @@ Desarrollar habilidades en la creación de aplicaciones móviles mediante **Flut
 | N.º | Nombre | Descripción | Potenciador | Estatus |
 |---:|---|---|---:|---|
 | 01 | Metodología de Evaluación de la Materia | Se revisaron los criterios de evaluación, actividades, prácticas y evidencias que se realizarán durante la materia. | 5 |  Completada |
-| 02 | Mi primera aplicación móvil con Flutter | Se creó una aplicación móvil básica con Flutter y Dart, utilizando widgets, una interfaz sencilla y ejecución en un dispositivo Android. | 25 | Completada |
+| 02 | [Mi primera aplicación móvil con Flutter](Practica02/hello_world_app/README.md) | Se creó una aplicación móvil básica con Flutter y Dart, utilizando widgets, una interfaz sencilla y ejecución en un dispositivo Android. | 25 | Completada |
 | 03 |  |  |  |   |
 
 
