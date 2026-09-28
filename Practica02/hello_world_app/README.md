@@ -30,7 +30,7 @@ Aquí se observa cómo el contador aumenta y muestra valores positivos en color 
 ![Números negativos](image/3.png)
 En esta captura se muestra la disminución del contador con valores negativos en color rojo, evidenciando el decremento del número.
 
-## Liga
-- [Diagrama](https://koudionicio.github.io/Practicas_DMI_230237/)
+
+# [Diagrama de arquitectura](https://koudionicio.github.io/Practicas_DMI_230237/project_architecture.html) 
 
 
