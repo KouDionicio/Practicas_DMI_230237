@@ -131,7 +131,7 @@
       "type": "cloud",
       "label": "GitHub Pages · workflow",
       "sublabel": "Rama Practica03 · workflow_dispatch",
-      "tag": "Copia app docs y sube hello_world_app/docs",
+      "tag": "Copia app docs; publica carpeta docs/",
       "pos": [337, 356],
       "size": [245, 76]
     },
