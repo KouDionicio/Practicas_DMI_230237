@@ -27,6 +27,38 @@ La elección se realiza de forma independiente en cada pregunta, por lo que una 
 - [Ícono de Android](android/app/src/main/res/drawable/ic_yes_no.xml)
 - [Ícono web](web/icons/yes-no-icon.svg)
 
+## Evidencias
+
+### 1. Pantalla inicial BTS ARMY
+
+Vista de bienvenida del chat con el emblema ARMY y el saludo inicial.
+
+![Pantalla inicial del chat BTS ARMY](images/1.png)
+
+### 2. Respuesta con GIF de BT21
+
+Ejemplo de una pregunta respondida por el chat junto con un personaje de BT21.
+
+![Respuesta del chat con un GIF de BT21](images/2.png)
+
+### 3. Conversación con respuestas automáticas
+
+Intercambio de mensajes que muestra respuestas y GIFs de BT21 dentro de la conversación.
+
+![Conversación con respuestas y GIFs de BT21](images/3.png)
+
+### 4. Varias respuestas de BT21
+
+Captura de una conversación con diferentes respuestas y animaciones de BT21.
+
+![Conversación con distintos GIFs de BT21](images/4.png)
+
+### 5. Icono ARMY instalado en el celular
+
+Evidencia pendiente: aquí se agregará una captura de la pantalla de inicio del celular donde se vea el icono ARMY de la aplicación ya instalada.
+
+> Espacio reservado para la captura del icono en el celular.
+
 ## Ejecución y pruebas
 
 Desde el directorio de la aplicación:
