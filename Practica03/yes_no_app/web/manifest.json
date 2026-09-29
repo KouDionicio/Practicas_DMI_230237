@@ -1,11 +1,11 @@
 {
-    "name": "Sí, No, Maybe — Chat",
-    "short_name": "Sí, No, Maybe",
+    "name": "BTS ARMY — Chat",
+    "short_name": "BTS ARMY",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#F8F7FB",
-    "theme_color": "#6750A4",
-    "description": "Chat de respuestas automáticas Sí, No o Tal vez con GIFs.",
+    "background_color": "#FBF8FC",
+    "theme_color": "#59477D",
+    "description": "Un chat BTS ARMY con respuestas y GIFs de BT21.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

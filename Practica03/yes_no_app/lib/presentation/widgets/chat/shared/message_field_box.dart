@@ -40,10 +40,13 @@ class _MessageFieldBoxState extends State<MessageFieldBox> {
         onSubmitted: (_) => _sendMessage(),
         onTapOutside: (_) => _focusNode.unfocus(),
         decoration: InputDecoration(
-          hintText: 'Escribe una pregunta…',
+          hintText: 'Pregúntale algo a BTS…',
           filled: true,
           fillColor: colors.surfaceContainerHighest,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,

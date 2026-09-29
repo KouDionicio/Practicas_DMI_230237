@@ -5,12 +5,24 @@ import 'package:yes_no_app/main.dart';
 import 'package:yes_no_app/presentation/providers/chat_provider.dart';
 
 void main() {
-  testWidgets('muestra el chat de respuestas automáticas', (tester) async {
+  testWidgets('muestra la identidad BTS ARMY del chat', (tester) async {
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('Sí, No, Maybe'), findsOneWidget);
-    expect(find.text('Escribe una pregunta…'), findsOneWidget);
-    expect(find.textContaining('Pregúntame algo'), findsOneWidget);
+    expect(find.text('BTS ARMY'), findsOneWidget);
+    expect(find.text('Jungkook · V · RM'), findsOneWidget);
+    expect(find.byTooltip('Jungkook'), findsOneWidget);
+    expect(find.byTooltip('V'), findsOneWidget);
+    expect(find.byTooltip('RM'), findsOneWidget);
+    expect(find.text('Pregúntale algo a BTS…'), findsOneWidget);
+    expect(find.textContaining('¡Hola, ARMY!'), findsOneWidget);
+  });
+
+  test('cada respuesta elige un GIF BT21 distinto', () {
+    final gifUrls = AnswerKind.values.map(bt21GifFor).toList();
+
+    expect(gifUrls.toSet(), hasLength(3));
+    expect(gifUrls, everyElement(contains('giphy.com/media/')));
+    expect(gifUrls, everyElement(endsWith('/giphy.webp')));
   });
 
   test('la selección respeta exactamente 40/40/20 en 100 resultados', () {
