@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura de BTS ARMY Chat",
+    "output": "yes_no_app.html",
+    "quality_profile": "showcase",
+    "viewBox": [920, 560],
+    "views": [
+      {
+        "id": "runtime-path",
+        "label": "Ejecución del chat",
+        "focus": ["targets", "bootstrap", "chat-ui", "chat-provider", "answer-client", "yesno-api"],
+        "note": "Sigue una pregunta desde la plataforma hasta yesno.wtf y su regreso al chat."
+      },
+      {
+        "id": "message-and-media",
+        "label": "Mensaje y medios",
+        "focus": ["answer-model", "message-entity", "bt21-media"],
+        "note": "Distingue el modelo de respuesta, la entidad del dominio y los recursos mostrados."
+      },
+      {
+        "id": "platforms-and-tests",
+        "label": "Plataformas y pruebas",
+        "focus": ["targets", "test-suite", "local-resources", "pages-workflow"],
+        "note": "Las plataformas configuradas y las pruebas se documentan por separado de la ruta de ejecución."
+      }
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": { "label": "Interfaz, plataformas y recursos locales" },
+        "backend": { "label": "Lógica Flutter" },
+        "external": { "label": "Servicios externos" }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "targets",
+      "type": "frontend",
+      "label": "Plataformas Flutter",
+      "sublabel": "Android/iOS nativos · Web bootstrap · Desktop runners",
+      "tag": "Comparten lib/main.dart; builds no verificados",
+      "pos": [25, 20],
+      "size": [210, 76]
+    },
+    {
+      "id": "bootstrap",
+      "type": "frontend",
+      "label": "Inicio Flutter",
+      "sublabel": "main → MyApp → MultiProvider → MaterialApp",
+      "tag": "Tema BTS ARMY · fuente Lugo Rockwell",
+      "pos": [350, 20],
+      "size": [205, 76]
+    },
+    {
+      "id": "chat-ui",
+      "type": "frontend",
+      "label": "Interfaz del chat",
+      "sublabel": "ChatScreen · campo · burbujas · GIF",
+      "tag": "Presentación",
+      "pos": [675, 20],
+      "size": [205, 76]
+    },
+    {
+      "id": "chat-provider",
+      "type": "backend",
+      "label": "ChatProvider",
+      "sublabel": "ChangeNotifier · mensajes · espera · notifica UI",
+      "tag": "Pregunta con ?; respuestas ponderadas 40/40/20",
+      "pos": [675, 125],
+      "size": [220, 82]
+    },
+    {
+      "id": "answer-client",
+      "type": "backend",
+      "label": "GetYesNoAnswer",
+      "sublabel": "Dio · GET /api?force=yes|no|maybe",
+      "tag": "JSON → modelo; error si respuesta vacía",
+      "pos": [350, 125],
+      "size": [205, 76]
+    },
+    {
+      "id": "yesno-api",
+      "type": "external",
+      "label": "yesno.wtf API",
+      "sublabel": "Responde JSON: answer + image",
+      "tag": "HTTPS externo",
+      "pos": [25, 125],
+      "size": [205, 76]
+    },
+    {
+      "id": "answer-model",
+      "type": "backend",
+      "label": "YesNoModel",
+      "sublabel": "JSON → etiqueta y AnswerKind",
+      "tag": "yes / no / maybe",
+      "pos": [25, 248],
+      "size": [205, 76]
+    },
+    {
+      "id": "message-entity",
+      "type": "backend",
+      "label": "Message · dominio",
+      "sublabel": "texto · imageUrl · remitente · hora · AnswerKind",
+      "tag": "Entidad compartida",
+      "pos": [350, 248],
+      "size": [220, 76]
+    },
+    {
+      "id": "bt21-media",
+      "type": "external",
+      "label": "GIPHY · BT21",
+      "sublabel": "3 WebP BT21 elegidos por AnswerKind",
+      "tag": "La burbuja carga Image.network",
+      "pos": [682.5, 248],
+      "size": [205, 76]
+    },
+    {
+      "id": "test-suite",
+      "type": "backend",
+      "label": "Pruebas automatizadas",
+      "sublabel": "4 tests: UI · GIFs · 40/40/20 · modelo",
+      "tag": "flutter test · flutter analyze",
+      "pos": [25, 356],
+      "size": [245, 76]
+    },
+    {
+      "id": "pages-workflow",
+      "type": "cloud",
+      "label": "GitHub Pages · workflow",
+      "sublabel": "Rama Practica03 · workflow_dispatch",
+      "tag": "Copia app docs y sube hello_world_app/docs",
+      "pos": [337, 356],
+      "size": [245, 76]
+    },
+    {
+      "id": "local-resources",
+      "type": "frontend",
+      "label": "Recursos locales",
+      "sublabel": "Iconos ARMY · fuente y licencia",
+      "tag": "images/ no presente en este checkout",
+      "pos": [650, 356],
+      "size": [245, 76]
+    }
+  ],
+  "connections": [
+    { "id": "platform-bootstrap", "from": "targets", "to": "bootstrap", "variant": "emphasis" },
+    { "id": "bootstrap-ui", "from": "bootstrap", "to": "chat-ui" },
+    { "id": "ui-provider-request", "from": "chat-ui", "to": "chat-provider", "fromSide": "bottom", "toSide": "top" },
+    { "id": "provider-client", "from": "chat-provider", "to": "answer-client" },
+    { "id": "client-api", "from": "answer-client", "to": "yesno-api", "variant": "emphasis" },
+    { "id": "client-model", "from": "answer-client", "to": "answer-model" },
+    { "id": "model-entity", "from": "answer-model", "to": "message-entity" },
+    { "id": "entity-provider", "from": "message-entity", "to": "chat-provider" },
+    { "id": "provider-bt21", "from": "chat-provider", "to": "bt21-media", "fromSide": "bottom", "toSide": "top" }
+  ]
+}
