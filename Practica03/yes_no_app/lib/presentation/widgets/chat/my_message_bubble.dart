@@ -7,9 +7,8 @@ class MyMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final colors = Theme.of(context).colorScheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -18,6 +17,13 @@ class MyMessageBubble extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 11, 12, 7),
           decoration: BoxDecoration(
             color: colors.primary,
+            boxShadow: [
+              BoxShadow(
+                color: colors.primary.withValues(alpha: 0.16),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),

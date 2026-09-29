@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:yes_no_app/domain/entities/message.dart';
 
 import 'package:yes_no_app/presentation/widgets/chat/my_message_bubble.dart';
 import 'package:yes_no_app/presentation/widgets/chat/her_message_bubble.dart';
@@ -19,25 +20,127 @@ class ChatScreen extends StatelessWidget {
         leadingWidth: 62,
         leading: Padding(
           padding: const EdgeInsets.only(left: 14),
-          child: CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
-            child: const Icon(Icons.question_answer_rounded, size: 21),
+          child: Semantics(
+            label: 'Emblema ARMY',
+            child: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: CustomPaint(
+                size: const Size(22, 24),
+                painter: _ArmyMarkPainter(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+            ),
           ),
         ),
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Sí, No, Maybe', style: TextStyle(fontWeight: FontWeight.w700)),
-            Text('Chat de respuestas automáticas',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+            Text('BTS ARMY', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Jungkook · V · RM',
+              style: TextStyle(
+                color: Color(0xFF766C7F),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
+        actions: [
+          if (MediaQuery.sizeOf(context).width >= 400)
+            const Padding(
+              padding: EdgeInsets.only(right: 14),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _MemberAvatar(
+                    initials: 'JK',
+                    label: 'Jungkook',
+                    color: Color(0xFFD87991),
+                  ),
+                  SizedBox(width: 5),
+                  _MemberAvatar(
+                    initials: 'V',
+                    label: 'V',
+                    color: Color(0xFF438C83),
+                  ),
+                  SizedBox(width: 5),
+                  _MemberAvatar(
+                    initials: 'RM',
+                    label: 'RM',
+                    color: Color(0xFF8170A5),
+                  ),
+                ],
+              ),
+            ),
+        ],
         centerTitle: false,
       ),
       body: const _ChatView(),
     );
   }
+}
+
+class _MemberAvatar extends StatelessWidget {
+  const _MemberAvatar({
+    required this.initials,
+    required this.label,
+    required this.color,
+  });
+
+  final String initials;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: label,
+      child: CircleAvatar(
+        radius: 14,
+        backgroundColor: color,
+        child: Text(
+          initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArmyMarkPainter extends CustomPainter {
+  const _ArmyMarkPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final leftPanel = Path()
+      ..moveTo(size.width * 0.08, size.height * 0.06)
+      ..lineTo(size.width * 0.43, size.height * 0.2)
+      ..lineTo(size.width * 0.43, size.height * 0.8)
+      ..lineTo(size.width * 0.08, size.height * 0.94)
+      ..close();
+    final rightPanel = Path()
+      ..moveTo(size.width * 0.92, size.height * 0.06)
+      ..lineTo(size.width * 0.57, size.height * 0.2)
+      ..lineTo(size.width * 0.57, size.height * 0.8)
+      ..lineTo(size.width * 0.92, size.height * 0.94)
+      ..close();
+
+    canvas.drawPath(leftPanel, paint);
+    canvas.drawPath(rightPanel, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ArmyMarkPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class _ChatView extends StatelessWidget {
@@ -56,7 +159,8 @@ class _ChatView extends StatelessWidget {
             child: ListView.builder(
               controller: chatProvider.chatScrollController,
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-              itemCount: chatProvider.messageList.length +
+              itemCount:
+                  chatProvider.messageList.length +
                   (chatProvider.isReplying ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == chatProvider.messageList.length) {
@@ -69,7 +173,7 @@ class _ChatView extends StatelessWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: colors.surfaceContainerHighest,
+                        color: colors.secondaryContainer,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const SizedBox(
@@ -117,10 +221,14 @@ class _TypingDotState extends State<_TypingDot>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 550),
-    )..repeat(reverse: true, period: Duration(milliseconds: 550 + widget.delay));
+    _controller =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 550),
+        )..repeat(
+          reverse: true,
+          period: Duration(milliseconds: 550 + widget.delay),
+        );
   }
 
   @override
@@ -131,11 +239,10 @@ class _TypingDotState extends State<_TypingDot>
 
   @override
   Widget build(BuildContext context) => FadeTransition(
-        opacity: Tween<double>(begin: 0.3, end: 1).animate(_controller),
-        child: CircleAvatar(
-          radius: 3,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-      );
-  }
+    opacity: Tween<double>(begin: 0.3, end: 1).animate(_controller),
+    child: CircleAvatar(
+      radius: 3,
+      backgroundColor: Theme.of(context).colorScheme.tertiary,
+    ),
+  );
 }

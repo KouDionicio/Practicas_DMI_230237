@@ -16,7 +16,7 @@ class HerMessageBubble extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 300),
           padding: const EdgeInsets.fromLTRB(16, 11, 12, 7),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest,
+            color: colors.secondaryContainer,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -27,7 +27,13 @@ class HerMessageBubble extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(message.text, style: TextStyle(color: colors.onSurface)),
+              Text(
+                message.text,
+                style: TextStyle(
+                  color: colors.onSecondaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 3),
               _MessageTime(message: message, color: colors.onSurfaceVariant),
             ],
@@ -65,7 +71,7 @@ class _ImageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Image.network(
         imageUrl,
         width: 260,
@@ -76,7 +82,7 @@ class _ImageBubble extends StatelessWidget {
           return Container(
             width: 260,
             height: 170,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: Theme.of(context).colorScheme.secondaryContainer,
             alignment: Alignment.center,
             child: const CircularProgressIndicator(),
           );
@@ -84,7 +90,7 @@ class _ImageBubble extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => Container(
           width: 260,
           height: 100,
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          color: Theme.of(context).colorScheme.secondaryContainer,
           alignment: Alignment.center,
           child: const Text('No se pudo cargar el GIF'),
         ),

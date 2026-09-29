@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => ChatProvider())],
       child: MaterialApp(
-        title: 'Sí, No, Maybe',
+        title: 'BTS ARMY Chat',
         debugShowCheckedModeBanner: false,
         theme: AppTheme(selectedColor: 0).theme(),
         home: const ChatScreen(),
