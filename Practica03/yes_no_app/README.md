@@ -70,7 +70,7 @@ flutter test
 flutter analyze
 ```
 
-La versión web necesita conexión a internet para consultar la API y cargar los GIF. Está publicada en [GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/yes_no_app/).
+La versión web necesita conexión a internet para consultar la API y cargar los GIF. El diagrama de arquitectura se publica en [GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/practica03/yes_no_app/).
 
 ## Conclusión
 

@@ -1,9 +1,9 @@
-name: Publicar diagrama en GitHub Pages
+name: Publicar portal de prácticas en GitHub Pages
 
 on:
   push:
     branches:
-      - Practica03
+      - main
   workflow_dispatch:
 
 permissions:
@@ -28,15 +28,15 @@ jobs:
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Añadir arquitectura de Práctica 03
+      - name: Añadir documentación de Práctica 03
         run: |
-          mkdir -p hello_world_app/docs/practica03/yes_no_app
-          cp -R Practica03/yes_no_app/docs/. hello_world_app/docs/practica03/yes_no_app/
+          mkdir -p docs/practica03/yes_no_app
+          cp -R Practica03/yes_no_app/docs/. docs/practica03/yes_no_app/
 
       - name: Preparar archivos del sitio
         uses: actions/upload-pages-artifact@v3
         with:
-          path: hello_world_app/docs
+          path: docs
 
       - name: Publicar sitio
         id: deployment
