@@ -33,25 +33,25 @@ La elección se realiza de forma independiente en cada pregunta, por lo que una 
 
 Vista de bienvenida del chat con el emblema ARMY y el saludo inicial.
 
-![Pantalla inicial del chat BTS ARMY](images/1.png)
+<img src="images/1.png" alt="Pantalla inicial del chat BTS ARMY" width="250">
 
 ### 2. Respuesta con GIF de BT21
 
 Ejemplo de una pregunta respondida por el chat junto con un personaje de BT21.
 
-![Respuesta del chat con un GIF de BT21](images/2.png)
+<img src="images/2.png" alt="Respuesta del chat con un GIF de BT21" width="250">
 
 ### 3. Conversación con respuestas automáticas
 
 Intercambio de mensajes que muestra respuestas y GIFs de BT21 dentro de la conversación.
 
-![Conversación con respuestas y GIFs de BT21](images/3.png)
+<img src="images/3.png" alt="Conversación con respuestas y GIFs de BT21" width="250">
 
 ### 4. Varias respuestas de BT21
 
 Captura de una conversación con diferentes respuestas y animaciones de BT21.
 
-![Conversación con distintos GIFs de BT21](images/4.png)
+<img src="images/4.png" alt="Conversación con distintos GIFs de BT21" width="250">
 
 ### 5. Icono ARMY instalado en el celular
 
