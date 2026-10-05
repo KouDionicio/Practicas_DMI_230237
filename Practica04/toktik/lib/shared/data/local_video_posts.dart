@@ -47,7 +47,34 @@ List<Map<String, dynamic>> videoPosts = [
     'likes': 342,
     'views': 3332,
   },
-
-
+  {
+    'name': 'Una vuelta bajo las nubes 🎡',
+    'videoUrl': 'assets/videos/9.mp4',
+    'likes': 1842,
+    'views': 12750,
+  },
+  {
+    'name': 'Luces de la ciudad por la noche 🌃',
+    'videoUrl': 'assets/videos/10.mp4',
+    'likes': 3267,
+    'views': 18430,
+  },
+  {
+    'name': 'La ciudad desde las alturas 🌙',
+    'videoUrl': 'assets/videos/11.mp4',
+    'likes': 4215,
+    'views': 23980,
+  },
+  {
+    'name': 'Un taxi entre los gigantes 🏙️',
+    'videoUrl': 'assets/videos/12.mp4',
+    'likes': 5832,
+    'views': 31640,
+  },
+  {
+    'name': 'Una noche lluviosa en la ciudad 🌧️',
+    'videoUrl': 'assets/videos/13.mp4',
+    'likes': 7348,
+    'views': 42890,
+  },
 ];
-

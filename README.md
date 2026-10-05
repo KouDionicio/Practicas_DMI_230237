@@ -13,8 +13,8 @@ Desarrollar habilidades en la creación de aplicaciones móviles mediante **Flut
 | N.º | Nombre | Descripción | Potenciador | Estatus |
 |---:|---|---|---:|---|
 | 01 | Metodología de Evaluación de la Materia | Se revisaron los criterios de evaluación, actividades, prácticas y evidencias que se realizarán durante la materia. | 5 |  Completada |
-| 02 | Mi primera aplicación móvil con Flutter | Se creó una aplicación móvil básica con Flutter y Dart, utilizando widgets, una interfaz sencilla y ejecución en un dispositivo Android. | 25 | Completada |
+| 02 | [Mi primera aplicación móvil con Flutter](Practica02/hello_world_app/README.md) | Se creó una aplicación móvil básica con Flutter y Dart, utilizando widgets, una interfaz sencilla y ejecución en un dispositivo Android. | 25 | Completada |
 | 03 |  [Yes, No, Maybe — Chat con API de Respuestas Automáticas](Practica03/yes_no_app/README.md)| El alumno creará una app de chat en Flutter que responda preguntas del usuario (mensajes que terminan en ?) utilizando la API de yesno.wtf, con una distribución de 40% Sí, 40% No y 20% Tal Vez, mostrando además el GIF correspondiente a cada respuesta. | 30 | Completada  |
-
+|04|[TokTik — Feed de videos cortos](Practica04/toktik/README.md)|Aplicación desarrollada en Flutter que presenta videos locales en un feed vertical de pantalla completa. La navegación entre publicaciones se realiza deslizando hacia arriba o abajo.|?||
 
 ---
