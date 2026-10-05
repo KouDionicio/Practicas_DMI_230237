@@ -53,6 +53,7 @@ Captura de una conversación con diferentes respuestas y animaciones de BT21.
 
 <img src="images/4.png" alt="Conversación con distintos GIFs de BT21" width="250">
 
+
 ### 5. Icono ARMY instalado en el celular
 
 Evidencia pendiente: aquí se agregará una captura de la pantalla de inicio del celular donde se vea el icono ARMY de la aplicación ya instalada.
