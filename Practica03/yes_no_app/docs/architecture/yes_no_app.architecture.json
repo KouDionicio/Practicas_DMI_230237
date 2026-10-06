@@ -130,7 +130,7 @@
       "id": "pages-workflow",
       "type": "cloud",
       "label": "GitHub Pages · workflow",
-      "sublabel": "Rama Practica03 · workflow_dispatch",
+      "sublabel": "main push · workflow_dispatch",
       "tag": "Copia app docs; publica carpeta docs/",
       "pos": [337, 356],
       "size": [245, 76]
@@ -140,7 +140,7 @@
       "type": "frontend",
       "label": "Recursos locales",
       "sublabel": "Iconos ARMY · fuente y licencia",
-      "tag": "images/ no presente en este checkout",
+      "tag": "Capturas de evidencia incluidas en images/",
       "pos": [650, 356],
       "size": [245, 76]
     }
