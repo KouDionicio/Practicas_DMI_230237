@@ -38,6 +38,8 @@ dependencies:
   animate_do: ^5.1.0
   video_player: ^2.14.1
   intl: ^0.20.3
+  shared_preferences: ^2.5.4
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +65,28 @@ flutter:
   
   assets:
     - assets/videos/
+    - assets/icons/
+    - assets/audio/normal/
+    - assets/audio/halloween/
+    - assets/audio/christmas/
+    - assets/audio/valentines/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf
+    - family: Creepster
+      fonts:
+        - asset: assets/fonts/Creepster/Creepster-Regular.ttf
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico/Pacifico-Regular.ttf
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/Playfair_Display/PlayfairDisplay-VariableFont_wght.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito/Nunito-VariableFont_wght.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

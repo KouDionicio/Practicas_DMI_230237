@@ -2,12 +2,14 @@ List<Map<String, dynamic>> videoPosts = [
   {
     'name': 'Subiendo escaleras automáticas',
     'videoUrl': 'assets/videos/1.mp4',
+    'description': 'Un recorrido tranquilo por las escaleras automáticas. A veces, un trayecto cotidiano ofrece una perspectiva distinta cuando nos detenemos a observar los detalles, la luz y el movimiento alrededor.',
     'likes': 23230,
     'views': 1523,
   },
   {
     'name': 'Planta apreciada por peatones',
     'videoUrl': 'assets/videos/2.mp4',
+    'description': 'Una pequeña planta se convierte en parte del paisaje urbano y acompaña el paso de quienes recorren la calle.',
     'likes': 24230,
     'views': 1343,
   },
@@ -50,6 +52,7 @@ List<Map<String, dynamic>> videoPosts = [
   {
     'name': 'Una vuelta bajo las nubes 🎡',
     'videoUrl': 'assets/videos/9.mp4',
+    'description': 'Una vuelta bajo las nubes y una vista distinta de la ciudad. Desde lo alto, el movimiento de la rueda de la fortuna contrasta con el cielo cambiante y las luces que comienzan a encenderse al final de la tarde.',
     'likes': 1842,
     'views': 12750,
   },
@@ -74,6 +77,7 @@ List<Map<String, dynamic>> videoPosts = [
   {
     'name': 'Una noche lluviosa en la ciudad 🌧️',
     'videoUrl': 'assets/videos/13.mp4',
+    'description': 'La lluvia cubre la calle y transforma cada reflejo en una pequeña línea de luz. Los autos avanzan despacio sobre el pavimento mojado mientras la ciudad continúa su ritmo habitual, entre paraguas, semáforos y ventanas iluminadas. Un instante tranquilo para mirar la noche desde otro ángulo.',
     'likes': 7348,
     'views': 42890,
   },
