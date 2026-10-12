@@ -1,4 +1,4 @@
-enum VideoSource { youtube, vimeo, dailymotion }
+enum VideoSource { youtube, vimeo, peertube }
 
 class ExternalVideo {
   const ExternalVideo({

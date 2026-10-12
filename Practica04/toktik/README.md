@@ -59,36 +59,44 @@ locales. Los videos externos usan un iframe HTML validado en Flutter Web y
 ## Proveedores externos: integración, credenciales y reproducción
 
 Desde el botón de búsqueda externo se pueden elegir YouTube, Vimeo o
-Dailymotion. Cada fuente usa su datasource HTTP, mapper y repositorio común.
+PeerTube. Cada fuente usa su datasource HTTP, mapper y repositorio común.
 Los fallos de configuración, autorización, HTTP o respuesta inválida se
 muestran en pantalla; no ocultan ni reemplazan el feed local.
 
-| Proveedor | Consulta de metadatos | Reproducción (WebView Android/iOS; iframe Chrome) | Configuración/estado |
+| Proveedor | Consulta de metadatos | Reproducción (WebView Android/iOS; iframe Chrome) | Configuración |
 |---|---|---|---|
 | YouTube | YouTube Data API v3 `search.list`, solo videos | IFrame Player oficial en WebView | `YOUTUBE_API_KEY`; requiere habilitar la API y restringir la clave |
 | Vimeo | API de videos `GET /videos`, con Bearer token desde `Practica04/vimeo_backend` | Vimeo Player oficial en WebView | `VIMEO_ACCESS_TOKEN` solo en el entorno del backend y `VIMEO_BACKEND_URL` en Flutter |
-| Dailymotion | Búsqueda pública global `GET https://api.dailymotion.com/videos?search=...` | Player oficial con Player ID, iframe en Chrome y WebView en Android/iOS | `DAILYMOTION_API_KEY` (Public API key) y `DAILYMOTION_PLAYER_ID` |
+| PeerTube | API pública `GET /api/v1/search/videos?search=...&count=25&sort=-views` | Embed oficial `/videos/embed/{uuid}`, iframe en Chrome y WebView en Android/iOS | `PEERTUBE_INSTANCE_URL`, opcional; predeterminado `https://peertube.cpy.re` |
 
 La columna WebView de la tabla describe Android e iOS; en Chrome las tres
 integraciones usan el `embedUrl` oficial de cada proveedor en un iframe HTML.
 
-YouTube y Vimeo usan endpoints de búsqueda propios. La integración Dailymotion
-usa el endpoint global de búsqueda de la API pública legada (`/videos?search`)
-porque la API v2 actual requiere OAuth y documenta listas bajo un perfil, no
-una búsqueda global de cualquier creador. El datasource ya no usa
-`DAILYMOTION_PROFILE_ID`; solicita hasta 25 resultados por consulta y conserva
-la duración cuando la API la devuelve.
+### Arquitectura, búsqueda y reproducción
 
-La API v2 es la versión recomendada por Dailymotion. Su documentación indica
-que las llamadas API requieren un access token; `bundle.public` incluye
-`video.read` para contenido público, pero el endpoint v2 documentado de listado
-requiere un perfil. Por ello, la búsqueda global implementada depende del API
-legado y su disponibilidad puede cambiar. La documentación del endpoint público
-indica que se requiere una **Public API key**. Esta clave no es un client secret,
-pero al compilarse en Flutter puede inspeccionarse en el cliente; nunca uses
-una clave privada ni un token de usuario en la app. Si las políticas de tu
-cuenta no permiten una clave pública en clientes, sirve la búsqueda desde un
-backend propio y no desde Flutter.
+`ExternalVideoDatasource` define la búsqueda; los datasources de YouTube,
+Vimeo y PeerTube consultan sus APIs y los modelos de infraestructura mapean
+metadatos a `ExternalVideo`. `ExternalVideoRepositoryImpl` selecciona el
+datasource por `VideoSource`, y `ExternalVideoSearchProvider` alimenta la
+pantalla de videos externos abierta desde Discover. Al tocar un resultado, se
+abre el reproductor oficial verificado del proveedor.
+
+La búsqueda PeerTube usa la consulta de texto, pide hasta 25 resultados por
+defecto y ordena por visualizaciones (`sort=-views`). El datasource limita
+`count` a 1–100, codifica la consulta como parámetro URI y descarta UUIDs
+duplicados. No necesita una API key para este endpoint público. Puedes cambiar
+la instancia con `--dart-define=PEERTUBE_INSTANCE_URL=https://tu-instancia`,
+sin incluir rutas de API, query, fragmentos ni credenciales; debe ser HTTPS.
+El valor por defecto es `https://peertube.cpy.re`.
+
+Los resultados externos conservan su propio modelo `ExternalVideo`; no se
+convierten a `VideoPost`, que pertenece al feed local y a `video_player`.
+PeerTube, como YouTube y Vimeo, reproduce la página oficial de embed, no la
+página HTML ni una supuesta URL MP4. Chrome usa un iframe y Android/iOS usan
+`webview_flutter`; la disponibilidad depende de que la instancia permita
+incrustar el video y servir sus recursos. La instancia pública puede aplicar
+límite de solicitudes, cambiar disponibilidad o configuración CORS y no
+garantiza permanencia ni reproducción de todos los videos.
 
 ### Configurar metadatos
 
@@ -97,19 +105,16 @@ backend propio y no desde Flutter.
    clave a la API y a las aplicaciones/cuotas previstas para el despliegue.
    La clave de API que se compile en Flutter es extraíble: no es un secreto y
    no debe tener permisos amplios.
-2. Crea una aplicación en Dailymotion Developer para obtener la **Public API
-   key** que habilita llamadas al host público `api.dailymotion.com`. Obtén
-   también un **Player ID** creado o elegido en Dailymotion Studio > Embed >
-   Players; el endpoint de inserción actual requiere un Player ID. No uses una
-   private API key ni un client secret en Flutter.
+2. PeerTube no necesita credenciales para la búsqueda pública. Si deseas usar
+   otra instancia, configura `PEERTUBE_INSTANCE_URL` con su URL HTTPS.
 3. Ejecuta desde `Practica04/toktik/` (reemplaza los valores localmente, sin
    guardarlos en Git):
 
    ```sh
-   flutter run --dart-define=YOUTUBE_API_KEY=TU_API_KEY_RESTRINGIDA --dart-define=DAILYMOTION_API_KEY=TU_PUBLIC_API_KEY --dart-define=DAILYMOTION_PLAYER_ID=PLAYER_ID
+   flutter run --dart-define=YOUTUBE_API_KEY=TU_API_KEY_RESTRINGIDA --dart-define=PEERTUBE_INSTANCE_URL=https://peertube.cpy.re
    ```
 
-4. En Discover, abre el botón de búsqueda externa, selecciona Dailymotion,
+4. En Discover, abre el botón de búsqueda externa, selecciona PeerTube,
    escribe una consulta y toca un resultado.
 
 Vimeo requiere una aplicación registrada en
@@ -180,7 +185,7 @@ confíes en CORS como control de acceso. La URL puede ir en
 
 La pantalla de reproducción solo navega a HTTPS y a los hosts/rutas oficiales
 de embed (`youtube.com/embed`, `player.vimeo.com/video` y
-`geo.dailymotion.com/player/{PLAYER_ID}.html?video={VIDEO_ID}`). No se envían páginas web de proveedor a
+`{instancia}/videos/embed/{UUID}`). No se envían páginas web de proveedor a
 `video_player`, ni se extraen o descargan streams. Se aplican los controles,
 restricciones, disponibilidad regional, anuncios y permisos definidos por cada
 servicio. Chrome inserta el embed HTTPS oficial del proveedor en un iframe
@@ -193,15 +198,8 @@ Referencias oficiales: [YouTube search.list](https://developers.google.com/youtu
 [políticas de YouTube API](https://developers.google.com/youtube/terms/developer-policies),
 [Vimeo API](https://developer.vimeo.com/api/reference/videos),
 [Vimeo Player SDK](https://developer.vimeo.com/player/sdk),
-[Dailymotion API v2](https://developers.dailymotion.com/docs/browse-large-video-catalog),
-[Dailymotion autenticación y llamadas API legadas](https://developers.dailymotion.com/v0/reference/perform-an-api-call),
-[campos de videos legados](https://developers.dailymotion.com/v0/reference/video-fields),
-[filtros de videos legados](https://developers.dailymotion.com/v0/reference/video-filters),
-[migración del nuevo embed Dailymotion](https://developers.dailymotion.com/reference/migration-guide-new-embed-endpoint.md),
-[Dailymotion vertical player](https://developers.dailymotion.com/docs/vertical-player),
-y [condiciones de streams de Dailymotion](https://developers.dailymotion.com/docs/generate-stream-urls).
-Los endpoints de streams directos requieren permisos/plan, son temporales y no
-se usan en la app.
+[PeerTube REST API: búsqueda de videos](https://docs.joinpeertube.org/api-rest-reference.html#tag/Videos/operation/getApiV1SearchVideos),
+y [inserción de videos PeerTube](https://docs.joinpeertube.org/use-embed).
 
 ## Ejecutar y probar
 

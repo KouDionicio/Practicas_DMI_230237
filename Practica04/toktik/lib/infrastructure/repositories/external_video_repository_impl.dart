@@ -6,19 +6,19 @@ class ExternalVideoRepositoryImpl implements ExternalVideoRepository {
   const ExternalVideoRepositoryImpl({
     required this.youtubeDatasource,
     required this.vimeoDatasource,
-    required this.dailymotionDatasource,
+    required this.peerTubeDatasource,
   });
 
   final ExternalVideoDatasource youtubeDatasource;
   final ExternalVideoDatasource vimeoDatasource;
-  final ExternalVideoDatasource dailymotionDatasource;
+  final ExternalVideoDatasource peerTubeDatasource;
 
   @override
   Future<List<ExternalVideo>> search(VideoSource source, String query) {
     final datasource = switch (source) {
       VideoSource.youtube => youtubeDatasource,
       VideoSource.vimeo => vimeoDatasource,
-      VideoSource.dailymotion => dailymotionDatasource,
+      VideoSource.peertube => peerTubeDatasource,
     };
     return datasource.search(query);
   }

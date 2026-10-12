@@ -69,7 +69,11 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
                 uri.scheme == 'https' &&
                 uri.port == 443 &&
                 uri.userInfo.isEmpty &&
-                _allowedNavigationHost(widget.video.source, uri.host)) {
+                _allowedNavigationHost(
+                  widget.video.source,
+                  uri.host,
+                  peerTubeHost: widget.video.embedUrl.host,
+                )) {
               return NavigationDecision.navigate;
             }
             return NavigationDecision.prevent;
@@ -236,29 +240,24 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
         RegExp(r'^/video/([0-9]+)$'),
         embedUrl.path,
       ),
-      VideoSource.dailymotion => _capture(
-        RegExp(r'^/player/([A-Za-z0-9_-]{1,128})\.html$'),
-        embedUrl.path,
-      ),
+      VideoSource.peertube => _peerTubePathId(embedUrl, 'embed'),
     };
     final entityVideoId = _capture(
       RegExp(switch (video.source) {
         VideoSource.youtube => r'^youtube:([A-Za-z0-9_-]{1,128})$',
         VideoSource.vimeo => r'^vimeo:([0-9]{1,128})$',
-        VideoSource.dailymotion => r'^dailymotion:([A-Za-z0-9_-]{1,128})$',
+        VideoSource.peertube =>
+          r'^peertube:([0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12})$',
       }),
       video.id,
     );
-    final videoId = video.source == VideoSource.dailymotion
-        ? embedUrl.queryParameters['video']
-        : embedVideoId;
+    final videoId = embedVideoId;
     if (embedVideoId == null ||
         videoId == null ||
         entityVideoId != videoId ||
-        !RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(videoId) ||
-        (video.source != VideoSource.dailymotion && embedUrl.hasQuery) ||
-        (video.source == VideoSource.dailymotion &&
-            embedUrl.queryParameters.length != 1)) {
+        (video.source != VideoSource.peertube &&
+            !RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(videoId)) ||
+        embedUrl.hasQuery) {
       return (
         error: 'La ruta no corresponde al reproductor oficial del proveedor.',
         embedUrl: null,
@@ -271,7 +270,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
         watchUrl.port != 443 ||
         watchUrl.userInfo.isNotEmpty ||
         watchUrl.hasFragment ||
-        !_validWatchUrl(video.source, watchUrl, videoId)) {
+        !_validWatchUrl(video.source, watchUrl, videoId, embedUrl: embedUrl)) {
       return (
         error: 'El enlace alternativo del video no es válido.',
         embedUrl: null,
@@ -284,50 +283,92 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
   static String? _capture(RegExp pattern, String value) =>
       pattern.firstMatch(value)?.group(1);
 
-  static bool _validWatchUrl(VideoSource source, Uri uri, String videoId) =>
-      switch (source) {
-        VideoSource.youtube =>
-          uri.host == 'www.youtube.com' &&
-              uri.path == '/watch' &&
-              uri.queryParameters.length == 1 &&
-              uri.queryParameters['v'] == videoId,
-        VideoSource.vimeo =>
-          (uri.host == 'vimeo.com' || uri.host == 'www.vimeo.com') &&
-              uri.path == '/$videoId' &&
-              !uri.hasQuery,
-        VideoSource.dailymotion =>
-          (uri.host == 'www.dailymotion.com' ||
-                  uri.host == 'dailymotion.com') &&
-              uri.path == '/video/$videoId' &&
-              !uri.hasQuery,
-      };
+  static String? _peerTubePathId(Uri uri, String route) {
+    final segments = uri.pathSegments;
+    if (segments.length < 3 ||
+        segments[segments.length - 3] != 'videos' ||
+        segments[segments.length - 2] != route) {
+      return null;
+    }
+    final id = segments.last;
+    return RegExp(r'^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$')
+            .hasMatch(id)
+        ? id
+        : null;
+  }
+
+  static bool _validWatchUrl(
+    VideoSource source,
+    Uri uri,
+    String videoId, {
+    required Uri embedUrl,
+  }) => switch (source) {
+    VideoSource.youtube =>
+      uri.host == 'www.youtube.com' &&
+          uri.path == '/watch' &&
+          uri.queryParameters.length == 1 &&
+          uri.queryParameters['v'] == videoId,
+    VideoSource.vimeo =>
+      (uri.host == 'vimeo.com' || uri.host == 'www.vimeo.com') &&
+          uri.path == '/$videoId' &&
+          !uri.hasQuery,
+    VideoSource.peertube =>
+      uri.host.toLowerCase() == embedUrl.host.toLowerCase() &&
+          uri.port == embedUrl.port &&
+          !uri.hasQuery &&
+          _validPeerTubeWatchPath(uri, embedUrl, videoId),
+  };
 
   static bool _allowedEmbedHost(VideoSource source, String host) =>
       switch (source) {
         VideoSource.youtube => host == 'www.youtube.com',
         VideoSource.vimeo => host == 'player.vimeo.com',
-        VideoSource.dailymotion => host == 'geo.dailymotion.com',
+        VideoSource.peertube => host.isNotEmpty,
       };
 
-  static bool _allowedNavigationHost(VideoSource source, String host) =>
-      switch (source) {
-        VideoSource.youtube =>
-          host == 'www.youtube.com' ||
-              host == 'youtube.com' ||
-              host == 'm.youtube.com',
-        VideoSource.vimeo =>
-          host == 'player.vimeo.com' ||
-              host == 'vimeo.com' ||
-              host == 'www.vimeo.com',
-        VideoSource.dailymotion =>
-          host == 'geo.dailymotion.com' ||
-              host == 'dailymotion.com' ||
-              host == 'www.dailymotion.com',
-      };
+  static bool _validPeerTubeWatchPath(
+    Uri watchUrl,
+    Uri embedUrl,
+    String videoId,
+  ) {
+    final watchSegments = watchUrl.pathSegments;
+    final embedSegments = embedUrl.pathSegments;
+    if (embedSegments.length < 3) return false;
+    final prefixLength = embedSegments.length - 3;
+    if (watchSegments.length < prefixLength + 2) return false;
+    for (var index = 0; index < prefixLength; index++) {
+      if (watchSegments[index] != embedSegments[index]) return false;
+    }
+    final watchPath = watchSegments.skip(prefixLength).toList();
+    if (watchPath.length == 3) {
+      return watchPath[0] == 'videos' &&
+          watchPath[1] == 'watch' &&
+          watchPath[2] == videoId;
+    }
+    return watchPath.length == 2 &&
+        watchPath[0] == 'w' &&
+        RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(watchPath[1]);
+  }
+
+  static bool _allowedNavigationHost(
+    VideoSource source,
+    String host, {
+    required String peerTubeHost,
+  }) => switch (source) {
+    VideoSource.youtube =>
+      host == 'www.youtube.com' ||
+          host == 'youtube.com' ||
+          host == 'm.youtube.com',
+    VideoSource.vimeo =>
+      host == 'player.vimeo.com' ||
+          host == 'vimeo.com' ||
+          host == 'www.vimeo.com',
+    VideoSource.peertube => host.toLowerCase() == peerTubeHost.toLowerCase(),
+  };
 
   static String _providerName(VideoSource source) => switch (source) {
     VideoSource.youtube => 'YouTube',
     VideoSource.vimeo => 'Vimeo',
-    VideoSource.dailymotion => 'Dailymotion',
+    VideoSource.peertube => 'PeerTube',
   };
 }

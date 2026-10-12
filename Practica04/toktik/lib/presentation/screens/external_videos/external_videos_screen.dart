@@ -123,7 +123,7 @@ class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
   static String _sourceName(VideoSource source) => switch (source) {
     VideoSource.youtube => 'YouTube',
     VideoSource.vimeo => 'Vimeo',
-    VideoSource.dailymotion => 'Dailymotion',
+    VideoSource.peertube => 'PeerTube',
   };
 
   static String _formatDuration(int seconds) {

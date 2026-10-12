@@ -6,7 +6,7 @@ import 'package:http/testing.dart';
 import 'package:toktik/domain/datasources/external_video_datasource.dart';
 import 'package:toktik/domain/entities/external_video.dart';
 import 'package:toktik/domain/errors/external_video_exception.dart';
-import 'package:toktik/infrastructure/datasources/dailymotion_video_datasource.dart';
+import 'package:toktik/infrastructure/datasources/peertube_video_datasource.dart';
 import 'package:toktik/infrastructure/datasources/vimeo_video_datasource.dart';
 import 'package:toktik/infrastructure/datasources/youtube_video_datasource.dart';
 import 'package:toktik/infrastructure/repositories/external_video_repository_impl.dart';
@@ -186,86 +186,99 @@ void main() {
     });
   });
 
-  group('Dailymotion datasource', () {
+  group('PeerTube datasource', () {
     test(
-      'searches public videos across creators and maps player card fields',
+      'searches the configured instance and maps official embed fields',
       () async {
         final client = MockClient((request) async {
-          expect(request.url.host, 'api.dailymotion.com');
-          expect(request.url.path, '/videos');
-          expect(request.url.queryParameters['search'], 'cooking');
-          expect(request.url.queryParameters['page'], '1');
-          expect(request.url.queryParameters['limit'], '25');
-          expect(
-            request.url.queryParameters['fields'],
-            'id,title,description,thumbnail_720_url,duration,embed_url,url',
-          );
-          expect(request.url.queryParameters['api_key'], 'public-test-key');
+          expect(request.url.host, 'videos.example');
+          expect(request.url.path, '/api/v1/search/videos');
+          expect(request.url.queryParameters['search'], 'cooking & travel');
+          expect(request.url.queryParameters['count'], '12');
+          expect(request.url.queryParameters['sort'], '-views');
+          expect(request.headers.containsKey('Authorization'), isFalse);
           return _json({
-            'list': [
+            'data': [
               {
-                'id': 'x1',
-                'title': 'Cooking at home',
+                'uuid': 'a1b2c3d4-0000-4000-8000-000000000001',
+                'shortUUID': 'sWxgbBUu1ScQkHqz831Qqi',
+                'name': 'Cooking at home',
                 'description': 'Pasta',
-                'thumbnail_720_url': 'https://s1.dmcdn.net/cooking.jpg',
+                'thumbnailPath': '/lazy-static/thumbnails/cooking.jpg',
+                'embedPath':
+                    '/videos/embed/a1b2c3d4-0000-4000-8000-000000000001',
                 'duration': 125,
-                'embed_url': 'https://geo.dailymotion.com/player.html?video=x1',
-                'url': 'https://www.dailymotion.com/video/x1',
+                'url': 'https://videos.example/w/sWxgbBUu1ScQkHqz831Qqi',
               },
               {
-                'id': 'x2',
-                'title': 'Cooking around the world',
+                'uuid': 'a1b2c3d4-0000-4000-8000-000000000002',
+                'name': 'Cooking around the world',
                 'description': 'Another creator',
+              },
+              {
+                'uuid': 'a1b2c3d4-0000-4000-8000-000000000001',
+                'name': 'Duplicate result',
               },
             ],
           });
         });
 
-        final videos = await DailymotionVideoDatasource(
-          apiKey: 'public-test-key',
-          playerId: 'player_1',
+        final videos = await PeerTubeVideoDatasource(
+          baseUrl: Uri.https('videos.example'),
+          count: 12,
           client: client,
-        ).search('cooking');
+        ).search(' cooking & travel ');
 
         expect(videos.map((video) => video.id), [
-          'dailymotion:x1',
-          'dailymotion:x2',
+          'peertube:a1b2c3d4-0000-4000-8000-000000000001',
+          'peertube:a1b2c3d4-0000-4000-8000-000000000002',
         ]);
         expect(videos.first.title, 'Cooking at home');
         expect(videos.first.description, 'Pasta');
-        expect(videos.first.thumbnailUrl, 'https://s1.dmcdn.net/cooking.jpg');
+        expect(
+          videos.first.thumbnailUrl,
+          'https://videos.example/lazy-static/thumbnails/cooking.jpg',
+        );
         expect(videos.first.durationSeconds, 125);
-        expect(videos.first.embedUrl.host, 'geo.dailymotion.com');
-        expect(videos.first.embedUrl.path, '/player/player_1.html');
-        expect(videos.first.embedUrl.queryParameters['video'], 'x1');
+        expect(videos.first.embedUrl.host, 'videos.example');
+        expect(
+          videos.first.embedUrl.path,
+          '/videos/embed/a1b2c3d4-0000-4000-8000-000000000001',
+        );
+        expect(videos.first.watchUrl.path, '/w/sWxgbBUu1ScQkHqz831Qqi');
       },
     );
 
-    test('requires the public API key and Player ID', () async {
+    test('uses the public default instance without API credentials', () async {
+      final client = MockClient((request) async {
+        expect(request.url.host, 'peertube.cpy.re');
+        expect(request.url.path, '/api/v1/search/videos');
+        return _json({'data': []});
+      });
+      expect(
+        await PeerTubeVideoDatasource(client: client).search('query'),
+        isEmpty,
+      );
+    });
+
+    test('rejects invalid instance configuration and result limits', () async {
       await expectLater(
-        DailymotionVideoDatasource(
-          apiKey: null,
-          playerId: 'player_1',
+        PeerTubeVideoDatasource(
+          baseUrl: Uri.http('videos.example'),
           client: MockClient((_) async => fail('Unexpected API request')),
         ).search('query'),
         throwsA(isA<ExternalVideoConfigurationException>()),
       );
       await expectLater(
-        DailymotionVideoDatasource(
-          apiKey: 'public-test-key',
-          playerId: null,
-          client: MockClient((_) async => fail('Unexpected API request')),
-        ).search('query'),
-        throwsA(isA<ExternalVideoConfigurationException>()),
+        () => PeerTubeVideoDatasource(count: 101),
+        throwsArgumentError,
       );
     });
 
     test(
       'returns no results for an empty query without making a request',
       () async {
-        final videos = await DailymotionVideoDatasource(
-          apiKey: null,
-          playerId: null,
+        final videos = await PeerTubeVideoDatasource(
           client: MockClient((_) async => fail('Unexpected API request')),
         ).search('   ');
         expect(videos, isEmpty);
@@ -275,9 +288,7 @@ void main() {
     test(
       'preserves HTTP authentication failures and reports rate limiting',
       () async {
-        final unauthorized = DailymotionVideoDatasource(
-          apiKey: 'public-test-key',
-          playerId: 'player_1',
+        final unauthorized = PeerTubeVideoDatasource(
           client: MockClient(
             (_) async => _json({'error': 'unauthorized'}, statusCode: 401),
           ),
@@ -295,9 +306,7 @@ void main() {
           ),
         );
 
-        final rateLimited = DailymotionVideoDatasource(
-          apiKey: 'public-test-key',
-          playerId: 'player_1',
+        final rateLimited = PeerTubeVideoDatasource(
           client: MockClient(
             (_) async => http.Response(
               jsonEncode({'error': 'Too many requests'}),
@@ -321,41 +330,72 @@ void main() {
       },
     );
 
-    test('rejects malformed results and invalid video IDs', () async {
-      final incomplete = DailymotionVideoDatasource(
-        apiKey: 'public-test-key',
-        playerId: 'player_1',
-        client: MockClient(
-          (_) async => _json({
-            'list': [
-              {'title': 'No ID'},
-            ],
-          }),
-        ),
-      );
-      await expectLater(incomplete.search('query'), throwsFormatException);
-      final invalidId = DailymotionVideoDatasource(
-        apiKey: 'public-test-key',
-        playerId: 'player_1',
-        client: MockClient(
-          (_) async => _json({
-            'list': [
-              {'id': '../not-a-video'},
-            ],
-          }),
-        ),
-      );
-      await expectLater(invalidId.search('query'), throwsFormatException);
-    });
+    test(
+      'rejects malformed response collections, invalid IDs, and JSON',
+      () async {
+        final incomplete = PeerTubeVideoDatasource(
+          client: MockClient(
+            (_) async => _json({
+              'data': [
+                {'name': 'No UUID'},
+              ],
+            }),
+          ),
+        );
+        await expectLater(incomplete.search('query'), throwsFormatException);
+        final invalidId = PeerTubeVideoDatasource(
+          client: MockClient(
+            (_) async => _json({
+              'data': [
+                {'uuid': '../not-a-video'},
+              ],
+            }),
+          ),
+        );
+        await expectLater(invalidId.search('query'), throwsFormatException);
+        final untrustedUrl = PeerTubeVideoDatasource(
+          client: MockClient(
+            (_) async => _json({
+              'data': [
+                {
+                  'uuid': 'a1b2c3d4-0000-4000-8000-000000000001',
+                  'url':
+                      'https://attacker.example/videos/watch/'
+                      'a1b2c3d4-0000-4000-8000-000000000001',
+                },
+              ],
+            }),
+          ),
+        );
+        await expectLater(untrustedUrl.search('query'), throwsFormatException);
+        final malformedJson = PeerTubeVideoDatasource(
+          client: MockClient((_) async => http.Response('not json', 200)),
+        );
+        await expectLater(malformedJson.search('query'), throwsFormatException);
+      },
+    );
 
-    test('returns an empty results list from the official endpoint', () async {
-      final videos = await DailymotionVideoDatasource(
-        apiKey: 'public-test-key',
-        playerId: 'player_1',
-        client: MockClient((_) async => _json({'list': []})),
+    test('returns empty results from the search endpoint', () async {
+      final videos = await PeerTubeVideoDatasource(
+        client: MockClient((_) async => _json({'data': []})),
       ).search('no matching videos');
       expect(videos, isEmpty);
     });
+
+    test(
+      'reports network failures instead of returning successful empties',
+      () async {
+        final datasource = PeerTubeVideoDatasource(
+          client: MockClient(
+            (_) async => throw http.ClientException('offline'),
+          ),
+        );
+        await expectLater(
+          datasource.search('query'),
+          throwsA(isA<ExternalVideoNetworkException>()),
+        );
+      },
+    );
   });
 
   test(
@@ -363,11 +403,11 @@ void main() {
     () async {
       final youtube = _RecordingDatasource();
       final vimeo = _RecordingDatasource();
-      final dailymotion = _RecordingDatasource();
+      final peerTube = _RecordingDatasource();
       final repository = ExternalVideoRepositoryImpl(
         youtubeDatasource: youtube,
         vimeoDatasource: vimeo,
-        dailymotionDatasource: dailymotion,
+        peerTubeDatasource: peerTube,
       );
 
       for (final source in VideoSource.values) {
@@ -376,7 +416,7 @@ void main() {
 
       expect(youtube.queries, ['query']);
       expect(vimeo.queries, ['query']);
-      expect(dailymotion.queries, ['query']);
+      expect(peerTube.queries, ['query']);
     },
   );
 
@@ -407,13 +447,14 @@ void main() {
             }),
           ),
         ),
-        dailymotionDatasource: DailymotionVideoDatasource(
-          apiKey: 'public-test-key',
-          playerId: 'player_1',
+        peerTubeDatasource: PeerTubeVideoDatasource(
           client: MockClient(
             (_) async => _json({
-              'list': [
-                {'id': 'dm1', 'title': 'Dailymotion result'},
+              'data': [
+                {
+                  'uuid': 'a1b2c3d4-0000-4000-8000-000000000003',
+                  'name': 'PeerTube result',
+                },
               ],
             }),
           ),

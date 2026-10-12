@@ -3,8 +3,8 @@ import 'package:toktik/domain/repositories/app_preferences_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toktik/domain/entities/external_video.dart';
 import 'package:toktik/domain/entities/video_post.dart';
-import 'package:toktik/infrastructure/models/dailymotion_video_model.dart';
 import 'package:toktik/infrastructure/models/local_video_model.dart';
+import 'package:toktik/infrastructure/models/peertube_video_model.dart';
 import 'package:toktik/infrastructure/models/vimeo_video_model.dart';
 import 'package:toktik/infrastructure/models/youtube_video_model.dart';
 import 'package:toktik/infrastructure/repositories/shared_preferences_repository.dart';
@@ -207,18 +207,25 @@ void main() {
       expect(video.embedUrl.path, '/video/42');
     });
 
-    test('maps Dailymotion metadata to its official embed URL', () {
-      final video = DailymotionVideoModel.fromJson({
-        'id': 'xyz123',
-        'title': 'Dailymotion clip',
-        'thumbnail': {'h720_url': 'https://s1.dmcdn.net/dailymotion.jpg'},
-        'duration': 125,
-      }).toEntity(playerId: 'player_1');
-      expect(video.source, VideoSource.dailymotion);
-      expect(video.id, 'dailymotion:xyz123');
-      expect(video.embedUrl.host, 'geo.dailymotion.com');
-      expect(video.embedUrl.path, '/player/player_1.html');
-      expect(video.embedUrl.queryParameters['video'], 'xyz123');
+    test('maps PeerTube metadata to instance watch and embed URLs', () {
+      const uuid = 'a1b2c3d4-0000-4000-8000-000000000001';
+      final video = PeerTubeVideoModel.fromJson(
+        {
+          'uuid': uuid,
+          'shortUUID': 'sWxgbBUu1ScQkHqz831Qqi',
+          'name': 'PeerTube clip',
+          'thumbnailPath': '/lazy-static/thumbnails/peertube.jpg',
+          'embedPath': '/videos/embed/$uuid',
+          'url': 'https://peertube.cpy.re/w/sWxgbBUu1ScQkHqz831Qqi',
+          'duration': 125,
+        },
+        instanceUrl: Uri.https('peertube.cpy.re'),
+      ).toEntity(instanceUrl: Uri.https('peertube.cpy.re'));
+      expect(video.source, VideoSource.peertube);
+      expect(video.id, 'peertube:$uuid');
+      expect(video.watchUrl.path, '/w/sWxgbBUu1ScQkHqz831Qqi');
+      expect(video.embedUrl.path, '/videos/embed/$uuid');
+      expect(video.thumbnailUrl, contains('peertube.cpy.re'));
       expect(video.durationSeconds, 125);
     });
 
@@ -235,7 +242,9 @@ void main() {
         throwsFormatException,
       );
       expect(
-        () => DailymotionVideoModel.fromJson({'id': '../not-a-video'}),
+        () => PeerTubeVideoModel.fromJson({
+          'uuid': '../not-a-video',
+        }, instanceUrl: Uri.https('peertube.cpy.re')),
         throwsFormatException,
       );
     });
@@ -257,14 +266,17 @@ void main() {
           ],
         },
       }).toEntity();
-      final dailymotion = DailymotionVideoModel.fromJson({
-        'id': 'xyz123',
-        'thumbnail_720_url': 'http://s1.dmcdn.net/image.jpg',
-      }).toEntity(playerId: 'player_1');
+      final peerTube = PeerTubeVideoModel.fromJson(
+        {
+          'uuid': 'a1b2c3d4-0000-4000-8000-000000000001',
+          'thumbnailPath': 'https://attacker.example/image.jpg',
+        },
+        instanceUrl: Uri.https('peertube.cpy.re'),
+      ).toEntity(instanceUrl: Uri.https('peertube.cpy.re'));
 
       expect(youtube.thumbnailUrl, isEmpty);
       expect(vimeo.thumbnailUrl, isEmpty);
-      expect(dailymotion.thumbnailUrl, isEmpty);
+      expect(peerTube.thumbnailUrl, isEmpty);
     });
   });
 }

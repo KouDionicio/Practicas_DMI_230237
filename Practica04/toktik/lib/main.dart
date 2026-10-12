@@ -6,11 +6,11 @@ import 'package:provider/provider.dart';
 import 'package:toktik/config/theme/app_theme.dart';
 import 'package:toktik/domain/repositories/external_video_repository.dart';
 import 'package:toktik/infrastructure/datasources/local_video_datasources_impl.dart';
-import 'package:toktik/infrastructure/datasources/dailymotion_video_datasource.dart';
 import 'package:toktik/infrastructure/repositories/external_video_repository_impl.dart';
 import 'package:toktik/infrastructure/repositories/shared_preferences_repository.dart';
 import 'package:toktik/infrastructure/repositories/video_post_repository_impl.dart';
 import 'package:toktik/infrastructure/datasources/vimeo_video_datasource.dart';
+import 'package:toktik/infrastructure/datasources/peertube_video_datasource.dart';
 import 'package:toktik/infrastructure/datasources/youtube_video_datasource.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/external_video_search_provider.dart';
@@ -20,8 +20,7 @@ import 'package:toktik/presentation/providers/seasonal_audio_provider.dart';
 import 'package:toktik/presentation/screens/discover/discover_screen.dart';
 
 const _youtubeApiKey = String.fromEnvironment('YOUTUBE_API_KEY');
-const _dailymotionApiKey = String.fromEnvironment('DAILYMOTION_API_KEY');
-const _dailymotionPlayerId = String.fromEnvironment('DAILYMOTION_PLAYER_ID');
+const _peerTubeInstanceUrl = String.fromEnvironment('PEERTUBE_INSTANCE_URL');
 const _vimeoBackendUrl = String.fromEnvironment('VIMEO_BACKEND_URL');
 
 Uri? _resolveVimeoBackendUrl() {
@@ -75,9 +74,10 @@ class MyApp extends StatelessWidget {
             vimeoDatasource: VimeoVideoDatasource(
               baseUrl: _resolveVimeoBackendUrl(),
             ),
-            dailymotionDatasource: DailymotionVideoDatasource(
-              apiKey: _dailymotionApiKey,
-              playerId: _dailymotionPlayerId,
+            peerTubeDatasource: PeerTubeVideoDatasource(
+              baseUrl: _peerTubeInstanceUrl.trim().isEmpty
+                  ? null
+                  : Uri.parse(_peerTubeInstanceUrl.trim()),
             ),
           ),
         ),

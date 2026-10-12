@@ -11,7 +11,7 @@ final _validVideo = ExternalVideo(
   title: 'A video',
   description: '',
   thumbnailUrl: '',
-  watchUrl: Uri.https('www.youtube.com', '/watch'),
+  watchUrl: Uri.https('www.youtube.com', '/watch', {'v': 'abc123'}),
   embedUrl: Uri.https('www.youtube.com', '/embed/abc123'),
 );
 
@@ -35,16 +35,17 @@ final _mismatchedVideo = ExternalVideo(
   embedUrl: Uri.https('www.youtube.com', '/embed/abc123'),
 );
 
-final _dailymotionVideo = ExternalVideo(
-  id: 'dailymotion:x1',
-  source: VideoSource.dailymotion,
-  title: 'A Dailymotion video',
+final _peerTubeVideo = ExternalVideo(
+  id: 'peertube:a1b2c3d4-0000-4000-8000-000000000001',
+  source: VideoSource.peertube,
+  title: 'A PeerTube video',
   description: '',
   thumbnailUrl: '',
-  watchUrl: Uri.https('www.dailymotion.com', '/video/x1'),
-  embedUrl: Uri.https('geo.dailymotion.com', '/player/player_1.html', {
-    'video': 'x1',
-  }),
+  watchUrl: Uri.https('peertube.cpy.re', '/w/sWxgbBUu1ScQkHqz831Qqi'),
+  embedUrl: Uri.https(
+    'peertube.cpy.re',
+    '/videos/embed/a1b2c3d4-0000-4000-8000-000000000001',
+  ),
 );
 
 void main() {
@@ -98,21 +99,21 @@ void main() {
     );
   });
 
-  testWidgets('opens the Dailymotion Player ID embed in a web iframe', (
-    tester,
-  ) async {
+  testWidgets('opens the PeerTube embed in a web iframe', (tester) async {
     if (!kIsWeb) return;
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(body: ExternalVideoPlayer(video: _dailymotionVideo)),
+        home: Scaffold(body: ExternalVideoPlayer(video: _peerTubeVideo)),
       ),
     );
     await tester.pump();
 
-    expect(_dailymotionVideo.embedUrl.host, 'geo.dailymotion.com');
-    expect(_dailymotionVideo.embedUrl.path, '/player/player_1.html');
-    expect(_dailymotionVideo.embedUrl.queryParameters['video'], 'x1');
+    expect(_peerTubeVideo.embedUrl.host, 'peertube.cpy.re');
+    expect(
+      _peerTubeVideo.embedUrl.path,
+      '/videos/embed/a1b2c3d4-0000-4000-8000-000000000001',
+    );
     expect(find.byType(HtmlElementView), findsOneWidget);
     expect(find.byType(WebViewWidget), findsNothing);
     expect(tester.takeException(), isNull);
