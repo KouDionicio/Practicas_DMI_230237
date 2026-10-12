@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TokTik · Provider de búsqueda externa",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "wiring", "label": "Inyección y recorrido", "focus": ["main", "provider", "repository", "datasource-contract"], "note": "main.dart registra las tres implementaciones y las conecta al provider de búsqueda externa." },
+      { "id": "sources", "label": "Enrutamiento por fuente", "focus": ["repository", "datasource-contract", "youtube", "vimeo", "dailymotion"], "note": "El repositorio selecciona exactamente un datasource mediante VideoSource y devuelve sus resultados." }
+    ]
+  },
+  "components": [
+    { "id": "main", "type": "frontend", "label": "main.dart", "tag": "registra repositorio y datasources", "pos": [35, 250], "size": [190, 82] },
+    { "id": "provider", "type": "frontend", "label": "ExternalVideoSearchProvider", "tag": "consulta source + query", "pos": [310, 250], "size": [235, 82] },
+    { "id": "repository", "type": "backend", "label": "ExternalVideoRepositoryImpl", "tag": "youtube / vimeo / dailymotion", "pos": [645, 250], "size": [245, 82] },
+    { "id": "datasource-contract", "type": "backend", "label": "ExternalVideoDatasource", "tag": "search(query)", "pos": [990, 250], "size": [220, 82] },
+    { "id": "youtube", "type": "cloud", "label": "YouTubeVideoDatasource", "tag": "api key · search.list", "pos": [1300, 75], "size": [235, 82] },
+    { "id": "vimeo", "type": "cloud", "label": "VimeoVideoDatasource", "tag": "baseUrl configurable", "pos": [1300, 250], "size": [235, 82] },
+    { "id": "dailymotion", "type": "cloud", "label": "DailymotionVideoDatasource", "tag": "api key + player ID", "pos": [1300, 425], "size": [235, 82] }
+  ],
+  "connections": [
+    { "from": "main", "to": "provider", "variant": "emphasis" },
+    { "from": "provider", "to": "repository" },
+    { "from": "repository", "to": "datasource-contract" },
+    { "from": "datasource-contract", "to": "youtube", "fromSide": "right", "toSide": "left" },
+    { "from": "datasource-contract", "to": "vimeo", "fromSide": "right", "toSide": "left" },
+    { "from": "datasource-contract", "to": "dailymotion", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "YouTube", "items": ["YouTube Data API v3", "YouTubeVideoModel mapea resultados a ExternalVideo"] },
+    { "dot": "emerald", "title": "Vimeo", "items": ["La app consulta el backend configurado", "VimeoVideoModel mapea resultados a ExternalVideo"] },
+    { "dot": "rose", "title": "Dailymotion", "items": ["Datasource usa API key y Player ID", "DailymotionVideoModel mapea resultados a ExternalVideo"] }
+  ]
+}

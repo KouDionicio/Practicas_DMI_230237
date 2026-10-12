@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TokTik · Provider de videos locales",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "wiring", "label": "Inyección de dependencias", "focus": ["main", "provider", "contract", "repository", "datasource"], "note": "main.dart construye el datasource local, lo inyecta al repositorio y entrega este al provider del feed." },
+      { "id": "feeds", "label": "Secciones del feed", "focus": ["provider", "contract", "repository", "datasource", "favorites", "posts"], "note": "Discover, For You y Favorites llegan al mismo datasource local mediante métodos distintos del contrato." }
+    ]
+  },
+  "components": [
+    { "id": "main", "type": "frontend", "label": "main.dart", "tag": "construye e inyecta dependencias", "pos": [30, 240], "size": [180, 82] },
+    { "id": "provider", "type": "frontend", "label": "DiscoverProvider", "tag": "discover / forYou / favorites", "pos": [285, 240], "size": [205, 82] },
+    { "id": "contract", "type": "backend", "label": "VideoPostsRepository", "tag": "tres operaciones de feed", "pos": [565, 240], "size": [205, 82] },
+    { "id": "repository", "type": "backend", "label": "VideoPostsRepositoryImpl", "tag": "implementa el contrato", "pos": [850, 240], "size": [220, 82] },
+    { "id": "datasource", "type": "backend", "label": "LocalVideoDatasource", "tag": "favorite IDs desde preferencias", "pos": [1150, 240], "size": [220, 82] },
+    { "id": "favorites", "type": "database", "label": "SharedPreferencesRepository", "tag": "loadFavoriteIds", "pos": [1150, 435], "size": [220, 78] },
+    { "id": "posts", "type": "backend", "label": "videoPosts", "tag": "metadatos locales · local_video_posts.dart", "pos": [850, 435], "size": [220, 78] }
+  ],
+  "connections": [
+    { "from": "main", "to": "provider", "variant": "emphasis" },
+    { "from": "provider", "to": "contract" },
+    { "from": "repository", "to": "contract" },
+    { "from": "repository", "to": "datasource" },
+    { "from": "datasource", "to": "favorites", "fromSide": "bottom", "toSide": "top" },
+    { "from": "datasource", "to": "posts", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Discover", "items": ["getTrendingVideosByPage", "Datasource mapea videoPosts a VideoPost"] },
+    { "dot": "emerald", "title": "For You", "items": ["getForYouVideosByPage", "Ordena por views en el datasource local"] },
+    { "dot": "rose", "title": "Favorites", "items": ["getFavoriteVideosByUser", "Filtra los metadatos con IDs guardados"] }
+  ]
+}
