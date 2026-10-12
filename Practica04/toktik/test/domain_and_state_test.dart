@@ -181,7 +181,7 @@ void main() {
           'title': 'YouTube clip',
           'description': 'Description',
           'thumbnails': {
-            'high': {'url': 'https://img.example/high.jpg'},
+            'high': {'url': 'https://i.ytimg.com/high.jpg'},
           },
         },
       }).toEntity();
@@ -197,7 +197,7 @@ void main() {
         'name': 'Vimeo clip',
         'pictures': {
           'sizes': [
-            {'link': 'https://img.example/vimeo.jpg'},
+            {'link': 'https://i.vimeocdn.com/vimeo.jpg'},
           ],
         },
       }).toEntity();
@@ -211,12 +211,60 @@ void main() {
       final video = DailymotionVideoModel.fromJson({
         'id': 'xyz123',
         'title': 'Dailymotion clip',
-        'thumbnail_720_url': 'https://img.example/dailymotion.jpg',
-      }).toEntity();
+        'thumbnail': {'h720_url': 'https://s1.dmcdn.net/dailymotion.jpg'},
+        'duration': 125,
+      }).toEntity(playerId: 'player_1');
       expect(video.source, VideoSource.dailymotion);
       expect(video.id, 'dailymotion:xyz123');
-      expect(video.embedUrl.host, 'www.dailymotion.com');
-      expect(video.embedUrl.path, '/embed/video/xyz123');
+      expect(video.embedUrl.host, 'geo.dailymotion.com');
+      expect(video.embedUrl.path, '/player/player_1.html');
+      expect(video.embedUrl.queryParameters['video'], 'xyz123');
+      expect(video.durationSeconds, 125);
+    });
+
+    test('rejects malformed external video identifiers', () {
+      expect(
+        () => YouTubeVideoModel.fromJson({
+          'id': {'videoId': '../not-a-video'},
+          'snippet': {},
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => VimeoVideoModel.fromJson({'uri': '/videos/42/extra'}),
+        throwsFormatException,
+      );
+      expect(
+        () => DailymotionVideoModel.fromJson({'id': '../not-a-video'}),
+        throwsFormatException,
+      );
+    });
+
+    test('ignores thumbnails outside the provider HTTPS CDN', () {
+      final youtube = YouTubeVideoModel.fromJson({
+        'id': {'videoId': 'abc123'},
+        'snippet': {
+          'thumbnails': {
+            'high': {'url': 'https://attacker.example/image.jpg'},
+          },
+        },
+      }).toEntity();
+      final vimeo = VimeoVideoModel.fromJson({
+        'uri': '/videos/42',
+        'pictures': {
+          'sizes': [
+            {'link': 'https://attacker.example/image.jpg'},
+          ],
+        },
+      }).toEntity();
+      final dailymotion = DailymotionVideoModel.fromJson({
+        'id': 'xyz123',
+        'thumbnail_720_url': 'http://s1.dmcdn.net/image.jpg',
+      }).toEntity(playerId: 'player_1');
+
+      expect(youtube.thumbnailUrl, isEmpty);
+      expect(vimeo.thumbnailUrl, isEmpty);
+      expect(dailymotion.thumbnailUrl, isEmpty);
     });
   });
 }

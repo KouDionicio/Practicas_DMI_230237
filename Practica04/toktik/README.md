@@ -37,8 +37,8 @@ Se mantienen tres capas útiles para el alcance actual:
 - `test/`: límites de calendario, persistencia, mappers y widgets.
 
 Los tres feeds locales reutilizan el datasource y repositorio existentes. Los
-proveedores externos tienen un contrato común y un mapper por proveedor; sus
-datasources actuales permanecen explícitamente sin configurar.
+proveedores externos tienen un contrato común, un datasource y un mapper por
+proveedor.
 
 ## Assets y dependencias
 
@@ -50,38 +50,158 @@ Pacifico, Playfair Display y Nunito desde sus rutas y nombres exactos.
 Hay iconos PNG para las cuatro temporadas y audio ambiental para las cuatro:
 Normal, Halloween, Navidad y San Valentín.
 
-Paquetes principales: `provider`, `video_player`, `shared_preferences`,
-`audioplayers`, `animate_do`, `intl` y `cupertino_icons`.
+Paquetes principales: `provider`, `video_player`, `webview_flutter`, `web`,
+`http`, `shared_preferences`, `audioplayers`, `animate_do`, `intl` y
+`cupertino_icons`. `video_player` sigue reproduciendo exclusivamente los assets
+locales. Los videos externos usan un iframe HTML validado en Flutter Web y
+`webview_flutter` en Android e iOS.
 
-## Proveedores externos: alcance y configuración pendiente
+## Proveedores externos: integración, credenciales y reproducción
 
-Las entidades, contratos, repositorio y mappers específicos de YouTube, Vimeo
-y Dailymotion están preparados. La implementación conectada a la app devuelve
-un error de configuración explícito: no hay claves, tokens, permisos ni
-reproductores externos configurados. Los fallos de esos proveedores no afectan
-al feed local. Los mappers se prueban con ejemplos de estructura JSON, no con
-respuestas en vivo.
+Desde el botón de búsqueda externo se pueden elegir YouTube, Vimeo o
+Dailymotion. Cada fuente usa su datasource HTTP, mapper y repositorio común.
+Los fallos de configuración, autorización, HTTP o respuesta inválida se
+muestran en pantalla; no ocultan ni reemplazan el feed local.
 
-No se pasan URLs de plataforma a `video_player` ni se extraen/descargan streams:
+| Proveedor | Consulta de metadatos | Reproducción (WebView Android/iOS; iframe Chrome) | Configuración/estado |
+|---|---|---|---|
+| YouTube | YouTube Data API v3 `search.list`, solo videos | IFrame Player oficial en WebView | `YOUTUBE_API_KEY`; requiere habilitar la API y restringir la clave |
+| Vimeo | API de videos `GET /videos`, con Bearer token desde `Practica04/vimeo_backend` | Vimeo Player oficial en WebView | `VIMEO_ACCESS_TOKEN` solo en el entorno del backend y `VIMEO_BACKEND_URL` en Flutter |
+| Dailymotion | Búsqueda pública global `GET https://api.dailymotion.com/videos?search=...` | Player oficial con Player ID, iframe en Chrome y WebView en Android/iOS | `DAILYMOTION_API_KEY` (Public API key) y `DAILYMOTION_PLAYER_ID` |
 
-- YouTube: `search.list` devuelve metadatos; la reproducción debe integrarse
-  con [YouTube Data API `search.list`](https://developers.google.com/youtube/v3/docs/search/list) y
-  con el [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference)
-  y respetar las [políticas de YouTube API](https://developers.google.com/youtube/terms/developer-policies).
-- Vimeo: requiere acceso permitido a la [API de videos](https://developer.vimeo.com/api/reference/videos)
-  y reproductor embebido, que se
-  controla mediante el [Vimeo Player SDK](https://developer.vimeo.com/player/sdk).
-- Dailymotion: su documentación ofrece [reproductores verticales](https://developers.dailymotion.com/docs/vertical-player).
-  Las URLs directas de stream requieren el permiso/plan correspondiente; son
-  efímeras y no deben guardarse ([documentación](https://developers.dailymotion.com/docs/generate-stream-urls)).
+La columna WebView de la tabla describe Android e iOS; en Chrome las tres
+integraciones usan el `embedUrl` oficial de cada proveedor en un iframe HTML.
 
-Para habilitar búsquedas y reproducción reales hay que implementar cada
-datasource con sus permisos aprobados y una integración de player apropiada.
-No incluir secretos en Dart, `--dart-define` ni en el APK: los valores que se
-compilan dentro de Flutter se pueden extraer. Mantener secretos de servidor
-(por ejemplo, secretos OAuth de Vimeo/Dailymotion) detrás de un backend propio;
-restringir cualquier clave pública de YouTube a la aplicación/cuotas necesarias.
-Estas integraciones no se validaron contra servicios externos.
+YouTube y Vimeo usan endpoints de búsqueda propios. La integración Dailymotion
+usa el endpoint global de búsqueda de la API pública legada (`/videos?search`)
+porque la API v2 actual requiere OAuth y documenta listas bajo un perfil, no
+una búsqueda global de cualquier creador. El datasource ya no usa
+`DAILYMOTION_PROFILE_ID`; solicita hasta 25 resultados por consulta y conserva
+la duración cuando la API la devuelve.
+
+La API v2 es la versión recomendada por Dailymotion. Su documentación indica
+que las llamadas API requieren un access token; `bundle.public` incluye
+`video.read` para contenido público, pero el endpoint v2 documentado de listado
+requiere un perfil. Por ello, la búsqueda global implementada depende del API
+legado y su disponibilidad puede cambiar. La documentación del endpoint público
+indica que se requiere una **Public API key**. Esta clave no es un client secret,
+pero al compilarse en Flutter puede inspeccionarse en el cliente; nunca uses
+una clave privada ni un token de usuario en la app. Si las políticas de tu
+cuenta no permiten una clave pública en clientes, sirve la búsqueda desde un
+backend propio y no desde Flutter.
+
+### Configurar metadatos
+
+1. En [Google Cloud Console](https://console.cloud.google.com/), crea o elige un
+   proyecto, habilita **YouTube Data API v3** y crea una API key. Restringe la
+   clave a la API y a las aplicaciones/cuotas previstas para el despliegue.
+   La clave de API que se compile en Flutter es extraíble: no es un secreto y
+   no debe tener permisos amplios.
+2. Crea una aplicación en Dailymotion Developer para obtener la **Public API
+   key** que habilita llamadas al host público `api.dailymotion.com`. Obtén
+   también un **Player ID** creado o elegido en Dailymotion Studio > Embed >
+   Players; el endpoint de inserción actual requiere un Player ID. No uses una
+   private API key ni un client secret en Flutter.
+3. Ejecuta desde `Practica04/toktik/` (reemplaza los valores localmente, sin
+   guardarlos en Git):
+
+   ```sh
+   flutter run --dart-define=YOUTUBE_API_KEY=TU_API_KEY_RESTRINGIDA --dart-define=DAILYMOTION_API_KEY=TU_PUBLIC_API_KEY --dart-define=DAILYMOTION_PLAYER_ID=PLAYER_ID
+   ```
+
+4. En Discover, abre el botón de búsqueda externa, selecciona Dailymotion,
+   escribe una consulta y toca un resultado.
+
+Vimeo requiere una aplicación registrada en
+[Vimeo Developer](https://developer.vimeo.com/), permisos de lectura aprobados
+y un access token con el alcance mínimo permitido por la cuenta (por ejemplo,
+`public` para buscar videos públicos). El backend independiente de
+`Practica04/vimeo_backend` lee el token solo de `process.env.VIMEO_ACCESS_TOKEN`
+y hace proxy de `GET /videos`; Flutter llama a `/api/vimeo/search` y nunca
+recibe ni envía el token de Vimeo.
+
+#### Ejecutar Vimeo localmente
+
+1. En Vimeo Developer crea/selecciona una aplicación, habilita el acceso de
+   lectura correspondiente y genera un Personal Access Token. No compartas el
+   token en el chat ni lo pongas en un comando, código o archivo versionado.
+2. Configura `VIMEO_ACCESS_TOKEN` en el entorno del proceso/servicio del
+   backend, no en Flutter. En desarrollo local de Windows, puedes agregar esa
+   variable mediante **Editar las variables de entorno de la cuenta** y luego
+   reiniciar VS Code para que su terminal la herede. En despliegue, usa el
+   almacén de secretos del proveedor de hosting. No la guardes en archivos,
+   comandos, `package.json`, `launch.json` ni el repositorio.
+3. Desde `Practica04/vimeo_backend/`, inicia el backend:
+
+   ```sh
+   npm start
+   ```
+
+   En otra terminal ejecuta las pruebas:
+
+   ```sh
+   npm test
+   ```
+
+   `/health` debe responder `{"status":"ok"}`. El backend escucha en el puerto
+   8787 y por defecto solo en `127.0.0.1`. Para que Android Emulator acceda al
+   host, establece además `HOST=0.0.0.0` en el entorno del backend; el manifest
+   de cleartext está limitado al build Android debug.
+   No expongas ese endpoint de desarrollo a Internet.
+   En producción, define `CORS_ALLOWED_ORIGINS` como una lista separada por
+   comas de orígenes HTTPS exactos autorizados. Los orígenes HTTP locales solo
+   se aceptan fuera de `NODE_ENV=production`; CORS no sustituye autenticación
+   ni límites de uso. Configura `HOST` según la plataforma de despliegue y
+   limita el acceso de red; `0.0.0.0` puede ser necesario dentro de un
+   contenedor, pero no debe usarse para exponer el backend local a Internet.
+4. El URL local predeterminado de Flutter es `http://10.0.2.2:8787` en Android
+   Emulator, `http://localhost:8787` en web, iOS Simulator y escritorio. Un
+   dispositivo físico necesita una URL que pueda alcanzar: configura
+   `VIMEO_BACKEND_URL` con una URL HTTPS del backend (recomendado) o una IP
+   accesible en una red de desarrollo confiable. Para apuntar Flutter a ese
+   backend:
+
+   ```sh
+   flutter run --dart-define=VIMEO_BACKEND_URL=https://tu-host-de-desarrollo
+   ```
+
+   No pongas una URL HTTP remota en builds release: Flutter permite HTTP solo
+   en debug y las políticas de plataforma restringen el tráfico sin cifrar.
+5. En Videos externos elige Vimeo y busca. El token no aparece en respuestas
+   de error ni se registra. El backend reduce la respuesta de Vimeo a los
+   campos que consume el mapper.
+
+El backend de muestra no implementa autenticación de usuario ni despliegue
+productivo. Mantén el servicio local; antes de publicarlo, protégelo con una
+pasarela de autenticación/rate-limit y HTTPS, limita el uso de Vimeo y no
+confíes en CORS como control de acceso. La URL puede ir en
+`--dart-define=VIMEO_BACKEND_URL=...`; **el token nunca**. En Vimeo revisa
+[API authentication](https://developer.vimeo.com/api/authentication).
+
+La pantalla de reproducción solo navega a HTTPS y a los hosts/rutas oficiales
+de embed (`youtube.com/embed`, `player.vimeo.com/video` y
+`geo.dailymotion.com/player/{PLAYER_ID}.html?video={VIDEO_ID}`). No se envían páginas web de proveedor a
+`video_player`, ni se extraen o descargan streams. Se aplican los controles,
+restricciones, disponibilidad regional, anuncios y permisos definidos por cada
+servicio. Chrome inserta el embed HTTPS oficial del proveedor en un iframe
+HTML y ofrece un enlace alternativo a la página del video si el proveedor
+bloquea la inserción. Android e iOS conservan `webview_flutter` y muestran un
+botón para abrir la página original del proveedor.
+
+Referencias oficiales: [YouTube search.list](https://developers.google.com/youtube/v3/docs/search/list),
+[YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference),
+[políticas de YouTube API](https://developers.google.com/youtube/terms/developer-policies),
+[Vimeo API](https://developer.vimeo.com/api/reference/videos),
+[Vimeo Player SDK](https://developer.vimeo.com/player/sdk),
+[Dailymotion API v2](https://developers.dailymotion.com/docs/browse-large-video-catalog),
+[Dailymotion autenticación y llamadas API legadas](https://developers.dailymotion.com/v0/reference/perform-an-api-call),
+[campos de videos legados](https://developers.dailymotion.com/v0/reference/video-fields),
+[filtros de videos legados](https://developers.dailymotion.com/v0/reference/video-filters),
+[migración del nuevo embed Dailymotion](https://developers.dailymotion.com/reference/migration-guide-new-embed-endpoint.md),
+[Dailymotion vertical player](https://developers.dailymotion.com/docs/vertical-player),
+y [condiciones de streams de Dailymotion](https://developers.dailymotion.com/docs/generate-stream-urls).
+Los endpoints de streams directos requieren permisos/plan, son temporales y no
+se usan en la app.
 
 ## Ejecutar y probar
 
@@ -93,17 +213,33 @@ flutter run
 dart format lib test
 flutter analyze
 flutter test
+flutter test --platform chrome test/external_video_player_test.dart
 ```
+El test de Chrome comprueba que el reproductor inserta un `HtmlElementView`
+sin inicializar `webview_flutter`; ejecútalo con Chrome instalado.
 
 En Windows, si `flutter pub get` termina con el mensaje de que los plugins
 requieren symlinks, habilitar **Developer Mode** en la configuración del sistema
 y volver a ejecutar el comando.
 
-Pruebas de calendario cubren los dos extremos de Halloween, Navidad entre
-diciembre y enero y San Valentín. Las pruebas de preferencias comprueban modo
-por defecto, modo manual, likes persistentes y taps seguidos; las pruebas de
-mappers incluyen datos locales y las tres plataformas. No se requieren
-credenciales ni Internet para el feed local.
+Las pruebas de `test/external_video_datasources_test.dart` usan HTTP simulado
+para respuestas válidas, errores HTTP/autenticación, respuestas incompletas y
+enrutamiento del repositorio; no contactan servicios reales. Las pruebas de
+`test/domain_and_state_test.dart` cubren mappers, calendario y persistencia.
+No se requieren credenciales ni Internet para el feed local. Las consultas
+reales requieren la configuración indicada arriba; no se han ejecutado APIs
+reales ni se afirma validada la reproducción en dispositivo.
+
+Validación de esta entrega: `flutter analyze` terminó sin problemas y
+`flutter test --reporter compact` pasó con 26 pruebas. También se ejecuta
+`npm test` en `Practica04/vimeo_backend/` para verificar salud, consulta,
+credencial ausente, entrada inválida, errores de autorización y respuesta
+malformada sin llamar a Vimeo real. `dart format` se ejecuta sobre los Dart
+modificados. En Windows, Flutter puede mostrar el aviso de soporte de symlinks
+al resolver plugins; si ocurre, habilita **Developer Mode** y vuelve a correr
+`flutter pub get`. Una prueba de proxy/backend simulada no equivale a validar
+el token, la cuota ni la reproducción Vimeo real; estos necesitan credencial
+válida y dispositivo/emulador.
 
 ## Compilar APK y probar en Appetize.io
 

@@ -1,0 +1,14 @@
+{
+  "name": "toktik-vimeo-backend",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Vimeo search proxy for TokTik; access token remains server-side.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}

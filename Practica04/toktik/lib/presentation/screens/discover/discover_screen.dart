@@ -4,6 +4,7 @@ import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
 import 'package:toktik/presentation/providers/seasonal_audio_provider.dart';
+import 'package:toktik/presentation/screens/external_videos/external_videos_screen.dart';
 import 'package:toktik/presentation/widgets/season_settings_sheet.dart';
 import 'package:toktik/presentation/widgets/shared/video_scrollable_view.dart';
 
@@ -18,6 +19,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   final PageController _sectionController = PageController();
   int _activeSection = 0;
   bool _isMuted = true;
+  bool _isExternalSearchOpen = false;
 
   @override
   void dispose() {
@@ -35,11 +37,129 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
+  Future<void> _openExternalVideos() async {
+    setState(() => _isExternalSearchOpen = true);
+    final audio = context.read<SeasonalAudioProvider>();
+    final navigator = Navigator.of(context);
+    try {
+      await audio.setVideoHasSound(true);
+      await navigator.push(
+        MaterialPageRoute<void>(builder: (_) => const ExternalVideosScreen()),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo abrir la búsqueda: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExternalSearchOpen = false);
+      try {
+        await audio.setVideoHasSound(false);
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No se pudo restaurar el audio: $error')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _toggleAmbientAudio() async {
+    try {
+      await context.read<SeasonalAudioProvider>().toggleEnabled();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo cambiar el audio ambiental: $error'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final season = context.watch<SeasonProvider>().season;
     final audio = context.watch<SeasonalAudioProvider>();
     final likesError = context.watch<LikesProvider>().error;
+    final compactHeader = MediaQuery.sizeOf(context).width < 480;
+    final sectionTabs = [
+      for (var index = 0; index < FeedSection.values.length; index++)
+        TextButton(
+          onPressed: () => _sectionController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOut,
+          ),
+          style: TextButton.styleFrom(
+            foregroundColor: _activeSection == index
+                ? Colors.white
+                : Colors.white70,
+            textStyle: TextStyle(
+              fontWeight: _activeSection == index
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
+          ),
+          child: Text(switch (FeedSection.values[index]) {
+            FeedSection.discover => 'Discover',
+            FeedSection.forYou => 'For You',
+            FeedSection.favorites => 'Favorites',
+          }),
+        ),
+    ];
+    final headerActions = [
+      IconButton(
+        tooltip: 'Configuración de temporada',
+        onPressed: _showSettings,
+        icon: Image.asset(
+          season.iconAsset,
+          width: 32,
+          height: 32,
+          fit: BoxFit.contain,
+          errorBuilder: (_, error, _) => const Icon(Icons.palette),
+        ),
+      ),
+      PopupMenuButton<_DiscoverMenuAction>(
+        tooltip: 'Más opciones',
+        onSelected: (action) {
+          switch (action) {
+            case _DiscoverMenuAction.externalVideos:
+              _openExternalVideos();
+            case _DiscoverMenuAction.toggleAmbientAudio:
+              _toggleAmbientAudio();
+          }
+        },
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: _DiscoverMenuAction.externalVideos,
+            child: ListTile(
+              leading: Icon(Icons.travel_explore),
+              title: Text('Buscar videos externos'),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          PopupMenuItem(
+            value: _DiscoverMenuAction.toggleAmbientAudio,
+            enabled: audio.hasAudio,
+            child: ListTile(
+              leading: Icon(
+                audio.isEnabled ? Icons.music_off : Icons.music_note,
+              ),
+              title: Text(
+                audio.isEnabled
+                    ? 'Silenciar audio ambiental'
+                    : 'Reproducir audio ambiental',
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ],
+        icon: Icon(audio.isAudible ? Icons.music_note : Icons.more_vert),
+      ),
+    ];
 
     return Scaffold(
       body: Stack(
@@ -53,7 +173,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               return _FeedPage(
                 key: ValueKey(section),
                 section: section,
-                isVisible: index == _activeSection,
+                isVisible: index == _activeSection && !_isExternalSearchOpen,
                 isMuted: _isMuted,
                 onMuteChanged: _setMuted,
               );
@@ -62,108 +182,76 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-              child: Row(
-                children: [
-                  for (
-                    var index = 0;
-                    index < FeedSection.values.length;
-                    index++
-                  )
-                    TextButton(
-                      onPressed: () => _sectionController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOut,
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: _activeSection == index
-                            ? Colors.white
-                            : Colors.white70,
-                        textStyle: TextStyle(
-                          fontWeight: _activeSection == index
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                      child: Text(switch (FeedSection.values[index]) {
-                        FeedSection.discover => 'Discover',
-                        FeedSection.forYou => 'For You',
-                        FeedSection.favorites => 'Favorites',
-                      }),
-                    ),
-                  const Spacer(),
-                  IconButton(
-                    tooltip: 'Configuración de temporada',
-                    onPressed: _showSettings,
-                    icon: Image.asset(
-                      season.iconAsset,
-                      width: 32,
-                      height: 32,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, error, _) => const Icon(Icons.palette),
-                    ),
-                  ),
-                  if (likesError != null)
-                    Positioned(
-                      top: MediaQuery.paddingOf(context).top + 58,
-                      left: 12,
-                      right: 12,
-                      child: Card(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 480) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'No se pudieron cargar tus Me gusta: $likesError',
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: context.read<LikesProvider>().load,
-                                child: const Text('Reintentar'),
-                              ),
-                            ],
+                            mainAxisSize: MainAxisSize.min,
+                            children: sectionTabs,
                           ),
                         ),
-                      ),
-                    ),
-                  IconButton(
-                    tooltip: audio.isEnabled
-                        ? 'Silenciar audio ambiental'
-                        : 'Reproducir audio ambiental',
-                    onPressed: audio.hasAudio
-                        ? () async {
-                            try {
-                              await audio.toggleEnabled();
-                            } catch (error) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'No se pudo cambiar el audio ambiental: $error',
-                                  ),
-                                ),
-                              );
-                            }
-                          }
-                        : null,
-                    icon: Icon(
-                      audio.isAudible ? Icons.music_note : Icons.music_off,
-                    ),
-                  ),
-                ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: headerActions,
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      ...sectionTabs,
+                      const Spacer(),
+                      ...headerActions,
+                    ],
+                  );
+                },
               ),
             ),
           ),
+          if (likesError != null)
+            Positioned(
+              top:
+                  MediaQuery.paddingOf(context).top +
+                  (compactHeader ? 112 : 58),
+              left: 12,
+              right: 12,
+              child: Card(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'No se pudieron cargar tus Me gusta: $likesError',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: context.read<LikesProvider>().load,
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
+
+enum _DiscoverMenuAction { externalVideos, toggleAmbientAudio }
 
 class _FeedPage extends StatelessWidget {
   const _FeedPage({

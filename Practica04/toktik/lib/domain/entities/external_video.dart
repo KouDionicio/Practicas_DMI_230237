@@ -9,6 +9,7 @@ class ExternalVideo {
     required this.thumbnailUrl,
     required this.watchUrl,
     required this.embedUrl,
+    this.durationSeconds,
   });
 
   final String id;
@@ -18,4 +19,5 @@ class ExternalVideo {
   final String thumbnailUrl;
   final Uri watchUrl;
   final Uri embedUrl;
+  final int? durationSeconds;
 }
