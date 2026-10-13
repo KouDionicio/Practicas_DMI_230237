@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
 import 'package:toktik/presentation/providers/seasonal_audio_provider.dart';
 
@@ -129,8 +130,8 @@ class SeasonSettingsSheet extends StatelessWidget {
               ],
             ),
             const Text(
-              'El icono mostrado pertenece a la interfaz; no cambia el icono '
-              'nativo del launcher.',
+              'El icono del launcher cambia en Android. Otros sistemas '
+              'conservan el icono de la aplicación.',
               style: TextStyle(fontSize: 12),
             ),
           ],

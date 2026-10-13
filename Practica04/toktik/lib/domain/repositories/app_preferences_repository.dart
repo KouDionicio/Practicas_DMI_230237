@@ -5,4 +5,6 @@ abstract class AppPreferencesRepository {
   Future<void> saveManualSeason(String season);
   Future<Set<String>> getLikedVideoIds();
   Future<void> saveLikedVideoIds(Set<String> ids);
+  Future<Map<String, int>> getVideoLikeCounts();
+  Future<void> saveVideoLikeCounts(Map<String, int> counts);
 }

@@ -16,6 +16,9 @@ class ExternalVideoRepositoryImpl implements ExternalVideoRepository {
   @override
   Future<List<ExternalVideo>> search(VideoSource source, String query) {
     final datasource = switch (source) {
+      VideoSource.local => throw const FormatException(
+        'Los videos locales no se consultan como proveedores externos.',
+      ),
       VideoSource.youtube => youtubeDatasource,
       VideoSource.vimeo => vimeoDatasource,
       VideoSource.peertube => peerTubeDatasource,

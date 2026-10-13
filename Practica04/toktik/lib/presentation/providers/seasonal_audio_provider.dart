@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
 
 class SeasonalAudioProvider extends ChangeNotifier with WidgetsBindingObserver {
@@ -14,6 +15,7 @@ class SeasonalAudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool isEnabled = false;
   bool _isForeground = true;
   bool _videoHasSound = false;
+  bool _resumeAfterBackground = false;
   Object? error;
 
   bool get hasAudio => _season.audioAsset != null;
@@ -35,24 +37,44 @@ class SeasonalAudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> toggleEnabled() async {
-    isEnabled = !isEnabled;
-    if (isAudible && _isForeground) {
-      await _playCurrentSeason();
-    } else {
-      await _player.stop();
+    final wasEnabled = isEnabled;
+    isEnabled = !wasEnabled;
+    try {
+      await _syncAudio();
+      error = null;
+    } catch (exception) {
+      isEnabled = wasEnabled;
+      error = exception;
+      notifyListeners();
+      rethrow;
     }
     notifyListeners();
   }
 
   Future<void> setVideoHasSound(bool value) async {
     if (_videoHasSound == value) return;
+    final previousValue = _videoHasSound;
     _videoHasSound = value;
-    if (isAudible && _isForeground) {
-      await _playCurrentSeason();
-    } else {
-      await _player.stop();
+    try {
+      await _syncAudio();
+      error = null;
+    } catch (exception) {
+      _videoHasSound = previousValue;
+      error = exception;
+      notifyListeners();
+      rethrow;
     }
     notifyListeners();
+  }
+
+  Future<void> _syncAudio() async {
+    if (isAudible && _isForeground) {
+      _resumeAfterBackground = false;
+      await _playCurrentSeason();
+    } else {
+      _resumeAfterBackground = false;
+      await _player.stop();
+    }
   }
 
   Future<void> _playCurrentSeason() async {
@@ -72,10 +94,15 @@ class SeasonalAudioProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _syncLifecycleAudio() async {
     try {
       if (!_isForeground) {
+        _resumeAfterBackground = isAudible;
         await _player.pause();
+      } else if (_resumeAfterBackground && isAudible) {
+        _resumeAfterBackground = false;
+        await _player.resume();
       } else if (isAudible) {
         await _playCurrentSeason();
       }
+      error = null;
     } catch (exception) {
       error = exception;
       notifyListeners();

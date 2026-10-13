@@ -1,4 +1,63 @@
-enum VideoSource { youtube, vimeo, peertube }
+enum VideoSource {
+  local,
+  youtube,
+  vimeo,
+  peertube;
+
+  static VideoSource? fromUrl(String rawUrl) {
+    final value = rawUrl.trim();
+    if (value.isEmpty) return null;
+
+    if (value.startsWith('assets/') ||
+        value.startsWith('lib/') ||
+        value.startsWith('./') ||
+        value.startsWith('../') ||
+        value.startsWith('file://') ||
+        value.startsWith('/')) {
+      return VideoSource.local;
+    }
+
+    final uri = Uri.tryParse(value);
+    if (uri == null) return null;
+    final host = uri.host.toLowerCase();
+
+    if (uri.scheme.isEmpty) {
+      return null;
+    }
+
+    if (host == 'youtu.be' ||
+        host == 'youtube.com' ||
+        host == 'www.youtube.com' ||
+        host == 'm.youtube.com' ||
+        host.endsWith('.youtube.com')) {
+      return VideoSource.youtube;
+    }
+
+    if (host == 'vimeo.com' ||
+        host == 'www.vimeo.com' ||
+        host == 'player.vimeo.com' ||
+        host.endsWith('.vimeocdn.com')) {
+      return VideoSource.vimeo;
+    }
+
+    final segments = uri.pathSegments;
+    final hasPeerTubeWatchPattern = segments.length >= 3 &&
+        segments[segments.length - 3] == 'videos' &&
+        (segments[segments.length - 2] == 'watch' ||
+            segments[segments.length - 2] == 'embed');
+    final hasPeerTubeShortPattern = segments.length >= 2 &&
+        segments.first == 'w';
+
+    if (host.isNotEmpty &&
+        (hasPeerTubeWatchPattern || hasPeerTubeShortPattern)) {
+      return VideoSource.peertube;
+    }
+
+    return null;
+  }
+
+  bool get isExternal => this != VideoSource.local;
+}
 
 class ExternalVideo {
   const ExternalVideo({

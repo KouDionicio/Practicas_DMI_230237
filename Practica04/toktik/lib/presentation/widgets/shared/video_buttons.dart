@@ -5,6 +5,7 @@ import 'package:toktik/config/helpers/human_formats.dart';
 import 'package:toktik/domain/entities/video_post.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
+import 'package:toktik/presentation/providers/season_provider.dart';
 import 'package:toktik/presentation/providers/seasonal_audio_provider.dart';
 
 class VideoButtons extends StatelessWidget {
@@ -22,14 +23,15 @@ class VideoButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final likesProvider = context.watch<LikesProvider>();
+    final season = context.watch<SeasonProvider>().season;
     final isLiked = likesProvider.isLiked(video);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _CustomIconButton(
-          value: video.likes + (isLiked ? 1 : 0),
-          iconColor: isLiked ? Colors.redAccent : Colors.white,
+          value: likesProvider.likeCount(video),
+          iconColor: season.primaryColor,
           iconData: isLiked ? Icons.favorite : Icons.favorite_border,
           semanticLabel: isLiked ? 'Quitar Me gusta' : 'Me gusta',
           onPressed: () async {
@@ -58,6 +60,7 @@ class VideoButtons extends StatelessWidget {
         _CustomIconButton(
           value: 0,
           iconData: isMuted ? Icons.volume_off : Icons.volume_up,
+          iconColor: season.primaryColor,
           semanticLabel: isMuted
               ? 'Activar sonido del video'
               : 'Silenciar video',
@@ -83,10 +86,11 @@ class VideoButtons extends StatelessWidget {
         SpinPerfect(
           infinite: true,
           duration: const Duration(seconds: 5),
-          child: const _CustomIconButton(
+          child: _CustomIconButton(
             value: 0,
             iconData: Icons.play_circle_outline,
             semanticLabel: 'Reproduciendo',
+            iconColor: season.primaryColor,
           ),
         ),
       ],
@@ -116,7 +120,11 @@ class _CustomIconButton extends StatelessWidget {
         IconButton(
           tooltip: semanticLabel,
           onPressed: onPressed,
-          icon: Icon(iconData, color: iconColor ?? Colors.white, size: 30),
+          icon: Icon(
+            iconData,
+            color: iconColor ?? Theme.of(context).iconTheme.color,
+            size: 30,
+          ),
         ),
         if (value > 0) Text(HumanFormats.humanReadbleNumber(value.toDouble())),
       ],

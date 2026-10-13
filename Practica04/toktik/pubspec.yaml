@@ -43,6 +43,8 @@ dependencies:
   http: ^1.5.0
   webview_flutter: ^4.13.0
   web: ^1.1.1
+  flutter_native_splash: ^2.4.8
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +56,25 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+flutter_launcher_icons:
+  android: "ic_launcher_normal"
+  ios: true
+  image_path: assets/icons/normal.png
+  adaptive_icon_background: "#101020"
+  adaptive_icon_foreground: assets/icons/normal.png
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#101020"
+  image: assets/icons/normal.png
+  android: true
+  ios: true
+  web: false
+  android_12:
+    color: "#101020"
+    image: assets/icons/normal.png
+    icon_background_color: "#101020"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -73,6 +94,7 @@ flutter:
     - assets/audio/halloween/
     - assets/audio/christmas/
     - assets/audio/valentines/
+    - .env
 
   fonts:
     - family: Inter

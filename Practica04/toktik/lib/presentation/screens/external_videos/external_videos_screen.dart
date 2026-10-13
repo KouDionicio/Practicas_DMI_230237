@@ -33,6 +33,7 @@ class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
               initialValue: search.source,
               decoration: const InputDecoration(labelText: 'Proveedor'),
               items: VideoSource.values
+                  .where((source) => source != VideoSource.local)
                   .map(
                     (source) => DropdownMenuItem(
                       value: source,
@@ -61,14 +62,34 @@ class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
               ),
             ),
           ),
+          if (search.environmentFileLoadFailed)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'No se pudo leer .env. Revisa el formato del archivo; '
+                'los proveedores sin configuración mostrarán un error '
+                'específico y el feed local seguirá disponible.',
+                textAlign: TextAlign.center,
+              ),
+            ),
           if (search.isLoading) const LinearProgressIndicator(),
           if (search.error != null)
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'No se pudo consultar ${_sourceName(search.source)}: '
-                '${search.error}\n\nEl feed local sigue disponible al volver.',
-                textAlign: TextAlign.center,
+              child: Column(
+                children: [
+                  Text(
+                    'No se pudo consultar ${_sourceName(search.source)}: '
+                    '${search.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.video_library),
+                    label: const Text('Volver a los videos locales'),
+                  ),
+                ],
               ),
             ),
           if (!search.isLoading &&
@@ -121,6 +142,7 @@ class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
   }
 
   static String _sourceName(VideoSource source) => switch (source) {
+    VideoSource.local => 'Local',
     VideoSource.youtube => 'YouTube',
     VideoSource.vimeo => 'Vimeo',
     VideoSource.peertube => 'PeerTube',

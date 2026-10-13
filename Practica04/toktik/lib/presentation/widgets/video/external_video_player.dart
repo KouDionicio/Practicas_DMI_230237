@@ -232,6 +232,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       );
     }
     final embedVideoId = switch (video.source) {
+      VideoSource.local => null,
       VideoSource.youtube => _capture(
         RegExp(r'^/embed/([A-Za-z0-9_-]{1,128})$'),
         embedUrl.path,
@@ -244,6 +245,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     };
     final entityVideoId = _capture(
       RegExp(switch (video.source) {
+        VideoSource.local => r'^$',
         VideoSource.youtube => r'^youtube:([A-Za-z0-9_-]{1,128})$',
         VideoSource.vimeo => r'^vimeo:([0-9]{1,128})$',
         VideoSource.peertube =>
@@ -303,27 +305,52 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     String videoId, {
     required Uri embedUrl,
   }) => switch (source) {
-    VideoSource.youtube =>
-      uri.host == 'www.youtube.com' &&
-          uri.path == '/watch' &&
-          uri.queryParameters.length == 1 &&
-          uri.queryParameters['v'] == videoId,
+    VideoSource.youtube => _validYouTubeWatchUrl(uri, videoId),
     VideoSource.vimeo =>
-      (uri.host == 'vimeo.com' || uri.host == 'www.vimeo.com') &&
-          uri.path == '/$videoId' &&
-          !uri.hasQuery,
+      (uri.host == 'vimeo.com' ||
+              uri.host == 'www.vimeo.com' ||
+              uri.host == 'player.vimeo.com') &&
+          uri.path == '/$videoId',
     VideoSource.peertube =>
       uri.host.toLowerCase() == embedUrl.host.toLowerCase() &&
           uri.port == embedUrl.port &&
-          !uri.hasQuery &&
           _validPeerTubeWatchPath(uri, embedUrl, videoId),
+    VideoSource.local => false,
   };
+
+  static bool _validYouTubeWatchUrl(Uri uri, String videoId) {
+    final host = uri.host.toLowerCase();
+    final normalizedPath = uri.path;
+    final queryVideoId = uri.queryParameters['v'];
+
+    if (host == 'youtu.be') {
+      final segments = uri.pathSegments;
+      return segments.length == 1 && segments.first == videoId;
+    }
+
+    if (host == 'youtube.com' ||
+        host == 'www.youtube.com' ||
+        host == 'm.youtube.com') {
+      if (normalizedPath == '/watch' && queryVideoId == videoId) {
+        return true;
+      }
+      if (normalizedPath == '/shorts/$videoId') {
+        return true;
+      }
+      if (normalizedPath == '/embed/$videoId') {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   static bool _allowedEmbedHost(VideoSource source, String host) =>
       switch (source) {
         VideoSource.youtube => host == 'www.youtube.com',
         VideoSource.vimeo => host == 'player.vimeo.com',
         VideoSource.peertube => host.isNotEmpty,
+        VideoSource.local => false,
       };
 
   static bool _validPeerTubeWatchPath(
@@ -358,15 +385,18 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     VideoSource.youtube =>
       host == 'www.youtube.com' ||
           host == 'youtube.com' ||
-          host == 'm.youtube.com',
+          host == 'm.youtube.com' ||
+          host == 'youtu.be',
     VideoSource.vimeo =>
       host == 'player.vimeo.com' ||
           host == 'vimeo.com' ||
           host == 'www.vimeo.com',
     VideoSource.peertube => host.toLowerCase() == peerTubeHost.toLowerCase(),
+    VideoSource.local => false,
   };
 
   static String _providerName(VideoSource source) => switch (source) {
+    VideoSource.local => 'Archivo local',
     VideoSource.youtube => 'YouTube',
     VideoSource.vimeo => 'Vimeo',
     VideoSource.peertube => 'PeerTube',

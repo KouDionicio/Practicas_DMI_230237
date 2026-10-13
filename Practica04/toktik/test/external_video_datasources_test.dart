@@ -112,6 +112,76 @@ void main() {
 
   group('Vimeo datasource', () {
     test(
+      'uses the direct API with the read-only token if no backend is set',
+      () async {
+        final client = MockClient((request) async {
+          expect(request.url.host, 'api.vimeo.com');
+          expect(request.url.path, '/videos');
+          expect(request.url.queryParameters['query'], 'travel');
+          expect(request.headers['Authorization'], 'Bearer read-only-token');
+          return _json({
+            'data': [
+              {'uri': '/videos/42', 'name': 'Travel'},
+            ],
+          });
+        });
+
+        final videos = await VimeoVideoDatasource(
+          baseUrl: null,
+          token: 'read-only-token',
+          client: client,
+        ).search('travel');
+
+        expect(videos.single.id, 'vimeo:42');
+      },
+    );
+
+    test(
+      'falls back to the direct API when the backend is unreachable',
+      () async {
+        final requestedHosts = <String>[];
+        final client = MockClient((request) async {
+          requestedHosts.add(request.url.host);
+          if (request.url.host == 'backend.example') {
+            throw http.ClientException('Connection refused');
+          }
+          expect(request.url.host, 'api.vimeo.com');
+          expect(request.headers['Authorization'], 'Bearer read-only-token');
+          return _json({
+            'data': [
+              {'uri': '/videos/42', 'name': 'Travel'},
+            ],
+          });
+        });
+
+        final videos = await VimeoVideoDatasource(
+          baseUrl: Uri.https('backend.example'),
+          token: 'read-only-token',
+          client: client,
+        ).search('travel');
+
+        expect(requestedHosts, ['backend.example', 'api.vimeo.com']);
+        expect(videos.single.id, 'vimeo:42');
+      },
+    );
+
+    test(
+      'reports a clear error when neither Vimeo connection is configured',
+      () async {
+        await expectLater(
+          VimeoVideoDatasource(baseUrl: null).search('query'),
+          throwsA(
+            isA<ExternalVideoConfigurationException>().having(
+              (error) => error.message,
+              'message',
+              contains('VIMEO_TOKEN'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
       'calls the Vimeo backend and maps results without sending a token',
       () async {
         final client = MockClient((request) async {
@@ -410,13 +480,19 @@ void main() {
         peerTubeDatasource: peerTube,
       );
 
-      for (final source in VideoSource.values) {
+      for (final source in VideoSource.values.where(
+        (source) => source.isExternal,
+      )) {
         await repository.search(source, 'query');
       }
 
       expect(youtube.queries, ['query']);
       expect(vimeo.queries, ['query']);
       expect(peerTube.queries, ['query']);
+      expect(
+        () => repository.search(VideoSource.local, 'query'),
+        throwsFormatException,
+      );
     },
   );
 
@@ -461,7 +537,9 @@ void main() {
         ),
       );
 
-      for (final source in VideoSource.values) {
+      for (final source in VideoSource.values.where(
+        (source) => source.isExternal,
+      )) {
         final results = await repository.search(source, 'result');
         expect(results, hasLength(1));
         expect(results.single.source, source);

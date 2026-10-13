@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/domain/entities/video_post.dart';
 import 'package:toktik/domain/repositories/app_preferences_repository.dart';
-import 'package:toktik/domain/repositories/video_posts_repository.dart';
+import 'package:toktik/domain/repositories/discover_repository.dart';
+import 'package:toktik/domain/repositories/favorites_repository.dart';
+import 'package:toktik/domain/repositories/for_you_repository.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
@@ -34,7 +37,11 @@ void main() {
               create: (_) => SeasonalAudioProvider(Season.normal),
             ),
             ChangeNotifierProvider(
-              create: (_) => DiscoverProvider(videosRepository: _FakeVideos()),
+              create: (_) => DiscoverProvider(
+                discoverRepository: _FakeFeeds(),
+                forYouRepository: _FakeFeeds(),
+                favoritesRepository: _FakeFeeds(),
+              ),
             ),
           ],
           child: const MaterialApp(home: DiscoverScreen()),
@@ -73,19 +80,23 @@ class _FakePreferences implements AppPreferencesRepository {
   Future<void> saveLikedVideoIds(Set<String> ids) async {}
 
   @override
+  Future<Map<String, int>> getVideoLikeCounts() async => {};
+
+  @override
+  Future<void> saveVideoLikeCounts(Map<String, int> counts) async {}
+
+  @override
   Future<void> saveManualSeason(String season) async {}
 
   @override
   Future<void> saveSeasonMode(String mode) async {}
 }
 
-class _FakeVideos implements VideoPostsRepository {
+class _FakeFeeds
+    implements DiscoverRepository, ForYouRepository, FavoritesRepository {
   @override
-  Future<List<VideoPost>> getFavoriteVideosByUser(String userId) async => [];
+  Future<List<VideoPost>> getVideosByPage(int page) async => [];
 
   @override
-  Future<List<VideoPost>> getForYouVideosByPage(int page) async => [];
-
-  @override
-  Future<List<VideoPost>> getTrendingVideosByPage(int page) async => [];
+  Future<List<VideoPost>> getVideosByUserId(String userId) async => [];
 }

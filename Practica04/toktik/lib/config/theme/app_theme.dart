@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
 
 class AppTheme {
@@ -11,6 +12,12 @@ class AppTheme {
       seedColor: season.primaryColor,
       brightness: Brightness.dark,
       surface: season.backgroundColor,
+    ),
+    iconTheme: IconThemeData(color: season.primaryColor),
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll(season.primaryColor),
+      ),
     ),
   );
 }

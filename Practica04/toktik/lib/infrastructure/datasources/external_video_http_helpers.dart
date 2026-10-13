@@ -19,11 +19,13 @@ Future<http.Response> getExternalVideoResponse(
   Uri uri, {
   required String provider,
   http.Client? client,
+  Map<String, String>? headers,
 }) async {
   try {
-    return await (client == null ? http.get(uri) : client.get(uri)).timeout(
-      const Duration(seconds: 15),
-    );
+    return await (client == null
+            ? http.get(uri, headers: headers)
+            : client.get(uri, headers: headers))
+        .timeout(const Duration(seconds: 15));
   } on TimeoutException {
     throw ExternalVideoNetworkException(
       'La consulta a $provider tardó demasiado. Intenta de nuevo.',
@@ -48,9 +50,13 @@ Map<String, dynamic> decodeCollection(
     throw ExternalVideoApiException(
       provider: provider,
       statusCode: response.statusCode,
-      message: response.statusCode == 429
-          ? 'Se alcanzó el límite de solicitudes.$retryHint'
-          : 'El servicio no pudo completar la consulta.',
+      message: switch (response.statusCode) {
+        401 || 403 =>
+          'La credencial es inválida o no tiene permisos suficientes. '
+              'Revisa la configuración de $provider.',
+        429 => 'Se alcanzó el límite de solicitudes.$retryHint',
+        _ => 'El servicio no pudo completar la consulta.',
+      },
       isAuthenticationError:
           response.statusCode == 401 || response.statusCode == 403,
     );

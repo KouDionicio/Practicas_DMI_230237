@@ -1,9 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/domain/repositories/app_preferences_repository.dart';
-
-enum SeasonMode { automatic, manual }
-
-enum Season { normal, halloween, christmas, valentines }
 
 extension SeasonDetails on Season {
   String get label => switch (this) {
@@ -11,13 +10,6 @@ extension SeasonDetails on Season {
     Season.halloween => 'Halloween',
     Season.christmas => 'Navidad',
     Season.valentines => 'San Valentín',
-  };
-
-  String get iconAsset => switch (this) {
-    Season.normal => 'assets/icons/normal.png',
-    Season.halloween => 'assets/icons/halloween.png',
-    Season.christmas => 'assets/icons/navidad.png',
-    Season.valentines => 'assets/icons/san_valentin.png',
   };
 
   String? get audioAsset => switch (this) {
@@ -48,38 +40,28 @@ extension SeasonDetails on Season {
     Season.christmas => const Color(0xFF071A12),
     Season.valentines => const Color(0xFF260F1A),
   };
-
-  static Season forDate(DateTime date) {
-    final day = date.day;
-    final month = date.month;
-    if (month == DateTime.october && day >= 1 && day <= 31) {
-      return Season.halloween;
-    }
-    if (month == DateTime.december || (month == DateTime.january && day <= 6)) {
-      return Season.christmas;
-    }
-    if (month == DateTime.february && day >= 1 && day <= 14) {
-      return Season.valentines;
-    }
-    return Season.normal;
-  }
 }
 
 class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
-  SeasonProvider(this._repository, {DateTime Function()? now})
-    : _now = now ?? DateTime.now {
+  SeasonProvider(
+    this._repository, {
+    DateTime Function()? now,
+    Future<void> Function(Season season)? onSeasonChanged,
+  }) : _now = now ?? DateTime.now {
+    _onSeasonChanged = onSeasonChanged;
     WidgetsBinding.instance.addObserver(this);
   }
 
   final AppPreferencesRepository _repository;
   final DateTime Function() _now;
+  late final Future<void> Function(Season season)? _onSeasonChanged;
   SeasonMode mode = SeasonMode.automatic;
   Season manualSeason = Season.normal;
   bool isLoaded = false;
   Object? error;
 
   Season get season => mode == SeasonMode.automatic
-      ? SeasonDetails.forDate(_now())
+      ? SeasonCalendar.forDate(_now())
       : manualSeason;
 
   Future<void> load() async {
@@ -97,6 +79,7 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
       );
       isLoaded = true;
       error = null;
+      await _syncLauncherIcon();
       notifyListeners();
     } catch (exception) {
       error = exception;
@@ -106,11 +89,13 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setMode(SeasonMode value) async {
+    final previousSeason = season;
     mode = value;
     notifyListeners();
     try {
       await _repository.saveSeasonMode(value.name);
       error = null;
+      if (season != previousSeason) await _syncLauncherIcon();
     } catch (exception) {
       error = exception;
       rethrow;
@@ -120,11 +105,13 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setManualSeason(Season value) async {
+    final previousSeason = season;
     manualSeason = value;
     notifyListeners();
     try {
       await _repository.saveManualSeason(value.name);
       error = null;
+      if (season != previousSeason) await _syncLauncherIcon();
     } catch (exception) {
       error = exception;
       rethrow;
@@ -136,6 +123,16 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mode == SeasonMode.automatic) {
+      notifyListeners();
+      unawaited(_syncLauncherIcon());
+    }
+  }
+
+  Future<void> _syncLauncherIcon() async {
+    try {
+      await _onSeasonChanged?.call(season);
+    } catch (exception) {
+      error = exception;
       notifyListeners();
     }
   }

@@ -3,9 +3,13 @@ import 'package:toktik/domain/entities/external_video.dart';
 import 'package:toktik/domain/repositories/external_video_repository.dart';
 
 class ExternalVideoSearchProvider extends ChangeNotifier {
-  ExternalVideoSearchProvider(this._repository);
+  ExternalVideoSearchProvider(
+    this._repository, {
+    this.environmentFileLoadFailed = false,
+  });
 
   final ExternalVideoRepository _repository;
+  final bool environmentFileLoadFailed;
   VideoSource source = VideoSource.youtube;
   List<ExternalVideo> results = const [];
   Object? error;

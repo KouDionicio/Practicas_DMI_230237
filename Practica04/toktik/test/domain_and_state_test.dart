@@ -2,10 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:toktik/domain/repositories/app_preferences_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toktik/domain/entities/external_video.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/domain/entities/video_post.dart';
 import 'package:toktik/infrastructure/models/local_video_model.dart';
 import 'package:toktik/infrastructure/models/peertube_video_model.dart';
 import 'package:toktik/infrastructure/models/vimeo_video_model.dart';
+import 'package:toktik/infrastructure/datasources/local_video_posts_mapper.dart';
 import 'package:toktik/infrastructure/models/youtube_video_model.dart';
 import 'package:toktik/infrastructure/repositories/shared_preferences_repository.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
@@ -15,6 +17,7 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   String? mode;
   String? season;
   Set<String> likedIds = {};
+  Map<String, int> likeCounts = {};
 
   @override
   Future<String?> getSeasonMode() async => mode;
@@ -39,6 +42,15 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   Future<void> saveLikedVideoIds(Set<String> ids) async {
     likedIds = Set.of(ids);
   }
+
+  @override
+  Future<Map<String, int>> getVideoLikeCounts() async =>
+      Map.of(likeCounts);
+
+  @override
+  Future<void> saveVideoLikeCounts(Map<String, int> counts) async {
+    likeCounts = Map.of(counts);
+  }
 }
 
 void main() {
@@ -53,33 +65,74 @@ void main() {
       await repository.saveSeasonMode(SeasonMode.manual.name);
       await repository.saveManualSeason(Season.christmas.name);
       await repository.saveLikedVideoIds({'local:one', 'local:two'});
+      await repository.saveVideoLikeCounts({
+        'local:one': 13,
+        'local:two': 24,
+      });
 
       expect(await repository.getSeasonMode(), SeasonMode.manual.name);
       expect(await repository.getManualSeason(), Season.christmas.name);
       expect(await repository.getLikedVideoIds(), {'local:one', 'local:two'});
+      expect(await repository.getVideoLikeCounts(), {
+        'local:one': 13,
+        'local:two': 24,
+      });
     },
   );
 
   group('automatic seasonal selection', () {
     test('includes the first and last days of Halloween', () {
-      expect(SeasonDetails.forDate(DateTime(2026, 10, 1)), Season.halloween);
-      expect(SeasonDetails.forDate(DateTime(2026, 10, 31)), Season.halloween);
-      expect(SeasonDetails.forDate(DateTime(2026, 9, 30)), Season.normal);
-      expect(SeasonDetails.forDate(DateTime(2026, 11, 1)), Season.normal);
+      expect(SeasonCalendar.forDate(DateTime(2026, 10, 1)), Season.halloween);
+      expect(SeasonCalendar.forDate(DateTime(2026, 10, 31)), Season.halloween);
+      expect(SeasonCalendar.forDate(DateTime(2026, 9, 30)), Season.normal);
+      expect(SeasonCalendar.forDate(DateTime(2026, 11, 1)), Season.normal);
     });
 
     test('covers Christmas across the year boundary', () {
-      expect(SeasonDetails.forDate(DateTime(2026, 12, 1)), Season.christmas);
-      expect(SeasonDetails.forDate(DateTime(2026, 12, 31)), Season.christmas);
-      expect(SeasonDetails.forDate(DateTime(2027, 1, 1)), Season.christmas);
-      expect(SeasonDetails.forDate(DateTime(2027, 1, 6)), Season.christmas);
-      expect(SeasonDetails.forDate(DateTime(2027, 1, 7)), Season.normal);
+      expect(SeasonCalendar.forDate(DateTime(2026, 12, 1)), Season.christmas);
+      expect(SeasonCalendar.forDate(DateTime(2026, 12, 31)), Season.christmas);
+      expect(SeasonCalendar.forDate(DateTime(2027, 1, 1)), Season.christmas);
+      expect(SeasonCalendar.forDate(DateTime(2027, 1, 6)), Season.christmas);
+      expect(SeasonCalendar.forDate(DateTime(2027, 1, 7)), Season.normal);
     });
 
     test('includes only February 1 through 14 for Valentine season', () {
-      expect(SeasonDetails.forDate(DateTime(2026, 2, 1)), Season.valentines);
-      expect(SeasonDetails.forDate(DateTime(2026, 2, 14)), Season.valentines);
-      expect(SeasonDetails.forDate(DateTime(2026, 2, 15)), Season.normal);
+      expect(SeasonCalendar.forDate(DateTime(2026, 2, 1)), Season.valentines);
+      expect(SeasonCalendar.forDate(DateTime(2026, 2, 14)), Season.valentines);
+      expect(SeasonCalendar.forDate(DateTime(2026, 2, 15)), Season.normal);
+    });
+  });
+
+  group('seasonal branding assets', () {
+    test('maps each season to its splash logo and launcher alias', () {
+      const expected = {
+        Season.normal: (
+          'assets/icons/normal.png',
+          'MainActivityNormal',
+          'ic_launcher_normal',
+        ),
+        Season.halloween: (
+          'assets/icons/halloween.png',
+          'MainActivityHalloween',
+          'ic_launcher_halloween',
+        ),
+        Season.christmas: (
+          'assets/icons/navidad.png',
+          'MainActivityChristmas',
+          'ic_launcher_christmas',
+        ),
+        Season.valentines: (
+          'assets/icons/san_valentin.png',
+          'MainActivityValentines',
+          'ic_launcher_valentines',
+        ),
+      };
+
+      for (final season in Season.values) {
+        expect(season.splashLogoAsset, expected[season]!.$1);
+        expect(season.launcherAlias, expected[season]!.$2);
+        expect(season.launcherIconResource, expected[season]!.$3);
+      }
     });
   });
 
@@ -120,6 +173,29 @@ void main() {
       provider.dispose();
       restored.dispose();
     });
+
+    test('synchronizes Android launcher alias on load and season changes', () async {
+      final preferences = _MemoryPreferencesRepository()
+        ..mode = SeasonMode.manual.name
+        ..season = Season.normal.name;
+      final launcherUpdates = <Season>[];
+      final provider = SeasonProvider(
+        preferences,
+        onSeasonChanged: (season) async => launcherUpdates.add(season),
+      );
+
+      await provider.load();
+      await provider.setManualSeason(Season.halloween);
+      await provider.setManualSeason(Season.christmas);
+
+      expect(launcherUpdates, [
+        Season.normal,
+        Season.halloween,
+        Season.christmas,
+      ]);
+      provider.dispose();
+    });
+
   });
 
   group('persistent likes', () {
@@ -139,14 +215,19 @@ void main() {
         await provider.load();
         await provider.toggleLike(video);
         expect(provider.isLiked(video), isTrue);
+        expect(provider.likeCount(video), 13);
         expect(preferences.likedIds, {'local:one'});
+        expect(preferences.likeCounts, {'local:one': 13});
 
         final restored = LikesProvider(preferences);
         await restored.load();
         expect(restored.isLiked(video), isTrue);
+        expect(restored.likeCount(video), 13);
         await restored.toggleLike(video);
         expect(restored.isLiked(video), isFalse);
+        expect(restored.likeCount(video), 12);
         expect(preferences.likedIds, isEmpty);
+        expect(preferences.likeCounts, {'local:one': 12});
       },
     );
 
@@ -159,11 +240,41 @@ void main() {
         provider.toggleLike(video),
       ]);
       expect(provider.isLiked(video), isFalse);
+      expect(provider.likeCount(video), 12);
       expect(preferences.likedIds, isEmpty);
+    });
+
+    test('prunes saved likes and counts for videos no longer available', () async {
+      final preferences = _MemoryPreferencesRepository()
+        ..likedIds = {
+          'assets/videos/1.mp4',
+          'removed-video-id',
+        }
+        ..likeCounts = {
+          'assets/videos/1.mp4': 18,
+          'removed-video-id': 21,
+        };
+      final provider = LikesProvider(
+        preferences,
+        validVideoIds: {'assets/videos/1.mp4', 'assets/videos/3.mp4'},
+      );
+
+      await provider.load();
+
+      expect(provider.likedVideoIds, {'assets/videos/1.mp4'});
+      expect(provider.videoLikeCounts, {'assets/videos/1.mp4': 18});
+      expect(preferences.likedIds, {'assets/videos/1.mp4'});
+      expect(preferences.likeCounts, {'assets/videos/1.mp4': 18});
+      expect(provider.error, isNull);
     });
   });
 
   group('video model mappers', () {
+    test('local feeds contain only the nine remaining bundled videos', () {
+      final videos = mapLocalVideoPosts();
+      expect(videos, hasLength(9));
+    });
+
     test('maps a local asset to a stable domain ID', () {
       final video = LocalVideoModel.fromJson({
         'name': 'Local',
@@ -277,6 +388,29 @@ void main() {
       expect(youtube.thumbnailUrl, isEmpty);
       expect(vimeo.thumbnailUrl, isEmpty);
       expect(peerTube.thumbnailUrl, isEmpty);
+    });
+
+    test('detects supported external providers from canonical URLs', () {
+      expect(
+        VideoSource.fromUrl('https://www.youtube.com/watch?v=abc123&t=42s'),
+        VideoSource.youtube,
+      );
+      expect(
+        VideoSource.fromUrl('https://youtu.be/abc123?si=sample'),
+        VideoSource.youtube,
+      );
+      expect(
+        VideoSource.fromUrl('https://vimeo.com/42?autoplay=1'),
+        VideoSource.vimeo,
+      );
+      expect(
+        VideoSource.fromUrl(
+          'https://peertube.cpy.re/videos/watch/a1b2c3d4-0000-4000-8000-000000000001',
+        ),
+        VideoSource.peertube,
+      );
+      expect(VideoSource.fromUrl('https://example.com/video.mp4'), isNull);
+      expect(VideoSource.fromUrl('assets/videos/1.mp4'), VideoSource.local);
     });
   });
 }

@@ -31,7 +31,7 @@ class PeerTubeVideoDatasource implements ExternalVideoDatasource {
         baseUrl.hasQuery ||
         baseUrl.hasFragment) {
       throw const ExternalVideoConfigurationException(
-        'Configura PEERTUBE_INSTANCE_URL con la URL HTTPS de una instancia '
+        'Configura PEERTUBE_BASE_URL con la URL HTTPS de una instancia '
         'PeerTube válida.',
       );
     }

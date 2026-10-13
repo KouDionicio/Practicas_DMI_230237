@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:toktik/presentation/providers/season_provider.dart';
 import 'package:toktik/presentation/widgets/video/video_background.dart';
 import 'package:toktik/presentation/widgets/video/video_description.dart';
 import 'package:video_player/video_player.dart';
@@ -112,6 +114,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
 
   @override
   Widget build(BuildContext context) {
+    final season = context.watch<SeasonProvider>().season;
     final controller = _controller;
     if (!widget.isActive) return const SizedBox.expand();
     if (_error != null) {
@@ -167,8 +170,12 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
             ),
           ),
           if (!_isPlaying)
-            const Center(
-              child: Icon(Icons.play_arrow, size: 72, color: Colors.white70),
+            Center(
+              child: Icon(
+                Icons.play_arrow,
+                size: 72,
+                color: season.primaryColor,
+              ),
             ),
         ],
       ),
