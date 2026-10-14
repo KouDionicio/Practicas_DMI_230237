@@ -6,9 +6,12 @@ de reproducción.
 
 ## Funcionalidades
 
-- Feed vertical local en **Discover**, **For You** y **Favorites**. Discover
-  conserva el orden local original; For You comparte la fuente local y prioriza
-  publicaciones con más visualizaciones; Favorites consulta los IDs guardados.
+- **Discover** intercala los videos locales con hasta tres resultados por
+  proveedor de YouTube, Vimeo y PeerTube usando la búsqueda predeterminada
+  `viral videos`. Si falta una llave o falla un proveedor, se omiten solo esos
+  resultados y permanecen los videos locales y de otros proveedores. **For You**
+  conserva su feed local ordenado por visualizaciones y **Favorites** consulta
+  los IDs guardados.
 - Un único reproductor activo: se inicializa al entrar en pantalla, se pausa
   durante interrupciones del sistema y se libera al salir del video o sección.
   Tocar el video pausa o reanuda el clip.
@@ -25,7 +28,8 @@ de reproducción.
 - El arranque presenta primero el splash nativo y después un splash Flutter
   animado de tres segundos con el audio de la temporada y fade out.
 - El splash Flutter y el icono del launcher Android siguen el tema estacional
-  efectivo; el nombre Android/iOS siempre es `TokTik`. iOS mantiene el icono
+  efectivo; cambiar la temporada manual actualiza el audio mientras el splash
+  está activo. El nombre Android/iOS siempre es `TokTik`. iOS mantiene el icono
   normal fijo.
 - Like, mute, reproducción, ajustes y otros iconos Material usan el color
   principal de la temporada; el acceso a ajustes usa el PNG de esa temporada.
@@ -65,28 +69,37 @@ cuatro temporadas. El Landing nativo usa el logo normal fijo; tras precargar el
 logo efectivo, el splash Flutter hace cross-fade al PNG de la temporada
 seleccionada, sobre el mismo fondo `#101020`.
 
-Paquetes principales: `provider`, `video_player`, `webview_flutter`, `web`, `http`,
-`shared_preferences`, `audioplayers`, `flutter_native_splash`,
+Paquetes principales: `provider`, `video_player`, `webview_flutter`, `web`,
+`http`, `shared_preferences`, `audioplayers`, `flutter_native_splash`,
 `flutter_launcher_icons`, `animate_do`, `intl` y `cupertino_icons`.
-`video_player` sigue reproduciendo exclusivamente los assets locales. Los
-videos externos usan un iframe HTML validado en Flutter Web y `webview_flutter`
-en Android e iOS.
+`video_player` reproduce assets locales y recursos multimedia PeerTube; YouTube
+y Vimeo usan su reproductor embebido en Flutter Web o un iframe con origen HTTPS
+dentro del WebView nativo.
 
 ## Proveedores externos: integración, credenciales y reproducción
 
 Desde el botón de búsqueda externo se pueden elegir YouTube, Vimeo o
 PeerTube. Cada fuente usa su datasource HTTP, mapper y repositorio común.
 Los fallos de configuración, autorización, HTTP o respuesta inválida se
-muestran en pantalla; no ocultan ni reemplazan el feed local.
+muestran en pantalla con proveedor, motivo y URL sin query/credenciales; no
+ocultan ni reemplazan el feed local. El reproductor permite volver directamente
+a Discover si una fuente externa no está disponible.
 
-| Proveedor | Consulta de metadatos | Reproducción (WebView Android/iOS; iframe Chrome) | Configuración |
+| Proveedor | Consulta de metadatos | Fuente exacta de reproducción | Configuración |
 |---|---|---|---|
-| YouTube | YouTube Data API v3 `search.list`, solo videos | IFrame Player oficial en WebView | `YOUTUBE_API_KEY`; requiere habilitar la API y restringir la clave |
+| YouTube | YouTube Data API v3 `search.list`, solo videos; extrae `items[].id.videoId` | La entidad conserva `youtube:{videoId}`; `WebViewController` abre `https://www.youtube.com/embed/{videoId}` en Android/iOS y un iframe HTML usa la misma URL en Chrome. No se manda la API key al reproductor. | `YOUTUBE_API_KEY`; requiere habilitar la API y restringir la clave |
 | Vimeo | API de videos `GET /videos`, con Bearer token desde `Practica04/vimeo_backend` | Vimeo Player oficial en WebView | `VIMEO_ACCESS_TOKEN` solo en el entorno del backend y `VIMEO_BACKEND_URL` en Flutter |
-| PeerTube | API pública `GET /api/v1/search/videos?search=...&count=25&sort=-views` | Embed oficial `/videos/embed/{uuid}`, iframe en Chrome y WebView en Android/iOS | `PEERTUBE_BASE_URL`, opcional; predeterminado `https://peertube.cpy.re` |
+| PeerTube | API pública `GET /api/v1/search/videos?search=...&count=25&sort=-views`; extrae `uuid` | Android/iOS consultan `GET /api/v1/videos/{uuid}` en la misma instancia y pasan primero `files[].fileUrl`, o si no existe `streamingPlaylists[].playlistUrl`, a `VideoPlayerController.networkUrl`. Chrome conserva el embed `https://{instancia}/videos/embed/{uuid}`. | `PEERTUBE_BASE_URL`, opcional; predeterminado `https://peertube.cpy.re` |
 
-La columna WebView de la tabla describe Android e iOS; en Chrome las tres
-integraciones usan el `embedUrl` oficial de cada proveedor en un iframe HTML.
+YouTube y Vimeo usan WebView nativa en Android/iOS y el `embedUrl` oficial en
+Chrome. PeerTube nativo reproduce la URL HTTPS del archivo o playlist HLS
+resuelta desde la API de detalles; la pantalla `/w/` nunca se usa como fuente
+multimedia. `video_player` usa ExoPlayer en Android y AVPlayer en iOS, ambos
+compatibles con HLS. En Chrome se mantiene el embed oficial para evitar
+dependencias de CORS.
+
+Vimeo extrae el ID numérico de `uri` (por ejemplo, `videos/12345`), lo conserva
+como `vimeo:12345` y abre `https://player.vimeo.com/video/12345`.
 Para la configuración actual de Flutter, Vimeo lee `BACKEND_BASE_URL` y
 `VIMEO_TOKEN` de `.env`; `VIMEO_ACCESS_TOKEN` pertenece solo al backend.
 `VIMEO_BACKEND_URL` ya no se lee desde Flutter. La celda de configuración
@@ -163,13 +176,11 @@ dart run flutter_native_splash:create
 ```
 
 Los resultados externos conservan su propio modelo `ExternalVideo`; no se
-convierten a `VideoPost`, que pertenece al feed local y a `video_player`.
-PeerTube, como YouTube y Vimeo, reproduce la página oficial de embed, no la
-página HTML ni una supuesta URL MP4. Chrome usa un iframe y Android/iOS usan
-`webview_flutter`; la disponibilidad depende de que la instancia permita
-incrustar el video y servir sus recursos. La instancia pública puede aplicar
-límite de solicitudes, cambiar disponibilidad o configuración CORS y no
-garantiza permanencia ni reproducción de todos los videos.
+convierten a `VideoPost`, que pertenece al feed local. En PeerTube, el
+adaptador de presentación resuelve la URL HTTPS del archivo/HLS desde los
+metadatos del UUID y `video_player` reproduce ese recurso en Android/iOS. En
+Chrome continúa el embed oficial. La disponibilidad depende de la instancia y
+de que el archivo o playlist sea accesible.
 
 ### Configurar metadatos
 

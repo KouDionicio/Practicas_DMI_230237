@@ -26,6 +26,8 @@ class YouTubeVideoDatasource implements ExternalVideoDatasource {
     final uri = Uri.https('www.googleapis.com', '/youtube/v3/search', {
       'part': 'snippet',
       'type': 'video',
+      'videoEmbeddable': 'true',
+      'videoSyndicated': 'true',
       'maxResults': '25',
       'q': normalizedQuery,
       'key': key,

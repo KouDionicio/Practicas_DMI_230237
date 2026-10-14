@@ -271,6 +271,7 @@ class _FeedPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final discover = context.watch<DiscoverProvider>();
     final videos = discover.videosFor(section);
+    final externalVideos = discover.externalVideosFor(section);
 
     if (discover.isLoading(section) && videos.isEmpty) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
@@ -294,7 +295,7 @@ class _FeedPage extends StatelessWidget {
         ),
       );
     }
-    if (videos.isEmpty) {
+    if (videos.isEmpty && externalVideos.isEmpty) {
       return Center(
         child: Text(
           section == FeedSection.favorites
@@ -305,6 +306,7 @@ class _FeedPage extends StatelessWidget {
     }
     return VideoScrollableView(
       videos: videos,
+      externalVideos: externalVideos,
       isVisible: isVisible,
       isMuted: isMuted,
       onMuteChanged: onMuteChanged,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:toktik/domain/entities/season.dart';
 import 'package:toktik/domain/entities/video_post.dart';
 import 'package:toktik/domain/repositories/app_preferences_repository.dart';
 import 'package:toktik/domain/repositories/discover_repository.dart';
@@ -51,12 +52,27 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.pumpAndSettle();
+    await seasonProvider.setMode(SeasonMode.manual);
+    await seasonProvider.setManualSeason(Season.christmas);
+    await tester.pump();
+
+    expect(startupAudio.season, Season.christmas);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Image &&
+            widget.image is AssetImage &&
+            (widget.image as AssetImage).assetName ==
+                Season.christmas.splashLogoAsset,
+      ),
+      findsOneWidget,
+    );
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
 
     expect(find.text('Discover'), findsOneWidget);
     expect(startupAudio.requestedDuration, const Duration(milliseconds: 20));
@@ -71,10 +87,16 @@ void main() {
 
 class _FakeStartupAudio implements StartupAudio {
   Duration? requestedDuration;
+  Season? season;
   bool isDisposed = false;
 
   @override
   Object? get error => null;
+
+  @override
+  Future<void> setSeason(Season value) async {
+    season = value;
+  }
 
   @override
   Future<void> preload() async {}

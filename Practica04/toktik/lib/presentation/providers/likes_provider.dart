@@ -18,6 +18,12 @@ class LikesProvider extends ChangeNotifier {
   int likeCount(VideoPost video) => _videoLikeCounts[video.id] ?? video.likes;
   Map<String, int> get videoLikeCounts => Map.unmodifiable(_videoLikeCounts);
 
+  static bool _isExternalId(String id) =>
+      RegExp(r'^youtube:[A-Za-z0-9_-]{1,128}$').hasMatch(id) ||
+      RegExp(r'^vimeo:[0-9]{1,128}$').hasMatch(id) ||
+      RegExp(r'^peertube:[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$')
+          .hasMatch(id);
+
   Future<void> load() async {
     try {
       final savedIds = await _repository.getLikedVideoIds();
@@ -25,12 +31,15 @@ class LikesProvider extends ChangeNotifier {
       final allowedIds = validVideoIds;
       final filteredIds = allowedIds == null
           ? savedIds
-          : savedIds.intersection(allowedIds);
+          : savedIds
+                .where((id) => allowedIds.contains(id) || _isExternalId(id))
+                .toSet();
       final filteredCounts = allowedIds == null
           ? savedCounts
           : Map<String, int>.fromEntries(
               savedCounts.entries.where(
-                (entry) => allowedIds.contains(entry.key),
+                (entry) =>
+                    allowedIds.contains(entry.key) || _isExternalId(entry.key),
               ),
             );
       _likedVideoIds

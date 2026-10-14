@@ -5,6 +5,8 @@ import 'package:toktik/presentation/providers/season_provider.dart';
 abstract interface class StartupAudio {
   Object? get error;
 
+  Future<void> setSeason(Season season);
+
   Future<void> preload();
 
   Future<void> playFor(Duration duration);
@@ -20,13 +22,36 @@ class SeasonalSplashAudio implements StartupAudio {
   static const _fadeDuration = Duration(milliseconds: 400);
   static const _fadeSteps = 8;
 
-  final Season _season;
+  Season _season;
   final AudioPlayer _player;
   Object? _error;
   bool _isDisposed = false;
+  bool _isPlaying = false;
 
   @override
   Object? get error => _error;
+
+  @override
+  Future<void> setSeason(Season season) async {
+    if (_season == season || _isDisposed) return;
+    _season = season;
+    final asset = season.audioAsset;
+    if (asset == null) {
+      _error = StateError('The selected season has no splash audio asset.');
+      return;
+    }
+
+    try {
+      await _player.stop();
+      await _player.setSource(AssetSource(asset.replaceFirst('assets/', '')));
+      await _player.setVolume(_volume);
+      if (_isPlaying) await _player.resume();
+      _error = null;
+    } catch (exception) {
+      _error = exception;
+      rethrow;
+    }
+  }
 
   @override
   Future<void> preload() async {
@@ -50,6 +75,7 @@ class SeasonalSplashAudio implements StartupAudio {
     final stopwatch = Stopwatch()..start();
     try {
       if (_error == null && !_isDisposed) {
+        _isPlaying = true;
         final fadeDuration = duration < _fadeDuration
             ? duration
             : _fadeDuration;
@@ -70,9 +96,11 @@ class SeasonalSplashAudio implements StartupAudio {
           }
         }
         await _player.stop();
+        _isPlaying = false;
       }
     } catch (exception) {
       _error = exception;
+      _isPlaying = false;
     } finally {
       final remaining = duration - stopwatch.elapsed;
       if (remaining > Duration.zero && !_isDisposed) {
@@ -85,6 +113,7 @@ class SeasonalSplashAudio implements StartupAudio {
   Future<void> dispose() async {
     if (_isDisposed) return;
     _isDisposed = true;
+    _isPlaying = false;
     await _player.dispose();
   }
 }

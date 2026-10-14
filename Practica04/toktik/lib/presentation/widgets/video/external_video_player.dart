@@ -3,16 +3,27 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:toktik/domain/entities/external_video.dart';
+import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'peertube_media_resolver.dart';
 import 'external_video_iframe_stub.dart'
     if (dart.library.js_interop) 'external_video_iframe_web.dart'
     as iframe;
 
 class ExternalVideoPlayer extends StatefulWidget {
-  const ExternalVideoPlayer({super.key, required this.video});
+  const ExternalVideoPlayer({
+    super.key,
+    required this.video,
+    this.isActive = true,
+    this.isMuted = true,
+    this.onDoubleTap,
+  });
 
   final ExternalVideo video;
+  final bool isActive;
+  final bool isMuted;
+  final VoidCallback? onDoubleTap;
 
   @override
   State<ExternalVideoPlayer> createState() => _ExternalVideoPlayerState();
@@ -20,10 +31,13 @@ class ExternalVideoPlayer extends StatefulWidget {
 
 class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
   WebViewController? _controller;
+  VideoPlayerController? _videoController;
   Uri? _embedUrl;
   Uri? _watchUrl;
   String? _error;
   int _progress = 0;
+  bool _isLoading = false;
+  bool _isPlaying = true;
 
   @override
   void initState() {
@@ -36,14 +50,57 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     _embedUrl = validation.embedUrl;
     _watchUrl = validation.watchUrl;
 
-    if (kIsWeb) return;
+    if (kIsWeb || !widget.isActive) return;
+    unawaited(_initializePlayer());
+  }
 
+  Future<void> _initializePlayer() async {
     if (!_supportsNativeWebView) {
       _error = 'El reproductor está disponible en Chrome, Android e iOS.';
+      if (mounted) setState(() {});
       return;
     }
 
-    unawaited(_initializeNativePlayer());
+    if (widget.video.source == VideoSource.peertube) {
+      await _initializePeerTubePlayer();
+    } else {
+      await _initializeNativePlayer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ExternalVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.video.id != widget.video.id) {
+      _releasePlayers();
+      _error = null;
+      _initializeUrls();
+      if (widget.isActive && !kIsWeb) unawaited(_initializePlayer());
+      return;
+    }
+    if (!oldWidget.isActive && widget.isActive && !kIsWeb) {
+      unawaited(_initializePlayer());
+    } else if (oldWidget.isActive && !widget.isActive) {
+      _releasePlayers();
+    }
+    if (oldWidget.isMuted != widget.isMuted &&
+        _videoController != null &&
+        _videoController!.value.isInitialized) {
+      unawaited(_videoController!.setVolume(widget.isMuted ? 0 : 1));
+    }
+    if (oldWidget.isMuted != widget.isMuted &&
+        _controller != null &&
+        (widget.video.source == VideoSource.youtube ||
+            widget.video.source == VideoSource.vimeo)) {
+      unawaited(_setWebViewMuted(widget.isMuted));
+    }
+  }
+
+  void _initializeUrls() {
+    final validation = _validateUrls(widget.video);
+    _embedUrl = validation.embedUrl;
+    _watchUrl = validation.watchUrl;
+    _error = validation.error;
   }
 
   Future<void> _initializeNativePlayer() async {
@@ -59,39 +116,272 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           onWebResourceError: (error) {
             if (error.isForMainFrame == true && mounted) {
               setState(
-                () => _error = 'No se pudo cargar el reproductor oficial.',
+                () => _error = 'WebView informó error ${error.errorCode}: '
+                    '${error.description}. URL: '
+                    '${_displayUrl(error.url)}',
+              );
+            }
+          },
+          onHttpError: (error) {
+            final statusCode = error.response?.statusCode;
+            final requestUrl = error.request?.uri;
+            if (statusCode != null && requestUrl != null && mounted) {
+              setState(
+                () => _error = 'HTTP $statusCode al cargar '
+                    '${_displayUrl(requestUrl.toString())} '
+                    'en ${_providerName(widget.video.source)}.',
               );
             }
           },
           onNavigationRequest: (request) {
             final uri = Uri.tryParse(request.url);
-            if (uri != null &&
+            final secureUrl = uri != null &&
                 uri.scheme == 'https' &&
                 uri.port == 443 &&
-                uri.userInfo.isEmpty &&
-                _allowedNavigationHost(
-                  widget.video.source,
-                  uri.host,
-                  peerTubeHost: widget.video.embedUrl.host,
-                )) {
+                uri.userInfo.isEmpty;
+            if (secureUrl &&
+                (!request.isMainFrame ||
+                    _allowedNavigationHost(
+                      widget.video.source,
+                      uri.host,
+                      peerTubeHost: widget.video.embedUrl.host,
+                    ))) {
               return NavigationDecision.navigate;
+            }
+            if (request.isMainFrame && mounted) {
+              setState(
+                () => _error = 'Se bloqueó una navegación no permitida '
+                    'por ${_providerName(widget.video.source)}: '
+                    '${_displayUrl(request.url)}.',
+              );
             }
             return NavigationDecision.prevent;
           },
         ),
       );
-      await controller.loadRequest(_embedUrl!);
-    } catch (_) {
+      if (widget.video.source == VideoSource.youtube ||
+          widget.video.source == VideoSource.vimeo) {
+        await controller.loadHtmlString(
+          _providerIframeHtml(
+            widget.video.source,
+            _embedUrl!,
+            isMuted: widget.isMuted,
+          ),
+          baseUrl: Uri(
+            scheme: 'https',
+            host: widget.video.source == VideoSource.youtube
+                ? 'www.youtube.com'
+                : 'player.vimeo.com',
+          ).toString(),
+        );
+      } else {
+        await controller.loadRequest(_embedUrl!);
+      }
+      _isPlaying = true;
+    } catch (exception) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo inicializar el reproductor oficial.',
+          () => _error = 'No se pudo inicializar WebView: $exception. '
+              'URL: ${_displayUrl(_embedUrl?.toString())}',
         );
+      }
+    }
+  }
+
+  Future<void> _initializePeerTubePlayer() async {
+    final embedUrl = _embedUrl;
+    if (embedUrl == null) return;
+    setState(() => _isLoading = true);
+    VideoPlayerController? controller;
+    Uri? mediaUrl;
+    try {
+      final videoId = widget.video.id.substring('peertube:'.length);
+      mediaUrl = await PeerTubeMediaResolver().resolve(embedUrl, videoId);
+      controller = VideoPlayerController.networkUrl(mediaUrl);
+      _videoController = controller;
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(widget.isMuted ? 0 : 1);
+      await controller.play();
+      if (mounted) setState(() => _isLoading = false);
+    } catch (exception) {
+      final playerError = controller?.value.errorDescription;
+      await controller?.dispose();
+      if (identical(_videoController, controller)) _videoController = null;
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = 'No se pudo reproducir PeerTube: $exception'
+              '${playerError == null ? '' : ' ($playerError)'}. '
+              'URL del medio: ${_displayUrl(mediaUrl?.toString() ?? embedUrl.toString())}';
+        });
+      }
+    }
+  }
+
+  static String _providerIframeHtml(
+    VideoSource source,
+    Uri embedUrl, {
+    required bool isMuted,
+  }) {
+    final playerUrl = switch (source) {
+      VideoSource.youtube => embedUrl.replace(
+        queryParameters: const {
+          'playsinline': '1',
+          'rel': '0',
+          'enablejsapi': '1',
+        },
+      ),
+      VideoSource.vimeo => embedUrl.replace(
+        queryParameters: const {'playsinline': '1', 'dnt': '1'},
+      ),
+      VideoSource.local || VideoSource.peertube => embedUrl,
+    };
+
+    final playerScript = switch (source) {
+      VideoSource.youtube => '''
+<script>
+  var toktikPlayer;
+  var toktikReady = false;
+  var toktikMuted = $isMuted;
+  var toktikPlaying = true;
+  function onYouTubeIframeAPIReady() {
+    toktikPlayer = new YT.Player('toktik-player', {
+      events: {
+        onReady: function(event) {
+          toktikReady = true;
+          if (toktikMuted) event.target.mute(); else event.target.unMute();
+          if (toktikPlaying) event.target.playVideo(); else event.target.pauseVideo();
+        }
+      }
+    });
+  }
+  function toktikSetMuted(value) {
+    toktikMuted = value;
+    if (!toktikReady) return;
+    if (value) toktikPlayer.mute(); else toktikPlayer.unMute();
+  }
+  function toktikTogglePlayback() {
+    toktikPlaying = !toktikPlaying;
+    if (!toktikReady) return;
+    if (toktikPlaying) toktikPlayer.playVideo(); else toktikPlayer.pauseVideo();
+    return toktikPlaying;
+  }
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+''',
+      VideoSource.vimeo => '''
+<script src="https://player.vimeo.com/api/player.js"></script>
+<script>
+  var toktikPlayer;
+  var toktikReady = false;
+  var toktikMuted = $isMuted;
+  var toktikPlaying = true;
+  window.addEventListener('load', function() {
+    toktikPlayer = new Vimeo.Player(document.getElementById('toktik-player'));
+    toktikPlayer.ready().then(function() {
+      toktikReady = true;
+      toktikPlayer.setMuted(toktikMuted);
+      if (toktikPlaying) toktikPlayer.play(); else toktikPlayer.pause();
+    });
+  });
+  function toktikSetMuted(value) {
+    toktikMuted = value;
+    if (toktikReady) toktikPlayer.setMuted(value);
+  }
+  function toktikTogglePlayback() {
+    toktikPlaying = !toktikPlaying;
+    if (!toktikReady) return toktikPlaying;
+    if (toktikPlaying) toktikPlayer.play(); else toktikPlayer.pause();
+    return toktikPlaying;
+  }
+</script>
+''',
+      VideoSource.local || VideoSource.peertube => '',
+    };
+
+    return '''
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; }
+  </style>
+  $playerScript
+</head>
+<body>
+  <iframe
+    id="toktik-player"
+    src="${_escapeHtml(playerUrl.toString())}"
+    title="${_escapeHtml(source.name)} player"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+    allowfullscreen
+    playsinline>
+  </iframe>
+</body>
+</html>
+''';
+  }
+
+  static String _escapeHtml(String value) => value
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+
+  void _releasePlayers() {
+    _controller = null;
+    final videoController = _videoController;
+    _videoController = null;
+    if (videoController != null) unawaited(videoController.dispose());
+    _isLoading = false;
+    _progress = 0;
+  }
+
+  Future<void> _toggleWebViewPlayback() async {
+    final videoController = _videoController;
+    if (videoController != null && videoController.value.isInitialized) {
+      setState(() => _isPlaying = !_isPlaying);
+      if (_isPlaying) {
+        await videoController.play();
+      } else {
+        await videoController.pause();
+      }
+      return;
+    }
+    final controller = _controller;
+    if (controller == null) return;
+    setState(() => _isPlaying = !_isPlaying);
+    try {
+      await controller.runJavaScript(
+        'if (typeof toktikTogglePlayback === "function") '
+        'toktikTogglePlayback();',
+      );
+    } catch (exception) {
+      if (mounted) {
+        setState(() => _error = 'No se pudo cambiar la reproducción: $exception');
+      }
+    }
+  }
+
+  Future<void> _setWebViewMuted(bool muted) async {
+    try {
+      await _controller?.runJavaScript(
+        'if (typeof toktikSetMuted === "function") toktikSetMuted($muted);',
+      );
+    } catch (exception) {
+      if (mounted) {
+        setState(() => _error = 'No se pudo cambiar el sonido: $exception');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.isActive) return const SizedBox.expand();
     if (_error != null && !kIsWeb) {
       return Center(
         child: Padding(
@@ -100,11 +390,18 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('No se pudo abrir el reproductor oficial: $_error'),
-              if (_watchUrl != null && _controller != null)
+              if (_watchUrl != null &&
+                  (widget.video.source != VideoSource.peertube ||
+                      _controller != null))
                 TextButton(
                   onPressed: _openOriginalVideo,
                   child: Text('Abrir en ${_providerName(widget.video.source)}'),
                 ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).popUntil((route) => route.isFirst),
+                child: const Text('Volver al feed local'),
+              ),
             ],
           ),
         ),
@@ -171,30 +468,97 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
         ],
       );
     }
-    final controller = _controller;
-    if (controller == null) {
-      return const Center(
-        child: Text('No se pudo inicializar el reproductor.'),
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    }
+    final videoController = _videoController;
+    if (videoController != null && videoController.value.isInitialized) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: Colors.black),
+          Positioned.fill(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: videoController.value.size.width,
+                height: videoController.value.size.height,
+                child: VideoPlayer(videoController),
+              ),
+            ),
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _toggleWebViewPlayback,
+            onDoubleTap: widget.onDoubleTap,
+            child: const ColoredBox(color: Colors.transparent),
+          ),
+          if (!_isPlaying)
+            const Center(
+              child: IgnorePointer(
+                child: Icon(Icons.play_arrow, size: 76, color: Colors.white),
+              ),
+            ),
+        ],
       );
     }
-    return Column(
-      children: [
-        Expanded(
-          child: Stack(
-            children: [
-              Positioned.fill(child: WebViewWidget(controller: controller)),
-              if (_progress < 100)
-                LinearProgressIndicator(value: _progress / 100),
-            ],
+    final controller = _controller;
+    if (controller == null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'No se pudo inicializar el reproductor de '
+              '${_providerName(widget.video.source)}. '
+              'URL: ${_displayUrl(_embedUrl?.toString())}',
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).popUntil((route) => route.isFirst),
+              child: const Text('Volver al feed local'),
+            ),
+          ],
+        ),
+      );
+    }
+    return _buildNativeWebView(controller);
+  }
+
+  Widget _buildNativeWebView(WebViewController controller) => Stack(
+    fit: StackFit.expand,
+    children: [
+      const ColoredBox(color: Colors.black),
+      Positioned.fill(
+        child: IgnorePointer(
+          child: WebViewWidget(controller: controller),
+        ),
+      ),
+      GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _toggleWebViewPlayback,
+        onDoubleTap: widget.onDoubleTap,
+        child: const ColoredBox(color: Colors.transparent),
+      ),
+      if (!_isPlaying)
+        const Center(
+          child: IgnorePointer(
+            child: Icon(Icons.play_arrow, size: 76, color: Colors.white),
           ),
         ),
-        TextButton(
-          onPressed: _openOriginalVideo,
-          child: Text('Abrir en ${_providerName(widget.video.source)}'),
+      if (_progress < 100)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: LinearProgressIndicator(value: _progress / 100),
+          ),
         ),
-      ],
-    );
-  }
+    ],
+  );
 
   Future<void> _openOriginalVideo() async {
     final controller = _controller;
@@ -202,13 +566,20 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     if (controller == null || watchUrl == null) return;
     try {
       await controller.loadRequest(watchUrl);
-    } catch (_) {
+    } catch (exception) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo abrir el video en el sitio del proveedor.',
+          () => _error = 'No se pudo abrir ${_displayUrl(watchUrl.toString())}: '
+              '$exception',
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _releasePlayers();
+    super.dispose();
   }
 
   bool get _supportsNativeWebView =>
@@ -401,4 +772,16 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     VideoSource.vimeo => 'Vimeo',
     VideoSource.peertube => 'PeerTube',
   };
+
+  static String _displayUrl(String? rawUrl) {
+    if (rawUrl == null) return '(URL no disponible)';
+    final uri = Uri.tryParse(rawUrl);
+    if (uri == null) return '(URL inválida)';
+    return Uri(
+      scheme: uri.scheme,
+      host: uri.host,
+      port: uri.hasPort ? uri.port : null,
+      path: uri.path,
+    ).toString();
+  }
 }

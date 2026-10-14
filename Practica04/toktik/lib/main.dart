@@ -42,10 +42,14 @@ Future<void> main() async {
     await dotenv.load(isOptional: true);
   } catch (_) {
     environmentFileLoadFailed = true;
-    debugPrint('No se pudo cargar .env; la búsqueda externa puede requerir '
-        'configuración.');
+    debugPrint(
+      'No se pudo cargar .env; la búsqueda externa puede requerir '
+      'configuración.',
+    );
   }
-  final environment = dotenv.isInitialized ? dotenv.env : const <String, String>{};
+  final environment = dotenv.isInitialized
+      ? dotenv.env
+      : const <String, String>{};
 
   final preferencesRepository = SharedPreferencesRepository();
   final launcherIconService = AndroidLauncherIconService();
@@ -147,10 +151,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => DiscoverProvider(
+          create: (context) => DiscoverProvider(
             discoverRepository: discoverRepository,
             forYouRepository: forYouRepository,
             favoritesRepository: favoritesRepository,
+            externalVideoRepository: context.read<ExternalVideoRepository>(),
           )..loadNextPage(),
         ),
       ],

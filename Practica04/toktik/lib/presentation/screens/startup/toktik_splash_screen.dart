@@ -26,8 +26,10 @@ class TokTikSplashScreen extends StatefulWidget {
   State<TokTikSplashScreen> createState() => _TokTikSplashScreenState();
 }
 
-class _TokTikSplashScreenState extends State<TokTikSplashScreen> {
-  bool _showEffectiveLogo = false;
+class _TokTikSplashScreenState extends State<TokTikSplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _logoAnimationController;
+  Season? _audioSeason;
   Object? _audioError;
   Object? _logoError;
   bool _audioDisposed = false;
@@ -35,24 +37,45 @@ class _TokTikSplashScreenState extends State<TokTikSplashScreen> {
   @override
   void initState() {
     super.initState();
+    _logoAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+      lowerBound: 0.97,
+      upperBound: 1.03,
+    )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_prepareSplash());
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final season = context.read<SeasonProvider>().season;
+    if (_audioSeason == season) return;
+    _audioSeason = season;
+    unawaited(_syncSplashAudioSeason(season));
+  }
+
+  Future<void> _syncSplashAudioSeason(Season season) async {
+    try {
+      await widget.startupAudio.setSeason(season);
+      if (mounted) setState(() => _audioError = null);
+    } catch (exception) {
+      if (mounted) setState(() => _audioError = exception);
+    }
+  }
+
   Future<void> _prepareSplash() async {
     final season = context.read<SeasonProvider>().season;
     try {
-      await Future.wait([
-        precacheImage(const AssetImage('assets/icons/normal.png'), context),
-        precacheImage(AssetImage(season.splashLogoAsset), context),
-      ]);
+      await precacheImage(AssetImage(season.splashLogoAsset), context);
     } catch (exception) {
       _logoError = exception;
     }
     if (!mounted) return;
     (widget.removeNativeSplash ?? FlutterNativeSplash.remove)();
-    setState(() => _showEffectiveLogo = true);
+    setState(() {});
     unawaited(_playIntroAndOpenHome());
   }
 
@@ -86,6 +109,7 @@ class _TokTikSplashScreenState extends State<TokTikSplashScreen> {
 
   @override
   void dispose() {
+    _logoAnimationController.dispose();
     if (!_audioDisposed) unawaited(widget.startupAudio.dispose());
     super.dispose();
   }
@@ -105,16 +129,31 @@ class _TokTikSplashScreenState extends State<TokTikSplashScreen> {
               duration: const Duration(milliseconds: 350),
               transitionBuilder: (child, animation) =>
                   FadeTransition(opacity: animation, child: child),
-              child: Image.asset(
-                _showEffectiveLogo
-                    ? season.splashLogoAsset
-                    : 'assets/icons/normal.png',
-                key: ValueKey(_showEffectiveLogo ? season : Season.normal),
-                width: 280,
-                height: 280,
-                fit: BoxFit.contain,
-                semanticLabel: 'TokTik',
+              child: ScaleTransition(
+                key: ValueKey(season),
+                scale: _logoAnimationController,
+                child: Image.asset(
+                  season.splashLogoAsset,
+                  width: 280,
+                  height: 280,
+                  fit: BoxFit.contain,
+                  semanticLabel: 'TokTik',
+                ),
               ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 144,
+              child: LinearProgressIndicator(
+                minHeight: 3,
+                color: season.primaryColor,
+                backgroundColor: Colors.white24,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Preparando tu feed',
+              style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
             if (audioError != null || logoError != null) ...[
               const SizedBox(height: 16),

@@ -13,6 +13,7 @@ class FullScreenPlayer extends StatefulWidget {
     required this.description,
     required this.isActive,
     required this.isMuted,
+    this.onDoubleTap,
   });
 
   final String videoUrl;
@@ -20,6 +21,7 @@ class FullScreenPlayer extends StatefulWidget {
   final String description;
   final bool isActive;
   final bool isMuted;
+  final VoidCallback? onDoubleTap;
 
   @override
   State<FullScreenPlayer> createState() => _FullScreenPlayerState();
@@ -144,6 +146,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
 
     return GestureDetector(
       onTap: _togglePlayback,
+      onDoubleTap: widget.onDoubleTap,
       child: Stack(
         fit: StackFit.expand,
         children: [
