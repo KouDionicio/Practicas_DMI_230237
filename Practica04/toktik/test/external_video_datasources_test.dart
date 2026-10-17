@@ -22,6 +22,7 @@ void main() {
         expect(request.url.path, '/youtube/v3/search');
         expect(request.url.queryParameters['type'], 'video');
         expect(request.url.queryParameters['q'], 'cats');
+        expect(request.url.queryParameters['maxResults'], '50');
         expect(request.url.queryParameters['key'], 'restricted-key');
         return _json({
           'items': [
@@ -46,6 +47,20 @@ void main() {
 
       expect(videos.single.id, 'youtube:abc123');
       expect(videos.single.embedUrl.host, 'www.youtube.com');
+    });
+
+    test('uses YouTube continuation tokens for the next result page', () async {
+      final client = MockClient((request) async {
+        expect(request.url.queryParameters['pageToken'], 'next-page');
+        return _json({'items': [], 'nextPageToken': 'page-after-next'});
+      });
+      final page = await YouTubeVideoDatasource(
+        apiKey: 'key',
+        client: client,
+      ).searchPage('cats', pageToken: 'next-page');
+
+      expect(page.videos, isEmpty);
+      expect(page.nextPageToken, 'page-after-next');
     });
 
     test('reports authentication and HTTP failures', () async {

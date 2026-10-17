@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
+import 'package:toktik/presentation/widgets/video/local_video_asset_path.dart';
 import 'package:toktik/presentation/widgets/video/video_background.dart';
 import 'package:toktik/presentation/widgets/video/video_description.dart';
 import 'package:video_player/video_player.dart';
@@ -64,7 +66,9 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
 
   Future<void> _initialize() async {
     if (_controller != null || !widget.isActive) return;
-    final controller = VideoPlayerController.asset(widget.videoUrl);
+    final controller = VideoPlayerController.asset(
+      localVideoAssetForPlatform(widget.videoUrl, defaultTargetPlatform),
+    );
     _controller = controller;
     try {
       await controller.initialize();
@@ -126,7 +130,7 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('No se pudo reproducir este video.'),
+              Text('No se pudo reproducir este video: $_error'),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () {

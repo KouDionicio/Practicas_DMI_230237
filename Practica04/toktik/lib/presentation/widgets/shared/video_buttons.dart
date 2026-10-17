@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toktik/config/helpers/human_formats.dart';
 import 'package:toktik/domain/entities/video_post.dart';
+import 'package:toktik/domain/entities/external_video.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
@@ -12,11 +13,13 @@ class VideoButtons extends StatelessWidget {
   const VideoButtons({
     super.key,
     required this.video,
+    this.externalVideo,
     required this.isMuted,
     required this.onMuteChanged,
   });
 
   final VideoPost video;
+  final ExternalVideo? externalVideo;
   final bool isMuted;
   final ValueChanged<bool> onMuteChanged;
 
@@ -37,7 +40,11 @@ class VideoButtons extends StatelessWidget {
           onPressed: () async {
             final discoverProvider = context.read<DiscoverProvider>();
             try {
-              await likesProvider.toggleLike(video);
+              if (externalVideo == null) {
+                await likesProvider.toggleLike(video);
+              } else {
+                await likesProvider.toggleExternalLike(externalVideo!);
+              }
               await discoverProvider.load(FeedSection.favorites);
             } catch (error) {
               if (context.mounted) {

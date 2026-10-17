@@ -8,6 +8,7 @@ class SharedPreferencesRepository implements AppPreferencesRepository {
   static const _manualSeasonKey = 'manual_season';
   static const _likedVideoIdsKey = 'liked_video_ids';
   static const _videoLikeCountsKey = 'video_like_counts';
+  static const _likedExternalVideosKey = 'liked_external_videos';
 
   Future<SharedPreferences> get _preferences => SharedPreferences.getInstance();
 
@@ -77,11 +78,42 @@ class SharedPreferencesRepository implements AppPreferencesRepository {
       }
     }
     final sortedCounts = Map.fromEntries(
-      counts.entries.toList()..sort((first, second) => first.key.compareTo(second.key)),
+      counts.entries.toList()
+        ..sort((first, second) => first.key.compareTo(second.key)),
     );
     await (await _preferences).setString(
       _videoLikeCountsKey,
       jsonEncode(sortedCounts),
+    );
+  }
+
+  @override
+  Future<Map<String, Map<String, Object?>>> getLikedExternalVideos() async {
+    final raw = (await _preferences).getString(_likedExternalVideosKey);
+    if (raw == null) return {};
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Saved external favorites are invalid.');
+    }
+    return {
+      for (final entry in decoded.entries)
+        if (entry.value is Map<String, dynamic>)
+          entry.key: Map<String, Object?>.from(
+            entry.value as Map<String, dynamic>,
+          ),
+    };
+  }
+
+  @override
+  Future<void> saveLikedExternalVideos(
+    Map<String, Map<String, Object?>> videos,
+  ) async {
+    final sorted = Map.fromEntries(
+      videos.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+    );
+    await (await _preferences).setString(
+      _likedExternalVideosKey,
+      jsonEncode(sorted),
     );
   }
 }

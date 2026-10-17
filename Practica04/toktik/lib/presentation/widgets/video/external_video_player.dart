@@ -108,6 +108,20 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       final controller = WebViewController();
       _controller = controller;
       await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      if (widget.video.source == VideoSource.youtube ||
+          widget.video.source == VideoSource.vimeo) {
+        await controller.addJavaScriptChannel(
+          'TokTikPlayerError',
+          onMessageReceived: (message) {
+            if (!mounted) return;
+            setState(
+              () => _error =
+                  '${_providerName(widget.video.source)} no pudo '
+                  'insertar este video (${_providerErrorMessage(widget.video.source, message.message)}).',
+            );
+          },
+        );
+      }
       await controller.setNavigationDelegate(
         NavigationDelegate(
           onProgress: (progress) {
@@ -116,7 +130,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           onWebResourceError: (error) {
             if (error.isForMainFrame == true && mounted) {
               setState(
-                () => _error = 'WebView informó error ${error.errorCode}: '
+                () => _error =
+                    'WebView informó error ${error.errorCode}: '
                     '${error.description}. URL: '
                     '${_displayUrl(error.url)}',
               );
@@ -127,7 +142,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
             final requestUrl = error.request?.uri;
             if (statusCode != null && requestUrl != null && mounted) {
               setState(
-                () => _error = 'HTTP $statusCode al cargar '
+                () => _error =
+                    'HTTP $statusCode al cargar '
                     '${_displayUrl(requestUrl.toString())} '
                     'en ${_providerName(widget.video.source)}.',
               );
@@ -135,7 +151,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           },
           onNavigationRequest: (request) {
             final uri = Uri.tryParse(request.url);
-            final secureUrl = uri != null &&
+            final secureUrl =
+                uri != null &&
                 uri.scheme == 'https' &&
                 uri.port == 443 &&
                 uri.userInfo.isEmpty;
@@ -150,7 +167,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
             }
             if (request.isMainFrame && mounted) {
               setState(
-                () => _error = 'Se bloqueó una navegación no permitida '
+                () => _error =
+                    'Se bloqueó una navegación no permitida '
                     'por ${_providerName(widget.video.source)}: '
                     '${_displayUrl(request.url)}.',
               );
@@ -170,7 +188,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           baseUrl: Uri(
             scheme: 'https',
             host: widget.video.source == VideoSource.youtube
-                ? 'www.youtube.com'
+                ? 'com.example.toktik'
                 : 'player.vimeo.com',
           ).toString(),
         );
@@ -181,7 +199,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     } catch (exception) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo inicializar WebView: $exception. '
+          () => _error =
+              'No se pudo inicializar WebView: $exception. '
               'URL: ${_displayUrl(_embedUrl?.toString())}',
         );
       }
@@ -211,7 +230,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'No se pudo reproducir PeerTube: $exception'
+          _error =
+              'No se pudo reproducir PeerTube: $exception'
               '${playerError == null ? '' : ' ($playerError)'}. '
               'URL del medio: ${_displayUrl(mediaUrl?.toString() ?? embedUrl.toString())}';
         });
@@ -225,11 +245,18 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     required bool isMuted,
   }) {
     final playerUrl = switch (source) {
+      // CAMBIO: parámetros para que se vea como Short (sin controles, en loop).
+      // Ya no es const porque 'playlist' usa el ID del video.
       VideoSource.youtube => embedUrl.replace(
-        queryParameters: const {
+        queryParameters: {
           'playsinline': '1',
           'rel': '0',
           'enablejsapi': '1',
+          'controls': '1',
+          'loop': '1',
+          'playlist': embedUrl.pathSegments.last,
+          'modestbranding': '1',
+          'origin': 'https://com.example.toktik',
         },
       ),
       VideoSource.vimeo => embedUrl.replace(
@@ -239,7 +266,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     };
 
     final playerScript = switch (source) {
-      VideoSource.youtube => '''
+      VideoSource.youtube =>
+        '''
 <script>
   var toktikPlayer;
   var toktikReady = false;
@@ -247,11 +275,21 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
   var toktikPlaying = true;
   function onYouTubeIframeAPIReady() {
     toktikPlayer = new YT.Player('toktik-player', {
+      videoId: '${embedUrl.pathSegments.last}',
+      playerVars: {
+        playsinline: 1,
+        origin: 'https://com.example.toktik',
+        controls: 1,
+        rel: 0
+      },
       events: {
         onReady: function(event) {
           toktikReady = true;
           if (toktikMuted) event.target.mute(); else event.target.unMute();
           if (toktikPlaying) event.target.playVideo(); else event.target.pauseVideo();
+        },
+        onError: function(event) {
+          TokTikPlayerError.postMessage(String(event.data));
         }
       }
     });
@@ -270,7 +308,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 ''',
-      VideoSource.vimeo => '''
+      VideoSource.vimeo =>
+        '''
 <script src="https://player.vimeo.com/api/player.js"></script>
 <script>
   var toktikPlayer;
@@ -283,6 +322,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       toktikReady = true;
       toktikPlayer.setMuted(toktikMuted);
       if (toktikPlaying) toktikPlayer.play(); else toktikPlayer.pause();
+    }).catch(function(error) {
+      TokTikPlayerError.postMessage(error.name + ': ' + error.message);
     });
   });
   function toktikSetMuted(value) {
@@ -305,6 +346,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <style>
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
     iframe { display: block; width: 100%; height: 100%; border: 0; }
@@ -312,15 +354,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
   $playerScript
 </head>
 <body>
-  <iframe
-    id="toktik-player"
-    src="${_escapeHtml(playerUrl.toString())}"
-    title="${_escapeHtml(source.name)} player"
-    referrerpolicy="strict-origin-when-cross-origin"
-    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-    allowfullscreen
-    playsinline>
-  </iframe>
+  ${source == VideoSource.vimeo ? '<iframe id="toktik-player" src="${_escapeHtml(playerUrl.toString())}" title="Vimeo player" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>' : '<div id="toktik-player" title="${_escapeHtml(source.name)} player"></div>'}
 </body>
 </html>
 ''';
@@ -362,7 +396,9 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       );
     } catch (exception) {
       if (mounted) {
-        setState(() => _error = 'No se pudo cambiar la reproducción: $exception');
+        setState(
+          () => _error = 'No se pudo cambiar la reproducción: $exception',
+        );
       }
     }
   }
@@ -424,6 +460,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
         children: [
           Positioned.fill(
             child: iframe.buildExternalVideoIframe(
+              isMuted: widget.isMuted,
               embedUrl: embedUrl,
               watchUrl: widget.video.watchUrl,
               title: widget.video.title,
@@ -447,7 +484,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
               top: 0,
               left: 0,
               right: 0,
-              child: LinearProgressIndicator(),
+              child: IgnorePointer(child: LinearProgressIndicator()),
             ),
           if (_error != null)
             Positioned(
@@ -458,9 +495,10 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
                 color: Theme.of(context).colorScheme.errorContainer,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
+                  // CAMBIO: ya no existe el enlace debajo del reproductor.
                   child: Text(
                     '$_error Si el proveedor bloquea la inserción, '
-                    'usa el enlace debajo del reproductor.',
+                    'desliza al siguiente video.',
                   ),
                 ),
               ),
@@ -532,9 +570,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     children: [
       const ColoredBox(color: Colors.black),
       Positioned.fill(
-        child: IgnorePointer(
-          child: WebViewWidget(controller: controller),
-        ),
+        child: IgnorePointer(child: WebViewWidget(controller: controller)),
       ),
       GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -569,7 +605,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     } catch (exception) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo abrir ${_displayUrl(watchUrl.toString())}: '
+          () => _error =
+              'No se pudo abrir ${_displayUrl(watchUrl.toString())}: '
               '$exception',
         );
       }
@@ -772,6 +809,21 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     VideoSource.vimeo => 'Vimeo',
     VideoSource.peertube => 'PeerTube',
   };
+
+  static String _providerErrorMessage(VideoSource source, String code) {
+    if (source == VideoSource.youtube && code.startsWith('152')) {
+      return 'error $code: YouTube rechazó la configuración de identidad del '
+          'reproductor incrustado. Comprueba que la WebView envíe un origen y '
+          'referer coherentes; no es un error de la API key de búsqueda.';
+    }
+    if (source == VideoSource.youtube && (code == '101' || code == '150')) {
+      return 'error $code: el propietario no permite insertar el video.';
+    }
+    if (source == VideoSource.youtube && code == '100') {
+      return 'error $code: el video no existe, es privado o fue retirado.';
+    }
+    return 'error $code';
+  }
 
   static String _displayUrl(String? rawUrl) {
     if (rawUrl == null) return '(URL no disponible)';

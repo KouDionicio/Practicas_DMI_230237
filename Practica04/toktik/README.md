@@ -6,6 +6,11 @@ de reproducción.
 
 ## Funcionalidades
 
+Android usa copias H.264 Main a 1080p/30 fps para los originales `1.mp4` y
+`5.mp4`, cuya resolucion 4K excede la capacidad del decodificador del Redmi
+Note 12S. Los originales permanecen en `assets/videos/`; las otras plataformas
+siguen usando esos archivos.
+
 - **Discover** intercala los videos locales con hasta tres resultados por
   proveedor de YouTube, Vimeo y PeerTube usando la búsqueda predeterminada
   `viral videos`. Si falta una llave o falla un proveedor, se omiten solo esos
@@ -65,9 +70,7 @@ Pacifico, Playfair Display y Nunito desde sus rutas y nombres exactos.
 
 Hay PNG existentes para Normal (`normal.png`), Halloween (`halloween.png`),
 Navidad (`navidad.png`) y San Valentín (`san_valentin.png`), y audios de las
-cuatro temporadas. El Landing nativo usa el logo normal fijo; tras precargar el
-logo efectivo, el splash Flutter hace cross-fade al PNG de la temporada
-seleccionada, sobre el mismo fondo `#101020`.
+cuatro temporadas. El splash nativo usa un fondo neutral `#101020` sin mostrar el icono Normal; cuando Flutter carga las preferencias, el splash Flutter presenta el PNG de la temporada elegida y el audio estacional.
 
 Paquetes principales: `provider`, `video_player`, `webview_flutter`, `web`,
 `http`, `shared_preferences`, `audioplayers`, `flutter_native_splash`,
@@ -96,7 +99,7 @@ Chrome. PeerTube nativo reproduce la URL HTTPS del archivo o playlist HLS
 resuelta desde la API de detalles; la pantalla `/w/` nunca se usa como fuente
 multimedia. `video_player` usa ExoPlayer en Android y AVPlayer en iOS, ambos
 compatibles con HLS. En Chrome se mantiene el embed oficial para evitar
-dependencias de CORS.
+dependencias de CORS. En Android, el WebView de YouTube usa `https://com.example.toktik` como base para enviar el `Referer` de identidad requerido y fija el mismo `origin` al usar la IFrame API. No se envia la API key de busqueda al reproductor. Los videos con insercion bloqueada o restricciones de cuenta/region aun pueden fallar; se conserva el enlace al proveedor.
 
 Vimeo extrae el ID numérico de `uri` (por ejemplo, `videos/12345`), lo conserva
 como `vimeo:12345` y abre `https://player.vimeo.com/video/12345`.
@@ -160,13 +163,7 @@ actualización en un dispositivo:
 4. Si el launcher conserva el icono anterior, reinicia el dispositivo o espera
    a que actualice su caché.
 
-Android cambia alias con `PackageManager` sin matar el proceso (`DONT_KILL_APP`),
-pero algunos launchers guardan en caché el icono y pueden refrescarlo con
-retraso. La pantalla de inicio nativa de Android 12+ usa un icono de splash
-estático (normal); el icono estacional aparece en Flutter después de leer las
-preferencias, mediante cross-fade. Android 13+ puede mostrar el icono normal
-sin tema en launchers que requieran una capa monocromática, ya que no se define
-un asset monochrome estacional.
+Android cambia alias con `PackageManager` sin matar el proceso (`DONT_KILL_APP`), pero algunos launchers guardan en cache el icono y pueden refrescarlo con retraso. La pantalla nativa de Android usa solo el fondo neutral: Android 12+ recibe un drawable transparente como icono del sistema mientras Flutter carga la temporada guardada. Android 13+ puede mostrar el icono Normal sin tema en launchers que requieran una capa monocromatica, ya que no se define un asset monochrome estacional.
 
 Para volver a generar los recursos del Landing nativo después de cambiar su
 configuración:

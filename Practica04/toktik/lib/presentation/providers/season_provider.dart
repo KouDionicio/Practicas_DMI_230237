@@ -89,13 +89,15 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setMode(SeasonMode value) async {
-    final previousSeason = season;
     mode = value;
     notifyListeners();
     try {
       await _repository.saveSeasonMode(value.name);
       error = null;
-      if (season != previousSeason) await _syncLauncherIcon();
+      // Reconcile the launcher even when the effective season is unchanged:
+      // the package-manager state may have drifted (for example after an
+      // interrupted update or a launcher alias reset).
+      await _syncLauncherIcon();
     } catch (exception) {
       error = exception;
       rethrow;
@@ -105,13 +107,13 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> setManualSeason(Season value) async {
-    final previousSeason = season;
     manualSeason = value;
     notifyListeners();
     try {
       await _repository.saveManualSeason(value.name);
       error = null;
-      if (season != previousSeason) await _syncLauncherIcon();
+      // A repeated selection is also a chance to repair a stale launcher icon.
+      await _syncLauncherIcon();
     } catch (exception) {
       error = exception;
       rethrow;
@@ -133,6 +135,7 @@ class SeasonProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _onSeasonChanged?.call(season);
     } catch (exception) {
       error = exception;
+      debugPrint('No se pudo sincronizar el icono de TokTik: $exception');
       notifyListeners();
     }
   }

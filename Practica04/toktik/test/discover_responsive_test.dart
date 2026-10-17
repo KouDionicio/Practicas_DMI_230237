@@ -86,6 +86,15 @@ class _FakePreferences implements AppPreferencesRepository {
   Future<void> saveVideoLikeCounts(Map<String, int> counts) async {}
 
   @override
+  Future<Map<String, Map<String, Object?>>> getLikedExternalVideos() async =>
+      {};
+
+  @override
+  Future<void> saveLikedExternalVideos(
+    Map<String, Map<String, Object?>> videos,
+  ) async {}
+
+  @override
   Future<void> saveManualSeason(String season) async {}
 
   @override

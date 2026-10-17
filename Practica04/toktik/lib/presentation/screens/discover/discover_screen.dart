@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:toktik/domain/entities/external_video.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
@@ -79,11 +80,43 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
   }
 
+  Future<void> _showExternalSourceErrors() async {
+    final errors = context.read<DiscoverProvider>().externalErrors;
+    if (errors.isEmpty) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Fuentes externas no disponibles'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final entry in errors.entries)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text('${_providerName(entry.key)}: ${entry.value}'),
+              ),
+            const Text(
+              'Los videos locales y las demás fuentes siguen disponibles.',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final season = context.watch<SeasonProvider>().season;
     final audio = context.watch<SeasonalAudioProvider>();
     final likesError = context.watch<LikesProvider>().error;
+    final externalErrors = context.watch<DiscoverProvider>().externalErrors;
     final compactHeader = MediaQuery.sizeOf(context).width < 480;
     final sectionTabs = [
       for (var index = 0; index < FeedSection.values.length; index++)
@@ -128,11 +161,22 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           switch (action) {
             case _DiscoverMenuAction.externalVideos:
               _openExternalVideos();
+            case _DiscoverMenuAction.externalErrors:
+              _showExternalSourceErrors();
             case _DiscoverMenuAction.toggleAmbientAudio:
               _toggleAmbientAudio();
           }
         },
         itemBuilder: (context) => [
+          if (externalErrors.isNotEmpty)
+            const PopupMenuItem(
+              value: _DiscoverMenuAction.externalErrors,
+              child: ListTile(
+                leading: Icon(Icons.warning_amber),
+                title: Text('Ver fuentes externas no disponibles'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
           const PopupMenuItem(
             value: _DiscoverMenuAction.externalVideos,
             child: ListTile(
@@ -251,7 +295,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 }
 
-enum _DiscoverMenuAction { externalVideos, toggleAmbientAudio }
+String _providerName(VideoSource source) => switch (source) {
+  VideoSource.local => 'Local',
+  VideoSource.youtube => 'YouTube',
+  VideoSource.vimeo => 'Vimeo',
+  VideoSource.peertube => 'PeerTube',
+};
+
+enum _DiscoverMenuAction { externalVideos, externalErrors, toggleAmbientAudio }
 
 class _FeedPage extends StatelessWidget {
   const _FeedPage({
@@ -270,14 +321,19 @@ class _FeedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final discover = context.watch<DiscoverProvider>();
+    final likes = context.watch<LikesProvider>();
     final videos = discover.videosFor(section);
-    final externalVideos = discover.externalVideosFor(section);
+    final externalVideos = section == FeedSection.favorites
+        ? likes.likedExternalVideos
+        : discover.externalVideosFor(section);
 
-    if (discover.isLoading(section) && videos.isEmpty) {
+    if (discover.isLoading(section) &&
+        videos.isEmpty &&
+        externalVideos.isEmpty) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
     final error = discover.errorFor(section);
-    if (error != null && videos.isEmpty) {
+    if (error != null && videos.isEmpty && externalVideos.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

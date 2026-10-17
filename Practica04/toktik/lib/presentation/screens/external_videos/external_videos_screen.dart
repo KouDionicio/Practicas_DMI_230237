@@ -13,10 +13,23 @@ class ExternalVideosScreen extends StatefulWidget {
 
 class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
   final _queryController = TextEditingController();
+  final _resultsController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _resultsController.addListener(() {
+      if (_resultsController.hasClients &&
+          _resultsController.position.extentAfter < 500) {
+        context.read<ExternalVideoSearchProvider>().loadMore();
+      }
+    });
+  }
 
   @override
   void dispose() {
     _queryController.dispose();
+    _resultsController.dispose();
     super.dispose();
   }
 
@@ -101,8 +114,19 @@ class _ExternalVideosScreenState extends State<ExternalVideosScreen> {
             ),
           Expanded(
             child: ListView.builder(
-              itemCount: search.results.length,
+              controller: _resultsController,
+              itemCount:
+                  search.results.length +
+                  (search.hasMore || search.isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == search.results.length) {
+                  return search.isLoadingMore
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : const SizedBox(height: 48);
+                }
                 final video = search.results[index];
                 return ListTile(
                   leading: video.thumbnailUrl.isEmpty

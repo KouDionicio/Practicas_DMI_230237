@@ -7,4 +7,8 @@ abstract class AppPreferencesRepository {
   Future<void> saveLikedVideoIds(Set<String> ids);
   Future<Map<String, int>> getVideoLikeCounts();
   Future<void> saveVideoLikeCounts(Map<String, int> counts);
+  Future<Map<String, Map<String, Object?>>> getLikedExternalVideos();
+  Future<void> saveLikedExternalVideos(
+    Map<String, Map<String, Object?>> videos,
+  );
 }

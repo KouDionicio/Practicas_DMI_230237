@@ -144,6 +144,15 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
 
   @override
   Future<void> saveVideoLikeCounts(Map<String, int> counts) async {}
+
+  @override
+  Future<Map<String, Map<String, Object?>>> getLikedExternalVideos() async =>
+      {};
+
+  @override
+  Future<void> saveLikedExternalVideos(
+    Map<String, Map<String, Object?>> videos,
+  ) async {}
 }
 
 class _EmptyFeeds

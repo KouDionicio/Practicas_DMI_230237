@@ -76,7 +76,7 @@ Map<String, dynamic> decodeCollection(
     );
   }
 
-  return {'items': items};
+  return {'items': items, 'nextPageToken': decoded['nextPageToken']};
 }
 
 List<Map<String, dynamic>> collectionItems(

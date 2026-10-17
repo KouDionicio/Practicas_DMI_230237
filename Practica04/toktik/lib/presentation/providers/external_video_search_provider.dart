@@ -14,6 +14,9 @@ class ExternalVideoSearchProvider extends ChangeNotifier {
   List<ExternalVideo> results = const [];
   Object? error;
   bool isLoading = false;
+  bool isLoadingMore = false;
+  bool get hasMore => _nextPageToken != null;
+  String? _nextPageToken;
   int _requestId = 0;
   bool _isDisposed = false;
 
@@ -22,8 +25,10 @@ class ExternalVideoSearchProvider extends ChangeNotifier {
     _requestId++;
     source = value;
     results = const [];
+    _nextPageToken = null;
     error = null;
     isLoading = false;
+    isLoadingMore = false;
     notifyListeners();
   }
 
@@ -32,8 +37,11 @@ class ExternalVideoSearchProvider extends ChangeNotifier {
     final requestId = ++_requestId;
     final selectedSource = source;
     final normalizedQuery = query.trim();
+    _lastQuery = normalizedQuery;
+    _nextPageToken = null;
     if (normalizedQuery.isEmpty) {
       results = const [];
+      _nextPageToken = null;
       error = null;
       isLoading = false;
       notifyListeners();
@@ -45,14 +53,19 @@ class ExternalVideoSearchProvider extends ChangeNotifier {
     results = const [];
     notifyListeners();
     try {
-      final videos = await _repository.search(selectedSource, normalizedQuery);
+      final page = await searchExternalVideoPage(
+        _repository,
+        selectedSource,
+        normalizedQuery,
+      );
       if (_isDisposed || requestId != _requestId) return;
-      if (videos.any((video) => video.source != selectedSource)) {
+      if (page.videos.any((video) => video.source != selectedSource)) {
         throw FormatException(
           'El repositorio devolvió resultados de otra fuente.',
         );
       }
-      results = videos;
+      results = page.videos;
+      _nextPageToken = page.nextPageToken;
     } catch (exception) {
       if (_isDisposed || requestId != _requestId) return;
       error = exception;
@@ -63,6 +76,40 @@ class ExternalVideoSearchProvider extends ChangeNotifier {
       }
     }
   }
+
+  Future<void> loadMore() async {
+    final token = _nextPageToken;
+    if (_isDisposed || isLoading || isLoadingMore || token == null) return;
+    final requestId = _requestId;
+    isLoadingMore = true;
+    notifyListeners();
+    try {
+      final page = await searchExternalVideoPage(
+        _repository,
+        source,
+        _lastQuery,
+        pageToken: token,
+      );
+      if (_isDisposed || requestId != _requestId) return;
+      final existingIds = results.map((video) => video.id).toSet();
+      results = [
+        ...results,
+        ...page.videos.where(
+          (video) => video.source == source && existingIds.add(video.id),
+        ),
+      ];
+      _nextPageToken = page.nextPageToken;
+    } catch (exception) {
+      if (!_isDisposed && requestId == _requestId) error = exception;
+    } finally {
+      if (!_isDisposed && requestId == _requestId) {
+        isLoadingMore = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  String _lastQuery = '';
 
   @override
   void dispose() {

@@ -41,12 +41,13 @@ enum VideoSource {
     }
 
     final segments = uri.pathSegments;
-    final hasPeerTubeWatchPattern = segments.length >= 3 &&
+    final hasPeerTubeWatchPattern =
+        segments.length >= 3 &&
         segments[segments.length - 3] == 'videos' &&
         (segments[segments.length - 2] == 'watch' ||
             segments[segments.length - 2] == 'embed');
-    final hasPeerTubeShortPattern = segments.length >= 2 &&
-        segments.first == 'w';
+    final hasPeerTubeShortPattern =
+        segments.length >= 2 && segments.first == 'w';
 
     if (host.isNotEmpty &&
         (hasPeerTubeWatchPattern || hasPeerTubeShortPattern)) {
@@ -79,4 +80,43 @@ class ExternalVideo {
   final Uri watchUrl;
   final Uri embedUrl;
   final int? durationSeconds;
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'source': source.name,
+    'title': title,
+    'description': description,
+    'thumbnailUrl': thumbnailUrl,
+    'watchUrl': watchUrl.toString(),
+    'embedUrl': embedUrl.toString(),
+    'durationSeconds': durationSeconds,
+  };
+
+  factory ExternalVideo.fromJson(Map<String, dynamic> json) {
+    final sourceName = json['source'];
+    final source = VideoSource.values
+        .where((value) => value.name == sourceName)
+        .firstOrNull;
+    final id = json['id'];
+    final watchUrl = Uri.tryParse(json['watchUrl'] as String? ?? '');
+    final embedUrl = Uri.tryParse(json['embedUrl'] as String? ?? '');
+    if (source == null ||
+        !source.isExternal ||
+        id is! String ||
+        !id.startsWith('${source.name}:') ||
+        watchUrl == null ||
+        embedUrl == null) {
+      throw const FormatException('Invalid saved external video.');
+    }
+    return ExternalVideo(
+      id: id,
+      source: source,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      thumbnailUrl: json['thumbnailUrl'] as String? ?? '',
+      watchUrl: watchUrl,
+      embedUrl: embedUrl,
+      durationSeconds: json['durationSeconds'] as int?,
+    );
+  }
 }

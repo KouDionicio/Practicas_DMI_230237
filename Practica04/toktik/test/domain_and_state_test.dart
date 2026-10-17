@@ -18,6 +18,7 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   String? season;
   Set<String> likedIds = {};
   Map<String, int> likeCounts = {};
+  Map<String, Map<String, Object?>> externalVideos = {};
 
   @override
   Future<String?> getSeasonMode() async => mode;
@@ -44,12 +45,22 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   }
 
   @override
-  Future<Map<String, int>> getVideoLikeCounts() async =>
-      Map.of(likeCounts);
+  Future<Map<String, int>> getVideoLikeCounts() async => Map.of(likeCounts);
 
   @override
   Future<void> saveVideoLikeCounts(Map<String, int> counts) async {
     likeCounts = Map.of(counts);
+  }
+
+  @override
+  Future<Map<String, Map<String, Object?>>> getLikedExternalVideos() async =>
+      Map.from(externalVideos);
+
+  @override
+  Future<void> saveLikedExternalVideos(
+    Map<String, Map<String, Object?>> videos,
+  ) async {
+    externalVideos = Map.from(videos);
   }
 }
 
@@ -65,9 +76,18 @@ void main() {
       await repository.saveSeasonMode(SeasonMode.manual.name);
       await repository.saveManualSeason(Season.christmas.name);
       await repository.saveLikedVideoIds({'local:one', 'local:two'});
-      await repository.saveVideoLikeCounts({
-        'local:one': 13,
-        'local:two': 24,
+      await repository.saveVideoLikeCounts({'local:one': 13, 'local:two': 24});
+      final savedExternal = ExternalVideo(
+        id: 'vimeo:42',
+        source: VideoSource.vimeo,
+        title: 'Vimeo clip',
+        description: 'Saved description',
+        thumbnailUrl: 'https://i.vimeocdn.com/video/42.jpg',
+        watchUrl: Uri.https('vimeo.com', '/42'),
+        embedUrl: Uri.https('player.vimeo.com', '/video/42'),
+      );
+      await repository.saveLikedExternalVideos({
+        savedExternal.id: savedExternal.toJson(),
       });
 
       expect(await repository.getSeasonMode(), SeasonMode.manual.name);
@@ -77,6 +97,12 @@ void main() {
         'local:one': 13,
         'local:two': 24,
       });
+      expect(
+        ExternalVideo.fromJson(
+          (await repository.getLikedExternalVideos()).values.single,
+        ).id,
+        savedExternal.id,
+      );
     },
   );
 
@@ -174,7 +200,7 @@ void main() {
       restored.dispose();
     });
 
-    test('synchronizes Android launcher alias on load and season changes', () async {
+    test('synchronizes launcher alias on load and every manual confirmation', () async {
       final preferences = _MemoryPreferencesRepository()
         ..mode = SeasonMode.manual.name
         ..season = Season.normal.name;
@@ -186,16 +212,18 @@ void main() {
 
       await provider.load();
       await provider.setManualSeason(Season.halloween);
+      // Re-selecting the same season must repair a stale package-manager state.
+      await provider.setManualSeason(Season.halloween);
       await provider.setManualSeason(Season.christmas);
 
       expect(launcherUpdates, [
         Season.normal,
         Season.halloween,
+        Season.halloween,
         Season.christmas,
       ]);
       provider.dispose();
     });
-
   });
 
   group('persistent likes', () {
@@ -231,6 +259,44 @@ void main() {
       },
     );
 
+    test(
+      'persists and restores external favorites with source-qualified IDs',
+      () async {
+        final external = ExternalVideo(
+          id: 'youtube:abc123',
+          source: VideoSource.youtube,
+          title: 'YouTube clip',
+          description: 'description',
+          thumbnailUrl: 'https://i.ytimg.com/vi/abc123/default.jpg',
+          watchUrl: Uri(
+            scheme: 'https',
+            host: 'www.youtube.com',
+            path: '/watch',
+            query: 'v=abc123',
+          ),
+          embedUrl: Uri(
+            scheme: 'https',
+            host: 'www.youtube.com',
+            path: '/embed/abc123',
+          ),
+        );
+        final preferences = _MemoryPreferencesRepository();
+        final provider = LikesProvider(preferences);
+        await provider.load();
+        await provider.toggleExternalLike(external);
+        expect(provider.likedVideoIds, {'youtube:abc123'});
+        expect(provider.likedExternalVideos.single.id, 'youtube:abc123');
+
+        final restored = LikesProvider(preferences);
+        await restored.load();
+        expect(restored.likedExternalVideos.single.title, 'YouTube clip');
+        await restored.toggleExternalLike(external);
+        expect(restored.likedExternalVideos, isEmpty);
+        expect(preferences.likedIds, isEmpty);
+        expect(preferences.externalVideos, isEmpty);
+      },
+    );
+
     test('serializes rapid repeated taps to the final toggled state', () async {
       final preferences = _MemoryPreferencesRepository();
       final provider = LikesProvider(preferences);
@@ -244,29 +310,26 @@ void main() {
       expect(preferences.likedIds, isEmpty);
     });
 
-    test('prunes saved likes and counts for videos no longer available', () async {
-      final preferences = _MemoryPreferencesRepository()
-        ..likedIds = {
-          'assets/videos/1.mp4',
-          'removed-video-id',
-        }
-        ..likeCounts = {
-          'assets/videos/1.mp4': 18,
-          'removed-video-id': 21,
-        };
-      final provider = LikesProvider(
-        preferences,
-        validVideoIds: {'assets/videos/1.mp4', 'assets/videos/3.mp4'},
-      );
+    test(
+      'prunes saved likes and counts for videos no longer available',
+      () async {
+        final preferences = _MemoryPreferencesRepository()
+          ..likedIds = {'assets/videos/1.mp4', 'removed-video-id'}
+          ..likeCounts = {'assets/videos/1.mp4': 18, 'removed-video-id': 21};
+        final provider = LikesProvider(
+          preferences,
+          validVideoIds: {'assets/videos/1.mp4', 'assets/videos/3.mp4'},
+        );
 
-      await provider.load();
+        await provider.load();
 
-      expect(provider.likedVideoIds, {'assets/videos/1.mp4'});
-      expect(provider.videoLikeCounts, {'assets/videos/1.mp4': 18});
-      expect(preferences.likedIds, {'assets/videos/1.mp4'});
-      expect(preferences.likeCounts, {'assets/videos/1.mp4': 18});
-      expect(provider.error, isNull);
-    });
+        expect(provider.likedVideoIds, {'assets/videos/1.mp4'});
+        expect(provider.videoLikeCounts, {'assets/videos/1.mp4': 18});
+        expect(preferences.likedIds, {'assets/videos/1.mp4'});
+        expect(preferences.likeCounts, {'assets/videos/1.mp4': 18});
+        expect(provider.error, isNull);
+      },
+    );
   });
 
   group('video model mappers', () {

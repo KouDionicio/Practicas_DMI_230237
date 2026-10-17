@@ -67,13 +67,11 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#101020"
-  image: assets/icons/normal.png
   android: true
   ios: true
   web: false
   android_12:
     color: "#101020"
-    image: assets/icons/normal.png
     icon_background_color: "#101020"
 
 # For information on the generic Dart part of this file, see the
@@ -89,6 +87,7 @@ flutter:
   
   assets:
     - assets/videos/
+    - assets/videos_android/
     - assets/icons/
     - assets/audio/normal/
     - assets/audio/halloween/

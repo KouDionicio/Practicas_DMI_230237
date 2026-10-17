@@ -47,7 +47,12 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
       scrollDirection: Axis.vertical,
       physics: const BouncingScrollPhysics(),
       itemCount: feedItems.length,
-      onPageChanged: (index) => setState(() => _activePage = index),
+      onPageChanged: (index) {
+        setState(() => _activePage = index);
+        if (index >= feedItems.length - 5) {
+          context.read<DiscoverProvider>().loadMoreExternalVideos();
+        }
+      },
       itemBuilder: (context, index) {
         final item = feedItems[index];
         final localVideo = item.localVideo;
@@ -63,7 +68,7 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
                   videoUrl: localVideo.videoUrl,
                   isActive: isActive,
                   isMuted: widget.isMuted,
-                  onDoubleTap: () => _likeVideo(context, localVideo),
+                  onDoubleTap: () => _likeVideo(context, video: localVideo),
                 ),
               )
             else if (externalVideo != null)
@@ -73,7 +78,7 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
                   isActive: isActive,
                   isMuted: widget.isMuted,
                   onDoubleTap: () =>
-                      _likeVideo(context, _externalAsVideoPost(externalVideo)),
+                      _likeVideo(context, externalVideo: externalVideo),
                 ),
               ),
             if (widget.isVisible && localVideo != null)
@@ -111,6 +116,7 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
                 right: 12,
                 child: VideoButtons(
                   video: _externalAsVideoPost(externalVideo),
+                  externalVideo: externalVideo,
                   isMuted: widget.isMuted,
                   onMuteChanged: widget.onMuteChanged,
                 ),
@@ -128,14 +134,21 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     description: video.description,
   );
 
-  static Future<void> _likeVideo(BuildContext context, VideoPost video) async {
+  static Future<void> _likeVideo(
+    BuildContext context, {
+    VideoPost? video,
+    ExternalVideo? externalVideo,
+  }) async {
     final likes = context.read<LikesProvider>();
     final discover = context.read<DiscoverProvider>();
     try {
-      if (!likes.isLiked(video)) {
-        await likes.toggleLike(video);
-        await discover.load(FeedSection.favorites);
+      if (externalVideo == null) {
+        final value = video!;
+        if (!likes.isLiked(value)) await likes.toggleLike(value);
+      } else if (!likes.likedVideoIds.contains(externalVideo.id)) {
+        await likes.toggleExternalLike(externalVideo);
       }
+      await discover.load(FeedSection.favorites);
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -150,15 +163,21 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     List<ExternalVideo> externalVideos,
   ) {
     final items = <_FeedVideo>[];
-    final length = localVideos.length > externalVideos.length
+    final localIds = localVideos.map((video) => video.id).toSet();
+    final uniqueExternal = <ExternalVideo>[];
+    final seenIds = <String>{...localIds};
+    for (final video in externalVideos) {
+      if (seenIds.add(video.id)) uniqueExternal.add(video);
+    }
+    final length = localVideos.length > uniqueExternal.length
         ? localVideos.length
-        : externalVideos.length;
+        : uniqueExternal.length;
     for (var index = 0; index < length; index++) {
       if (index < localVideos.length) {
         items.add(_FeedVideo.local(localVideos[index]));
       }
-      if (index < externalVideos.length) {
-        items.add(_FeedVideo.external(externalVideos[index]));
+      if (index < uniqueExternal.length) {
+        items.add(_FeedVideo.external(uniqueExternal[index]));
       }
     }
     return items;
