@@ -85,6 +85,74 @@ flutter run
 
 Para Vimeo, iniciar antes el backend desde `Practica04/vimeo_backend/` con `npm start`.
 
+## Publicación en Appetize
+
+Appetize.io ejecuta aplicaciones Android desde el navegador, sin instalarlas en un teléfono ni publicarlas en Google Play. Es una publicación para demostración y pruebas.
+
+**Enlace de la app:** [TODO: pegar aquí el enlace público de Appetize](https://appetize.io/)
+
+### Preparación
+
+- Permiso `INTERNET` declarado en `android/app/src/main/AndroidManifest.xml` (necesario en release para cargar videos remotos).
+- `.env` fuera de Git. Se usa una API key de YouTube restringida a YouTube Data API v3 y un token de Vimeo de solo lectura.
+- Vimeo en Appetize: como la app corre en la nube y no alcanza el backend local de la PC, `BACKEND_BASE_URL` se deja vacío y Flutter usa directamente `VIMEO_TOKEN`.
+
+### Comandos
+
+```sh
+cd Practica04/toktik
+flutter pub get
+flutter analyze
+flutter build apk --release
+```
+
+| Dato | Valor |
+|---|---|
+| Archivo | `build/app/outputs/flutter-apk/app-release.apk` |
+| Tamaño | TODO MB |
+| Versión | TODO (ver `pubspec.yaml`) |
+
+### Procedimiento
+
+1. Crear una cuenta en [appetize.io](https://appetize.io/) y entrar a *Upload*.
+2. Subir `app-release.apk` y esperar a que se procese.
+3. Elegir el dispositivo Android virtual y la versión del sistema.
+4. Iniciar la sesión, probar la app y copiar el enlace público.
+5. Abrir el enlace en una ventana de incógnito para comprobar que funciona en una sesión independiente.
+
+### Pruebas en dispositivos virtuales
+
+| Prueba | Dispositivo 1 (TODO) | Dispositivo 2 (TODO) |
+|---|---|---|
+| Splash y pantalla inicial | TODO | TODO |
+| For You (videos locales) | TODO | TODO |
+| Discover (YouTube, Vimeo, PeerTube) | TODO | TODO |
+| Favorites y likes persistentes | TODO | TODO |
+| Mute y descripción "... más" | TODO | TODO |
+| Cambio de tema por temporada | TODO | TODO |
+| Interfaz sin desbordes ni cortes | TODO | TODO |
+
+Resultados: usar ✅ si funciona, ⚠️ si funciona con detalles y ❌ si falla.
+
+### Capturas
+
+| Dispositivo 1 | Dispositivo 2 |
+|---|---|
+| <img src="images/appetize_1.png" width="200"> | <img src="images/appetize_2.png" width="200"> |
+
+### Incidencias
+
+| Incidencia | Causa | Solución |
+|---|---|---|
+| YouTube lento o con error 152 | Límites de YouTube y videos no embebibles | Captions desactivados, solo se crean el reproductor visible y el siguiente, y los videos no embebibles se descartan |
+| Vimeo sin cargar en Appetize | El backend local no es accesible desde la nube | Uso directo de `VIMEO_TOKEN` sin backend |
+| TODO | TODO | TODO |
+
+### Ventajas y limitaciones
+
+- **Ventajas:** no requiere dispositivo físico, se comparte con un enlace y permite probar varias pantallas y versiones de Android.
+- **Limitaciones:** minutos de uso limitados en la cuenta gratuita, rendimiento y reproducción de video menores que en un teléfono real, y sin acceso a servicios locales de la PC.
+
 ## Evidencia
 
 | 1 | 2 | 3 |
