@@ -25,7 +25,7 @@ Los providers solo hablan con los repositorios, nunca con los datasources direct
 
 ## Diagramas de arquitectura
 
-[Ver diagramas en GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/diagramas/)
+[Ver diagramas en GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/practica04/toktik/)
 
 ## Fuentes de video
 
@@ -93,7 +93,7 @@ Para Vimeo, iniciar antes el backend desde `Practica04/vimeo_backend/` con `npm 
 
 Appetize.io ejecuta aplicaciones Android desde el navegador, sin instalarlas en un teléfono ni publicarlas en Google Play. Es una publicación para demostración y pruebas.
 
-**Enlace de la app:** [TODO: pegar aquí el enlace público de Appetize](https://appetize.io/)
+**Enlace de la app:** [https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)
 
 ### Preparación
 
@@ -113,49 +113,66 @@ flutter build apk --release
 | Dato | Valor |
 |---|---|
 | Archivo | `build/app/outputs/flutter-apk/app-release.apk` |
-| Tamaño | TODO MB |
-| Versión | TODO (ver `pubspec.yaml`) |
+| Tamaño | 155.9 MB |
+| Versión | 1.0.0 (build 1) |
+| Identificador | `com.example.toktik` |
 
 ### Procedimiento
 
-1. Crear una cuenta en [appetize.io](https://appetize.io/) y entrar a *Upload*.
+1. Crear una cuenta en [appetize.io](https://appetize.io/) y entrar a *Upload App*.
 2. Subir `app-release.apk` y esperar a que se procese.
 3. Elegir el dispositivo Android virtual y la versión del sistema.
 4. Iniciar la sesión, probar la app y copiar el enlace público.
 5. Abrir el enlace en una ventana de incógnito para comprobar que funciona en una sesión independiente.
 
-### Pruebas en dispositivos virtuales
+### Dispositivo de prueba
 
-| Prueba | Dispositivo 1 (TODO) | Dispositivo 2 (TODO) |
+| Dispositivo | Sistema | Escala |
 |---|---|---|
-| Splash y pantalla inicial | TODO | TODO |
-| For You (videos locales) | TODO | TODO |
-| Discover (YouTube, Vimeo, PeerTube) | TODO | TODO |
-| Favorites y likes persistentes | TODO | TODO |
-| Mute y descripción "... más" | TODO | TODO |
-| Cambio de tema por temporada | TODO | TODO |
-| Interfaz sin desbordes ni cortes | TODO | TODO |
+| Pixel 7 | Android 13.0 | Auto |
 
-Resultados: usar ✅ si funciona, ⚠️ si funciona con detalles y ❌ si falla.
+### Pruebas
+
+| Prueba | Resultado | Notas |
+|---|---|---|
+| Instalación y apertura de la app | ✅ | La app aparece en el launcher y abre correctamente |
+| For You (videos locales) | ✅ | Reproduce el video local con los iconos de la temporada (Halloween) |
+| Discover: YouTube | ✅ | El reproductor de YouTube carga y se puede pausar |
+| Discover: Vimeo | ⚠️ | Muestra el error con "Abrir en Vimeo" y "Reintentar" (ver incidencias) |
+| Discover: PeerTube | TODO | |
+| Favorites y likes | ✅ | El video con like aparece en Favorites con el corazón marcado |
+| Mute | ✅ | El icono de sonido muestra el estado silenciado |
+| Descripción "... más" | TODO | |
+| Cambio de tema por temporada | TODO | |
+| Interfaz sin desbordes ni cortes | ✅ | Se adapta a la pantalla del Pixel 7 |
+
+Resultados: ✅ funciona, ⚠️ funciona con detalles, ❌ falla.
 
 ### Capturas
 
-| Dispositivo 1 | Dispositivo 2 |
-|---|---|
-| <img src="images/appetize_1.png" width="200"> | <img src="images/appetize_2.png" width="200"> |
+**Compilación y publicación**
+
+| APK generado | Archivo del APK | App subida | 
+|---|---|---|
+| <img src="assets/evidencia/01_build.png" width="200"> | <img src="assets/evidencia/02_apk.png" width="200"> | <img src="assets/evidencia/03_subida.png" width="200"> | 
+
+**Ejecución en Pixel 7 (Android 13.0)**
+
+| Dispositivo y launcher | For You | Favorites con YouTube |
+|---|---|---|
+| <img src="assets/evidencia/04_pixel7_inicio.png" width="200"> | <img src="assets/evidencia/05_foryou.png" width="200"> | <img src="assets/evidencia/06_favorites_youtube.png" width="200"> | 
 
 ### Incidencias
 
 | Incidencia | Causa | Solución |
 |---|---|---|
-| YouTube lento o con error 152 | Límites de YouTube y videos no embebibles | Captions desactivados, solo se crean el reproductor visible y el siguiente, y los videos no embebibles se descartan |
-| Vimeo sin cargar en Appetize | El backend local no es accesible desde la nube | Uso directo de `VIMEO_TOKEN` sin backend |
-| TODO | TODO | TODO |
+| Vimeo muestra "No se pudo abrir el reproductor oficial" (HTTP 403 de `challenges.cloudflare.com`) | Cloudflare bloquea la verificación anti-bots desde las IP del emulador en la nube | La app muestra el error con "Abrir en Vimeo" y "Reintentar" sin romper el feed; las demás fuentes siguen funcionando. En un teléfono físico reproduce con normalidad |
+| APK de 155.9 MB | Incluye los 9 videos locales y los binarios de varias arquitecturas | Se subió completo; se puede reducir con `--split-per-abi` y comprimiendo los videos de `assets/videos/` |
 
 ### Ventajas y limitaciones
 
 - **Ventajas:** no requiere dispositivo físico, se comparte con un enlace y permite probar varias pantallas y versiones de Android.
-- **Limitaciones:** minutos de uso limitados en la cuenta gratuita, rendimiento y reproducción de video menores que en un teléfono real, y sin acceso a servicios locales de la PC.
+- **Limitaciones:** minutos de uso limitados en la cuenta gratuita (30 min), rendimiento y reproducción de video menores que en un teléfono real, bloqueos de servicios como Vimeo (Cloudflare) y sin acceso a servicios locales de la PC.
 
 ## Evidencia
 
