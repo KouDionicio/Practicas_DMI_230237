@@ -59,10 +59,19 @@ Configuración en `.env` (copiar de `.env.example`): `YOUTUBE_API_KEY`, `VIMEO_T
 
 | Funcionalidad | Video |
 |---|---|
-| Temas por temporada | [![Temas](assets/video/temas.gif)](assets/video/temas.mp4) |
-| For You / Discover / Favorites | [![Secciones](assets/video/secciones.gif)](assets/video/secciones.mp4) |
-| Likes y mute | [![Likes y mute](assets/video/likes_mute.gif)](assets/video/likes_mute.mp4) |
-| YouTube, Vimeo y PeerTube | [![Proveedores](assets/video/proveedores.gif)](assets/video/proveedores.mp4) |
+| Temas por temporada | <video src="assets/video/temas.mp4" controls muted width="220"></video> |
+| For You / Discover / Favorites | <video src="assets/video/secciones.mp4" controls muted width="220"></video> |
+| Likes y mute | <video src="assets/video/likes_mute.mp4" controls muted width="220"></video> |
+| YouTube, Vimeo y PeerTube | <video src="assets/video/proveedores.mp4" controls muted width="220"></video> |
+
+Si el video no se muestra, ábrelo con estos enlaces:
+
+| Funcionalidad | Enlace |
+|---|---|
+| Temas por temporada | [Ver video](assets/video/temas.mp4) |
+| For You / Discover / Favorites | [Ver video](assets/video/secciones.mp4) |
+| Likes y mute | [Ver video](assets/video/likes_mute.mp4) |
+| YouTube, Vimeo y PeerTube | [Ver video](assets/video/proveedores.mp4) |
 
 ## Ejecutar
 
