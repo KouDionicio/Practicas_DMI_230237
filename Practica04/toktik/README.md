@@ -23,6 +23,10 @@ Aplicación Flutter de videos verticales con scroll tipo TikTok, temas por tempo
 
 Los providers solo hablan con los repositorios, nunca con los datasources directamente.
 
+## Diagramas de arquitectura
+
+[Ver diagramas en GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/diagramas/)
+
 ## Fuentes de video
 
 | Fuente | Reproducción |
