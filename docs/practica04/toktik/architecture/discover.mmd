@@ -1,0 +1,16 @@
+flowchart LR
+  UI["DiscoverScreen · Discover"] --> State["DiscoverProvider · shuffle, paging, source errors"]
+  State --> Contract["ExternalVideoRepository · domain"]
+  Contract --> Repo["ExternalVideoRepositoryImpl · source routing"]
+  Repo --> YT["YouTubeVideoDatasource"]
+  Repo --> VM["VimeoVideoDatasource"]
+  Repo --> PT["PeerTubeVideoDatasource"]
+  YT --> YTM["YouTubeVideoModel"] --> External["ExternalVideo · domain entity"]
+  VM --> Backend["Vimeo backend · /api/vimeo/search"]
+  Backend --> VimeoAPI["Vimeo API · /videos"]
+  VimeoAPI --> VMM["VimeoVideoModel"] --> External
+  PT --> PTAPI["PeerTube API · /api/v1/videos"]
+  PTAPI --> PTM["PeerTubeVideoModel"] --> External
+  State --> Cache["Page cache · max 2 requests · backoff on 429"]
+  State --> Prefs["SharedPreferencesRepository · seen and blocked IDs"]
+  State --> Player["VideoScrollableView · ExternalVideoPlayer"]

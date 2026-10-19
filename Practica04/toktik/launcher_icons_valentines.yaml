@@ -1,0 +1,6 @@
+flutter_launcher_icons:
+  android: "ic_launcher_valentines"
+  ios: false
+  image_path: assets/icons/san_valentin.png
+  adaptive_icon_background: "#260F1A"
+  adaptive_icon_foreground: assets/icons/san_valentin.png

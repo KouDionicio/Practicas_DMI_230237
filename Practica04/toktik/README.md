@@ -1,126 +1,92 @@
-# Práctica 04: TokTik — Feed de videos cortos
+# Práctica 04: TokTik
 
-## Descripción
+Aplicación Flutter de videos verticales con scroll tipo TikTok, temas por temporada y videos locales y remotos (YouTube, Vimeo y PeerTube), siguiendo Clean Architecture.
 
-Aplicación desarrollada en Flutter que presenta videos locales en un feed vertical de pantalla completa. La navegación entre publicaciones se realiza deslizando hacia arriba o abajo.
+## Funcionalidades
 
-## Aplicación desarrollada
+- **For You:** feed de videos locales (`assets/videos/`).
+- **Discover:** videos remotos de YouTube, Vimeo y PeerTube, mezclados e intercalados. Si una fuente falla, las demás siguen apareciendo. Pagina al llegar cerca del final y deja al final los videos ya vistos.
+- **Favorites:** videos con like, leídos desde `shared_preferences`.
+- **Likes persistentes:** al desmarcar el corazón resta 1 y al marcarlo suma 1; el contador se guarda en el dispositivo.
+- **Mute global:** un solo control de sonido compartido entre videos y secciones.
+- **Descripción extensa:** se contrae con "... más" y se expande en una zona con scroll vertical.
+- **Temas por temporada:** Halloween (1–31 oct.), Navidad (1 dic.–6 ene.), San Valentín (1–14 feb.) y Normal el resto del año. Cambian tipografía, audio, iconografía y paleta, según la fecha del dispositivo. Se puede elegir una temporada manualmente para pruebas (guardada en local storage).
+- **Splash animado** de 3 segundos con el audio de la temporada.
 
-Cada publicación reproduce su video en bucle y sin sonido. Al tocar el video se puede pausar o reanudar la reproducción. La interfaz muestra el título, los likes y las visualizaciones de cada clip.
+## Arquitectura
 
-Los videos se cargan desde `assets/videos/` y sus datos se definen localmente. El feed incluye 13 publicaciones.
+| Capa | Contenido |
+|---|---|
+| `lib/presentation/` | Pantallas, widgets de reproducción y providers (`DiscoverProvider`, likes, temporada, audio) |
+| `lib/domain/` | Entidades (`VideoPost`, `ExternalVideo`), reglas de temporada y contratos de datasources y repositorios |
+| `lib/infrastructure/` | Datasources (local, YouTube, Vimeo, PeerTube), modelos, mappers, repositorios y `shared_preferences` |
 
-## Actividades realizadas
+Los providers solo hablan con los repositorios, nunca con los datasources directamente.
 
-1. Se implementó el feed vertical de videos con desplazamiento por páginas.
-2. Se integró la reproducción de videos locales en pantalla completa.
-3. Se añadieron controles de reproducción al tocar cada video.
-4. Se mostraron el título, los likes y las visualizaciones de cada publicación.
-5. Se organizaron los datos locales de los videos y se registraron sus recursos en Flutter.
+## Fuentes de video
 
-## Archivos principales
+| Fuente | Reproducción |
+|---|---|
+| Local | `video_player` con assets |
+| YouTube | Iframe embebido en `WebView` (captions desactivados) |
+| Vimeo | Reproductor oficial embebido; metadatos vía `vimeo_backend` |
+| PeerTube | `video_player` con el mp4 o HLS de la API de la instancia |
 
-- [Punto de entrada](lib/main.dart)
-- [Pantalla de descubrimiento](lib/presentation/screens/discover/discover_screen.dart)
-- [Estado y carga de publicaciones](lib/presentation/providers/discover_provider.dart)
-- [Datos locales de videos](lib/shared/data/local_video_posts.dart)
-- [Entidad de publicación](lib/domain/entities/video_post.dart)
-- [Modelo para los datos locales](lib/infrastructure/models/local_video_model.dart)
-- [Feed vertical](lib/presentation/widgets/shared/video_scrollable_view.dart)
-- [Reproductor de pantalla completa](lib/presentation/widgets/video/fullscreen_player.dart)
+Configuración en `.env` (copiar de `.env.example`): `YOUTUBE_API_KEY`, `VIMEO_TOKEN`, `BACKEND_BASE_URL` y `PEERTUBE_BASE_URL`.
 
-## Evidencias
+## Iconografía
 
-### 1. Feed de videos — Publicación 1
+### Temporadas
 
-Vista inicial de la aplicación mostrando el primer video del feed junto con su título, likes y visualizaciones.
+| Temporada | Icono | Archivo |
+|---|---|---|
+| Normal | <img src="assets/icons/normal.png" width="48"> | `assets/icons/normal.png` |
+| Halloween | <img src="assets/icons/halloween.png" width="48"> | `assets/icons/halloween.png` |
+| Navidad | <img src="assets/icons/navidad.png" width="48"> | `assets/icons/navidad.png` |
+| San Valentín | <img src="assets/icons/san_valentin.png" width="48"> | `assets/icons/san_valentin.png` |
 
-<img src="images/1.png" alt="Feed de videos — Publicación 1" width="250">
+### Acciones
 
-### 2. Feed de videos — Publicación 2
+| Acción | Icono |
+|---|---|
+| Me gusta | `favorite` / `favorite_border` |
+| Sonido | `volume_up` / `volume_off` |
+| Reproducir / pausar | `play_arrow` / `pause` |
+| Búsqueda externa | `search` |
+| Ajustes de temporada | PNG de la temporada activa |
 
-Segunda publicación del feed mostrando la reproducción del video y la información correspondiente.
+## Demostración en video
 
-<img src="images/2.png" alt="Feed de videos — Publicación 2" width="250">
+| Funcionalidad | Video |
+|---|---|
+| Temas por temporada | <video src="assets/video/temas.mp4" controls muted width="220"></video> |
+| For You / Discover / Favorites | <video src="assets/video/secciones.mp4" controls muted width="220"></video> |
+| Likes y mute | <video src="assets/video/likes_mute.mp4" controls muted width="220"></video> |
+| YouTube, Vimeo y PeerTube | <video src="assets/video/proveedores.mp4" controls muted width="220"></video> |
 
-### 3. Feed de videos — Publicación 3
+Si el video no se muestra, ábrelo con estos enlaces:
 
-Tercera publicación mostrando el video local en pantalla completa y sus datos.
+| Funcionalidad | Enlace |
+|---|---|
+| Temas por temporada | [Ver video](assets/video/temas.mp4) |
+| For You / Discover / Favorites | [Ver video](assets/video/secciones.mp4) |
+| Likes y mute | [Ver video](assets/video/likes_mute.mp4) |
+| YouTube, Vimeo y PeerTube | [Ver video](assets/video/proveedores.mp4) |
 
-<img src="images/3.png" alt="Feed de videos — Publicación 3" width="250">
+## Ejecutar
 
-### 4. Feed de videos — Publicación 4
-
-Cuarta publicación del feed con el título, likes y visualizaciones del video.
-
-<img src="images/4.png" alt="Feed de videos — Publicación 4" width="250">
-
-### 5. Feed de videos — Publicación 5
-
-Quinta publicación mostrando la reproducción del video local dentro del feed vertical.
-
-<img src="images/5.png" alt="Feed de videos — Publicación 5" width="250">
-
-### 6. Feed de videos — Publicación 6
-
-Sexta publicación del feed con sus datos de interacción y reproducción.
-
-<img src="images/6.png" alt="Feed de videos — Publicación 6" width="250">
-
-### 7. Feed de videos — Publicación 7
-
-Séptima publicación mostrando otro de los videos locales incluidos en la aplicación.
-
-<img src="images/7.png" alt="Feed de videos — Publicación 7" width="250">
-
-### 8. Feed de videos — Publicación 8
-
-Octava publicación del feed mostrando el video y sus estadísticas.
-
-<img src="images/8.png" alt="Feed de videos — Publicación 8" width="250">
-
-### 9. Una vuelta bajo las nubes
-
-Publicación que muestra una rueda de la fortuna bajo un cielo nublado.
-
-<img src="images/9.png" alt="Una vuelta bajo las nubes" width="250">
-
-### 10. Luces de la ciudad por la noche
-
-Publicación que muestra una avenida iluminada durante la noche.
-
-<img src="images/10.png" alt="Luces de la ciudad por la noche" width="250">
-
-### 11. La ciudad desde las alturas
-
-Vista nocturna de la ciudad mostrando sus edificios y calles iluminadas.
-
-<img src="images/11.png" alt="La ciudad desde las alturas" width="250">
-
-### 12. Un taxi entre los gigantes
-
-Publicación nocturna donde se observa un taxi frente a los edificios de la ciudad.
-
-<img src="images/12.png" alt="Un taxi entre los gigantes" width="250">
-
-### 13. Una noche lluviosa en la ciudad
-
-Publicación que muestra una calle durante la lluvia y los reflejos de las luces sobre el pavimento.
-
-<img src="images/13.png" alt="Una noche lluviosa en la ciudad" width="250">
-
-## Ejecución y pruebas
-
-Desde el directorio de la aplicación:
+Desde `Practica04/toktik/`:
 
 ```sh
 flutter pub get
-flutter run
 flutter analyze
+flutter run
 ```
 
-La aplicación utiliza los videos incluidos en `assets/videos/`; no requiere conexión a internet para reproducirlos.
+Para Vimeo, iniciar antes el backend desde `Practica04/vimeo_backend/` con `npm start`.
 
-## Conclusión
+## Evidencia
 
-La práctica integra navegación vertical, reproducción local de video y presentación de datos de publicaciones en una aplicación Flutter. El feed cuenta con 13 publicaciones y permite interactuar con cada video mediante controles de reproducción.
+| 1 | 2 | 3 |
+|---|---|---|
+| <img src="images/1.png" width="160"> | <img src="images/2.png" width="160"> | <img src="images/3.png" width="160"> |

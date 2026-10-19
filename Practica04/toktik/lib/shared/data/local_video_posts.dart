@@ -2,14 +2,9 @@ List<Map<String, dynamic>> videoPosts = [
   {
     'name': 'Subiendo escaleras automáticas',
     'videoUrl': 'assets/videos/1.mp4',
+    'description': 'Un recorrido tranquilo por las escaleras automáticas. A veces, un trayecto cotidiano ofrece una perspectiva distinta cuando nos detenemos a observar los detalles, la luz y el movimiento alrededor.',
     'likes': 23230,
     'views': 1523,
-  },
-  {
-    'name': 'Planta apreciada por peatones',
-    'videoUrl': 'assets/videos/2.mp4',
-    'likes': 24230,
-    'views': 1343,
   },
   {
     'name': 'Que borroso veo todo!',
@@ -30,26 +25,9 @@ List<Map<String, dynamic>> videoPosts = [
     'views': 31030,
   },
   {
-    'name': 'No quiero ir a trabajar hoy señor Stark',
-    'videoUrl': 'assets/videos/6.mp4',
-    'likes': 10,
-    'views': 330,
-  },
-  {
-    'name': 'Limpiar nunca fue tan divertido',
-    'videoUrl': 'assets/videos/7.mp4',
-    'likes': 1320,
-    'views': 33032,
-  },
-  {
-    'name': '¿Ya llegamos a la India?... umm si',
-    'videoUrl': 'assets/videos/8.mp4',
-    'likes': 342,
-    'views': 3332,
-  },
-  {
     'name': 'Una vuelta bajo las nubes 🎡',
     'videoUrl': 'assets/videos/9.mp4',
+    'description': 'Una vuelta bajo las nubes y una vista distinta de la ciudad. Desde lo alto, el movimiento de la rueda de la fortuna contrasta con el cielo cambiante y las luces que comienzan a encenderse al final de la tarde.',
     'likes': 1842,
     'views': 12750,
   },
@@ -74,6 +52,7 @@ List<Map<String, dynamic>> videoPosts = [
   {
     'name': 'Una noche lluviosa en la ciudad 🌧️',
     'videoUrl': 'assets/videos/13.mp4',
+    'description': 'La lluvia cubre la calle y transforma cada reflejo en una pequeña línea de luz. Los autos avanzan despacio sobre el pavimento mojado mientras la ciudad continúa su ritmo habitual, entre paraguas, semáforos y ventanas iluminadas. Un instante tranquilo para mirar la noche desde otro ángulo.',
     'likes': 7348,
     'views': 42890,
   },

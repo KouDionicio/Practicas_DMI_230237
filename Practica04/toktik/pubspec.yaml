@@ -38,6 +38,15 @@ dependencies:
   animate_do: ^5.1.0
   video_player: ^2.14.1
   intl: ^0.20.3
+  shared_preferences: ^2.5.4
+  audioplayers: ^6.5.1
+  http: ^1.5.0
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.14.1
+  url_launcher: ^6.3.2
+  web: ^1.1.1
+  flutter_native_splash: ^2.4.8
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +58,23 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+flutter_launcher_icons:
+  android: "ic_launcher_normal"
+  ios: true
+  image_path: assets/icons/normal.png
+  adaptive_icon_background: "#101020"
+  adaptive_icon_foreground: assets/icons/normal.png
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#101020"
+  android: true
+  ios: true
+  web: false
+  android_12:
+    color: "#101020"
+    icon_background_color: "#101020"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -63,6 +89,30 @@ flutter:
   
   assets:
     - assets/videos/
+    - assets/videos_android/
+    - assets/icons/
+    - assets/audio/normal/
+    - assets/audio/halloween/
+    - assets/audio/christmas/
+    - assets/audio/valentines/
+    - .env
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf
+    - family: Creepster
+      fonts:
+        - asset: assets/fonts/Creepster/Creepster-Regular.ttf
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico/Pacifico-Regular.ttf
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/Playfair_Display/PlayfairDisplay-VariableFont_wght.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito/Nunito-VariableFont_wght.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

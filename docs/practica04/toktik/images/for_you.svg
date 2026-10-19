@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 760" role="img" aria-labelledby="title desc">
+<title id="title">Arquitectura local de For You en TokTik</title><desc id="desc">La UI envía la sección For You a DiscoverProvider, que usa ForYouRepositoryImpl y LocalForYouVideoDatasource para mapear metadatos a VideoPost y reproducir un asset. Likes y temporada se guardan en SharedPreferences.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0L10 4L0 8Z" fill="#655e6d"/></marker><style>.bg{fill:#f5f2f8}.panel{fill:#fff;stroke:#dcd5e4;stroke-width:2}.node{fill:#fff;stroke:#59477d;stroke-width:2}.green{stroke:#438c83}.data{stroke:#c47b26}.title{font:700 27px 'Segoe UI',sans-serif;fill:#282330}.label{font:700 17px 'Segoe UI',sans-serif;fill:#282330}.sub{font:14px 'Segoe UI',sans-serif;fill:#655e6d}.edge{fill:none;stroke:#655e6d;stroke-width:2.5;marker-end:url(#arrow)}.group{font:700 14px 'Segoe UI',sans-serif;fill:#438c83;letter-spacing:1px}</style></defs>
+<rect class="bg" width="1500" height="760" rx="18"/><text class="title" x="44" y="52">For You · contenido local</text>
+<rect class="panel" x="32" y="82" width="1436" height="385" rx="16"/><text class="group" x="56" y="112">PRESENTATION → DOMAIN → INFRASTRUCTURE</text>
+<path class="edge" d="M270 235H320"/><path class="edge" d="M570 235H620"/><path class="edge" d="M840 235H890"/><path class="edge" d="M1130 235H1180"/>
+<path class="edge" d="M1300 280V340H645V365"/><path class="edge" d="M770 410H800"/><path class="edge" d="M1040 410H1080"/>
+<rect class="node" x="50" y="185" width="220" height="100" rx="14"/><text class="label" x="72" y="222">DiscoverScreen + VideoScrollableView</text><text class="sub" x="72" y="250">_FeedPage · For You</text>
+<rect class="node" x="320" y="185" width="250" height="100" rx="14"/><text class="label" x="342" y="222">DiscoverProvider</text><text class="sub" x="342" y="250">FeedSection.forYou</text>
+<rect class="node" x="620" y="185" width="220" height="100" rx="14"/><text class="label" x="640" y="222">ForYouRepository</text><text class="sub" x="640" y="250">contrato de dominio</text>
+<rect class="node" x="890" y="185" width="240" height="100" rx="14"/><text class="label" x="908" y="222">ForYouRepositoryImpl</text><text class="sub" x="908" y="250">implementación</text>
+<rect class="node green" x="1180" y="185" width="250" height="100" rx="14"/><text class="label" x="1198" y="222">LocalForYouVideoDatasource</text><text class="sub" x="1198" y="250">lee y ordena metadatos</text>
+<rect class="node data" x="520" y="365" width="250" height="90" rx="14"/><text class="label" x="542" y="400">videoPosts</text><text class="sub" x="542" y="428">shared/data/local_video_posts.dart</text>
+<rect class="node green" x="800" y="365" width="240" height="90" rx="14"/><text class="label" x="820" y="400">LocalVideoModel</text><text class="sub" x="820" y="428">mapLocalVideoPosts()</text>
+<rect class="node" x="1080" y="365" width="220" height="90" rx="14"/><text class="label" x="1100" y="400">VideoPost</text><text class="sub" x="1100" y="428">entidad de dominio</text>
+<path class="edge" d="M1300 410H1330"/><rect class="node data" x="1330" y="365" width="125" height="90" rx="14"/><text class="label" x="1344" y="400">videoUrl</text><text class="sub" x="1344" y="428">asset local</text>
+<rect class="panel" x="32" y="495" width="1436" height="225" rx="16"/><text class="group" x="56" y="525">PERSISTENCIA COMPARTIDA</text>
+<path class="edge" d="M160 285V565"/><path class="edge" d="M280 620H470"/><path class="edge" d="M900 565V530H615V565"/><path class="edge" d="M1080 610V690H620V655"/>
+<rect class="node" x="60" y="565" width="220" height="90" rx="14"/><text class="label" x="80" y="600">LikesProvider</text><text class="sub" x="80" y="628">likes locales y externos</text>
+<rect class="node green" x="470" y="565" width="290" height="90" rx="14"/><text class="label" x="490" y="600">SharedPreferencesRepository</text><text class="sub" x="490" y="628">IDs y conteos persistentes</text>
+<rect class="node" x="760" y="565" width="280" height="90" rx="14"/><text class="label" x="780" y="600">SeasonProvider</text><text class="sub" x="780" y="628">temporada y override manual</text>
+<rect class="node green" x="1080" y="565" width="300" height="90" rx="14"/><text class="label" x="1100" y="600">DiscoverScreen</text><text class="sub" x="1100" y="628">mute persistente del reproductor</text>
+<path class="edge" d="M1040 610H1080"/>
+</svg>
