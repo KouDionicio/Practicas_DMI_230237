@@ -55,15 +55,26 @@ class MainActivity : FlutterActivity() {
             "MainActivityChristmas",
             "MainActivityValentines"
         )
+        if (aliases.none(::isLauncherAliasEnabled)) {
+            packageManager.setComponentEnabledSetting(
+                componentFor("MainActivityNormal"),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
         val activeIsEnabled = isLauncherAliasEnabled(activeAlias)
         val othersAreDisabled = aliases.filter { it != activeAlias }.all { alias ->
             !isLauncherAliasEnabled(alias)
         }
         if (activeIsEnabled && othersAreDisabled) return
 
-        // Disable stale launcher entries before enabling the selected one so
-        // two launcher aliases are never enabled at the same time. MainActivity
-        // remains enabled and the current process is kept alive.
+        // Enable the requested alias first so the package never has zero
+        // seasonal aliases enabled, even if a later package-manager call fails.
+        packageManager.setComponentEnabledSetting(
+            componentFor(activeAlias),
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
         aliases.filter { it != activeAlias }.forEach { alias ->
             packageManager.setComponentEnabledSetting(
                 ComponentName(packageName, "$packageName.$alias"),
@@ -71,11 +82,6 @@ class MainActivity : FlutterActivity() {
                 PackageManager.DONT_KILL_APP
             )
         }
-        packageManager.setComponentEnabledSetting(
-            componentFor(activeAlias),
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            PackageManager.DONT_KILL_APP
-        )
         val enabledAliases = aliases.filter { alias ->
             isLauncherAliasEnabled(alias)
         }

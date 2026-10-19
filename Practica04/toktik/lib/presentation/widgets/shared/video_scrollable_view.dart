@@ -16,6 +16,7 @@ class VideoScrollableView extends StatefulWidget {
     required this.isVisible,
     required this.isMuted,
     required this.onMuteChanged,
+    this.trackDiscoverViews = false,
   });
 
   final List<VideoPost> videos;
@@ -23,6 +24,7 @@ class VideoScrollableView extends StatefulWidget {
   final bool isVisible;
   final bool isMuted;
   final ValueChanged<bool> onMuteChanged;
+  final bool trackDiscoverViews;
 
   @override
   State<VideoScrollableView> createState() => _VideoScrollableViewState();
@@ -30,6 +32,13 @@ class VideoScrollableView extends StatefulWidget {
 
 class _VideoScrollableViewState extends State<VideoScrollableView> {
   int _activePage = 0;
+  late final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant VideoScrollableView oldWidget) {
@@ -37,6 +46,7 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     if (_activePage >= widget.videos.length + widget.externalVideos.length) {
       _activePage = 0;
     }
+    if (widget.trackDiscoverViews) _markActiveExternalAsSeen();
   }
 
   @override
@@ -44,12 +54,18 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     final feedItems = _interleaveVideos(widget.videos, widget.externalVideos);
     if (feedItems.isEmpty) return const SizedBox.expand();
     return PageView.builder(
+      controller: _pageController,
       scrollDirection: Axis.vertical,
       physics: const BouncingScrollPhysics(),
       itemCount: feedItems.length,
       onPageChanged: (index) {
         setState(() => _activePage = index);
-        if (index >= feedItems.length - 5) {
+        final item = feedItems[index];
+        if (widget.trackDiscoverViews) {
+          final video = item.externalVideo;
+          if (video != null) context.read<DiscoverProvider>().markExternalVideoSeen(video);
+        }
+        if (widget.isVisible && index >= feedItems.length - 3) {
           context.read<DiscoverProvider>().loadMoreExternalVideos();
         }
       },
@@ -58,6 +74,10 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
         final localVideo = item.localVideo;
         final externalVideo = item.externalVideo;
         final isActive = widget.isVisible && index == _activePage;
+        final isNext = widget.isVisible && index == _activePage + 1;
+        final canPrepareExternal = externalVideo != null &&
+            externalVideo.source == VideoSource.youtube &&
+            (isActive || isNext);
         return Stack(
           children: [
             if (localVideo != null)
@@ -71,16 +91,22 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
                   onDoubleTap: () => _likeVideo(context, video: localVideo),
                 ),
               )
-            else if (externalVideo != null)
+            else if (externalVideo != null &&
+                (externalVideo.source != VideoSource.youtube || canPrepareExternal))
               Positioned.fill(
                 child: ExternalVideoPlayer(
+                  key: ValueKey<String>('external:${externalVideo.id}'),
                   video: externalVideo,
                   isActive: isActive,
+                  shouldLoad: externalVideo.source != VideoSource.youtube || canPrepareExternal,
                   isMuted: widget.isMuted,
+                  onYouTubeUnembeddable: _skipUnembeddableYouTube,
                   onDoubleTap: () =>
                       _likeVideo(context, externalVideo: externalVideo),
                 ),
               ),
+            if (externalVideo?.source == VideoSource.youtube && !canPrepareExternal)
+              Positioned.fill(child: _YouTubeThumbnail(externalVideo!)),
             if (widget.isVisible && localVideo != null)
               Positioned(
                 bottom: 36,
@@ -127,6 +153,36 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     );
   }
 
+  void _markActiveExternalAsSeen() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !widget.isVisible) return;
+      final feedItems = _interleaveVideos(widget.videos, widget.externalVideos);
+      if (_activePage < feedItems.length) {
+        final video = feedItems[_activePage].externalVideo;
+        if (video != null) context.read<DiscoverProvider>().markExternalVideoSeen(video);
+      }
+    });
+  }
+
+  void _skipUnembeddableYouTube(String videoId) {
+    if (!mounted || ExternalVideoPlayer.canEmbedYouTube(videoId)) return;
+    context.read<DiscoverProvider>().markYouTubeUnembeddable(videoId);
+    setState(() {});
+    final remainingCount = _interleaveVideos(
+      widget.videos,
+      widget.externalVideos,
+    ).length;
+    if (remainingCount == 0) return;
+    final targetPage = _activePage < remainingCount
+        ? _activePage
+        : remainingCount - 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _pageController.hasClients) {
+        _pageController.jumpToPage(targetPage);
+      }
+    });
+  }
+
   static VideoPost _externalAsVideoPost(ExternalVideo video) => VideoPost(
     id: video.id,
     caption: video.title,
@@ -167,6 +223,12 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
     final uniqueExternal = <ExternalVideo>[];
     final seenIds = <String>{...localIds};
     for (final video in externalVideos) {
+      if (video.source == VideoSource.youtube &&
+          !ExternalVideoPlayer.canEmbedYouTube(
+            video.id.substring('youtube:'.length),
+          )) {
+        continue;
+      }
       if (seenIds.add(video.id)) uniqueExternal.add(video);
     }
     final length = localVideos.length > uniqueExternal.length
@@ -181,6 +243,21 @@ class _VideoScrollableViewState extends State<VideoScrollableView> {
       }
     }
     return items;
+  }
+}
+
+class _YouTubeThumbnail extends StatelessWidget {
+  const _YouTubeThumbnail(this.video);
+  final ExternalVideo video;
+
+  @override
+  Widget build(BuildContext context) {
+    final id = video.id.substring('youtube:'.length);
+    return Image.network(
+      'https://img.youtube.com/vi/$id/hqdefault.jpg',
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black),
+    );
   }
 }
 

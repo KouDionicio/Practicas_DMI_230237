@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toktik/domain/entities/external_video.dart';
+import 'package:toktik/infrastructure/repositories/shared_preferences_repository.dart';
 import 'package:toktik/presentation/providers/discover_provider.dart';
 import 'package:toktik/presentation/providers/likes_provider.dart';
 import 'package:toktik/presentation/providers/season_provider.dart';
@@ -23,12 +26,25 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   bool _isExternalSearchOpen = false;
 
   @override
+  void initState() {
+    super.initState();
+    context.read<SharedPreferencesRepository>().getVideosMuted().then((value) {
+      if (mounted) setState(() => _isMuted = value);
+    });
+  }
+
+  @override
   void dispose() {
     _sectionController.dispose();
     super.dispose();
   }
 
-  void _setMuted(bool value) => setState(() => _isMuted = value);
+  void _setMuted(bool value) {
+    setState(() => _isMuted = value);
+    unawaited(
+      context.read<SharedPreferencesRepository>().saveVideosMuted(value),
+    );
+  }
 
   Future<void> _showSettings() async {
     await showModalBottomSheet<void>(
@@ -352,6 +368,14 @@ class _FeedPage extends StatelessWidget {
       );
     }
     if (videos.isEmpty && externalVideos.isEmpty) {
+      if (section == FeedSection.discover) {
+        return Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Text('Hay pocos videos disponibles en Discover.'),
+            TextButton(onPressed: () => discover.load(section), child: const Text('Recargar')),
+          ]),
+        );
+      }
       return Center(
         child: Text(
           section == FeedSection.favorites
@@ -360,12 +384,34 @@ class _FeedPage extends StatelessWidget {
         ),
       );
     }
+    if (section == FeedSection.discover && videos.length + externalVideos.length < 5) {
+      return Stack(children: [
+        VideoScrollableView(
+          videos: videos,
+          externalVideos: externalVideos,
+          isVisible: isVisible,
+          isMuted: isMuted,
+          onMuteChanged: onMuteChanged,
+          trackDiscoverViews: true,
+        ),
+        if (isVisible)
+          Positioned(left: 12, right: 12, top: 90, child: Material(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), child: Row(children: [
+              const Expanded(child: Text('Hay pocos videos disponibles.', style: TextStyle(color: Colors.white))),
+              TextButton(onPressed: () => discover.load(section), child: const Text('Recargar')),
+            ])),
+          )),
+      ]);
+    }
     return VideoScrollableView(
       videos: videos,
       externalVideos: externalVideos,
       isVisible: isVisible,
       isMuted: isMuted,
       onMuteChanged: onMuteChanged,
+      trackDiscoverViews: section == FeedSection.discover,
     );
   }
 }

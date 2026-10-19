@@ -151,7 +151,10 @@ export function createVimeoServer({ env = process.env, fetchImpl = fetch } = {})
 
     const upstreamUrl = new URL(VIMEO_API_URL);
     upstreamUrl.searchParams.set('query', query);
+    const requestedPage = Number.parseInt(requestUrl.searchParams.get('page') ?? '1', 10);
+    const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     upstreamUrl.searchParams.set('per_page', '25');
+    upstreamUrl.searchParams.set('page', String(page));
     upstreamUrl.searchParams.set('fields', VIMEO_FIELDS);
 
     let upstream;

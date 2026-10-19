@@ -9,8 +9,29 @@ class SharedPreferencesRepository implements AppPreferencesRepository {
   static const _likedVideoIdsKey = 'liked_video_ids';
   static const _videoLikeCountsKey = 'video_like_counts';
   static const _likedExternalVideosKey = 'liked_external_videos';
+  static const _mutedVideosKey = 'videos_muted';
+  static const _discoverSeenIdsKey = 'discover_seen_ids';
+  static const _unembeddableYouTubeIdsKey = 'unembeddable_youtube_ids';
 
   Future<SharedPreferences> get _preferences => SharedPreferences.getInstance();
+
+  Future<bool> getVideosMuted() async =>
+      (await _preferences).getBool(_mutedVideosKey) ?? true;
+
+  Future<void> saveVideosMuted(bool muted) async =>
+      (await _preferences).setBool(_mutedVideosKey, muted);
+
+  Future<Set<String>> getDiscoverSeenIds() async =>
+      (await _preferences).getStringList(_discoverSeenIdsKey)?.toSet() ?? {};
+
+  Future<void> saveDiscoverSeenIds(Set<String> ids) async =>
+      (await _preferences).setStringList(_discoverSeenIdsKey, ids.toList());
+
+  Future<Set<String>> getUnembeddableYouTubeIds() async =>
+      (await _preferences).getStringList(_unembeddableYouTubeIdsKey)?.toSet() ?? {};
+
+  Future<void> saveUnembeddableYouTubeIds(Set<String> ids) async =>
+      (await _preferences).setStringList(_unembeddableYouTubeIdsKey, ids.toList());
 
   @override
   Future<String?> getSeasonMode() async =>

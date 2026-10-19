@@ -1,0 +1,13 @@
+flowchart LR
+  UI["DiscoverScreen · _FeedPage · For You"] --> State["DiscoverProvider · FeedSection.forYou"]
+  State --> Contract["ForYouRepository · domain"]
+  Contract --> Repo["ForYouRepositoryImpl"]
+  Repo --> Source["LocalForYouVideoDatasource"]
+  Source --> Data["videoPosts · local_video_posts.dart"]
+  Data --> Mapper["LocalVideoModel · mapLocalVideoPosts()"]
+  Mapper --> Entity["VideoPost · domain entity"]
+  Data --> Assets["videoUrl · assets/videos/*.mp4"]
+  UI --> Likes["LikesProvider"]
+  Likes --> Prefs["SharedPreferencesRepository · likes"]
+  UI --> Prefs
+  Season["SeasonProvider · theme override"] --> Prefs

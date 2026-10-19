@@ -3,27 +3,39 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:toktik/domain/entities/external_video.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import 'peertube_media_resolver.dart';
 import 'external_video_iframe_stub.dart'
     if (dart.library.js_interop) 'external_video_iframe_web.dart'
     as iframe;
+import 'youtube_embed_config.dart';
+
+final Set<String> _unembeddableYouTubeVideoIds = <String>{};
 
 class ExternalVideoPlayer extends StatefulWidget {
   const ExternalVideoPlayer({
     super.key,
     required this.video,
     this.isActive = true,
+    this.shouldLoad = true,
     this.isMuted = true,
     this.onDoubleTap,
+    this.onYouTubeUnembeddable,
   });
 
   final ExternalVideo video;
   final bool isActive;
+  final bool shouldLoad;
   final bool isMuted;
   final VoidCallback? onDoubleTap;
+  final ValueChanged<String>? onYouTubeUnembeddable;
+
+  static bool canEmbedYouTube(String videoId) =>
+      !_unembeddableYouTubeVideoIds.contains(videoId);
 
   @override
   State<ExternalVideoPlayer> createState() => _ExternalVideoPlayerState();
@@ -38,6 +50,12 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
   int _progress = 0;
   bool _isLoading = false;
   bool _isPlaying = true;
+  bool _isReady = false;
+  Timer? _startupTimer;
+  Timer? _preloadTimer;
+  int _webRetryToken = 0;
+  Stopwatch? _youtubeStartupWatch;
+  bool _loggedYoutubeReady = false;
 
   @override
   void initState() {
@@ -50,11 +68,37 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     _embedUrl = validation.embedUrl;
     _watchUrl = validation.watchUrl;
 
-    if (kIsWeb || !widget.isActive) return;
-    unawaited(_initializePlayer());
+    if (widget.video.source == VideoSource.youtube &&
+        !ExternalVideoPlayer.canEmbedYouTube(
+          widget.video.id.substring('youtube:'.length),
+        )) {
+      _error = 'Este video no permite reproducción embebida.';
+      return;
+    }
+
+    if (!widget.shouldLoad ||
+        (widget.video.source != VideoSource.youtube && !widget.isActive)) {
+      return;
+    }
+    if (widget.isActive) {
+      _startReadyTimeout();
+      if (!kIsWeb) unawaited(_initializePlayer());
+    } else if (widget.video.source == VideoSource.youtube && !kIsWeb) {
+      _scheduleYouTubePreload();
+    }
   }
 
   Future<void> _initializePlayer() async {
+    if (_controller != null || _videoController != null) return;
+    if (widget.video.source == VideoSource.youtube &&
+        !ExternalVideoPlayer.canEmbedYouTube(
+          widget.video.id.substring('youtube:'.length),
+        )) {
+      if (mounted) setState(() => _error = 'Este video no permite reproducción embebida.');
+      return;
+    }
+    _isReady = false;
+    if (widget.isActive) _startReadyTimeout();
     if (!_supportsNativeWebView) {
       _error = 'El reproductor está disponible en Chrome, Android e iOS.';
       if (mounted) setState(() {});
@@ -75,13 +119,39 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       _releasePlayers();
       _error = null;
       _initializeUrls();
-      if (widget.isActive && !kIsWeb) unawaited(_initializePlayer());
+      if (widget.shouldLoad && !kIsWeb) unawaited(_initializePlayer());
+      return;
+    }
+    if (oldWidget.shouldLoad && !widget.shouldLoad) {
+      _preloadTimer?.cancel();
+      unawaited(_pauseBeforeRelease());
+      _releasePlayers();
+      return;
+    }
+    if (!oldWidget.shouldLoad && widget.shouldLoad && !kIsWeb) {
+      if (widget.video.source == VideoSource.youtube && !widget.isActive) {
+        _scheduleYouTubePreload();
+      } else {
+        unawaited(_initializePlayer());
+      }
       return;
     }
     if (!oldWidget.isActive && widget.isActive && !kIsWeb) {
-      unawaited(_initializePlayer());
+      _preloadTimer?.cancel();
+      _startReadyTimeout();
+      final controller = _controller;
+      if (controller != null && widget.video.source == VideoSource.youtube) {
+        unawaited(controller.runJavaScript('toktikActivate();'));
+      } else {
+        unawaited(_initializePlayer());
+      }
     } else if (oldWidget.isActive && !widget.isActive) {
-      _releasePlayers();
+      unawaited(_pauseBeforeRelease());
+      if (widget.video.source != VideoSource.youtube || !widget.shouldLoad) {
+        _releasePlayers();
+      } else if (_controller != null) {
+        unawaited(_controller!.runJavaScript('toktikPausePlayback();'));
+      }
     }
     if (oldWidget.isMuted != widget.isMuted &&
         _videoController != null &&
@@ -105,15 +175,66 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
 
   Future<void> _initializeNativePlayer() async {
     try {
+      if (widget.video.source == VideoSource.youtube) {
+        _youtubeStartupWatch = Stopwatch()..start();
+        _loggedYoutubeReady = false;
+      }
       final controller = WebViewController();
       _controller = controller;
       await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      if (widget.video.source == VideoSource.youtube &&
+          defaultTargetPlatform == TargetPlatform.android &&
+          controller.platform is AndroidWebViewController) {
+        await (controller.platform as AndroidWebViewController)
+            .setMediaPlaybackRequiresUserGesture(false);
+      }
       if (widget.video.source == VideoSource.youtube ||
           widget.video.source == VideoSource.vimeo) {
+        await controller.addJavaScriptChannel(
+          'TokTikPlayerReady',
+          onMessageReceived: (_) {
+            _startupTimer?.cancel();
+            _reportYouTubeReady();
+            if (mounted) setState(() => _isReady = true);
+          },
+        );
+        if (widget.video.source == VideoSource.youtube) {
+          await controller.addJavaScriptChannel(
+            'TokTikPlayerState',
+            onMessageReceived: (message) {
+              if (!mounted) return;
+              final state = message.message;
+              if (state == 'playing') {
+                _startupTimer?.cancel();
+                _reportYouTubeReady();
+                setState(() { _isReady = true; _isPlaying = true; });
+              } else if (state == 'paused') {
+                setState(() => _isPlaying = false);
+              } else if (state == 'ready') {
+                _startupTimer?.cancel();
+                _reportYouTubeReady();
+                setState(() => _isReady = true);
+              }
+            },
+          );
+        }
         await controller.addJavaScriptChannel(
           'TokTikPlayerError',
           onMessageReceived: (message) {
             if (!mounted) return;
+            if (widget.video.source == VideoSource.youtube) {
+              debugPrint('YouTube ${widget.video.id} error=${message.message} baseUrl/origin=$youtubeEmbedOrigin');
+              _startupTimer?.cancel();
+              final code = RegExp(r'\b(152|101|150|153)\b')
+                  .firstMatch(message.message)
+                  ?.group(1);
+              if (code != null) {
+                debugPrint('YouTube ${widget.video.id} non-embeddable code=$code baseUrl/origin=$youtubeEmbedOrigin');
+                final id = widget.video.id.substring('youtube:'.length);
+                _unembeddableYouTubeVideoIds.add(id);
+                widget.onYouTubeUnembeddable?.call(id);
+              }
+            }
             setState(
               () => _error =
                   '${_providerName(widget.video.source)} no pudo '
@@ -129,6 +250,9 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           },
           onWebResourceError: (error) {
             if (error.isForMainFrame == true && mounted) {
+              if (widget.video.source == VideoSource.youtube) {
+                debugPrint('YouTube ${widget.video.id} WebView error=${error.errorCode} baseUrl/origin=$youtubeEmbedOrigin');
+              }
               setState(
                 () => _error =
                     'WebView informó error ${error.errorCode}: '
@@ -140,7 +264,17 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           onHttpError: (error) {
             final statusCode = error.response?.statusCode;
             final requestUrl = error.request?.uri;
+            if (widget.video.source == VideoSource.youtube &&
+                requestUrl?.host == 'www.youtube.com' &&
+                requestUrl?.path == '/api/timedtext') {
+              debugPrint('YouTube ${widget.video.id} ignored captions HTTP $statusCode baseUrl/origin=$youtubeEmbedOrigin');
+              return;
+            }
             if (statusCode != null && requestUrl != null && mounted) {
+              if (widget.video.source == VideoSource.youtube) {
+                _startupTimer?.cancel();
+                debugPrint('YouTube ${widget.video.id} HTTP error: $statusCode');
+              }
               setState(
                 () => _error =
                     'HTTP $statusCode al cargar '
@@ -184,13 +318,11 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
             widget.video.source,
             _embedUrl!,
             isMuted: widget.isMuted,
+            isActive: widget.isActive,
           ),
-          baseUrl: Uri(
-            scheme: 'https',
-            host: widget.video.source == VideoSource.youtube
-                ? 'com.example.toktik'
-                : 'player.vimeo.com',
-          ).toString(),
+          baseUrl: widget.video.source == VideoSource.youtube
+              ? youtubeEmbedOrigin
+              : 'https://player.vimeo.com',
         );
       } else {
         await controller.loadRequest(_embedUrl!);
@@ -222,7 +354,8 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       await controller.setLooping(true);
       await controller.setVolume(widget.isMuted ? 0 : 1);
       await controller.play();
-      if (mounted) setState(() => _isLoading = false);
+      _startupTimer?.cancel();
+      if (mounted) setState(() { _isLoading = false; _isReady = true; });
     } catch (exception) {
       final playerError = controller?.value.errorDescription;
       await controller?.dispose();
@@ -243,6 +376,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     VideoSource source,
     Uri embedUrl, {
     required bool isMuted,
+    required bool isActive,
   }) {
     final playerUrl = switch (source) {
       // CAMBIO: parámetros para que se vea como Short (sin controles, en loop).
@@ -252,11 +386,14 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
           'playsinline': '1',
           'rel': '0',
           'enablejsapi': '1',
-          'controls': '1',
+          'controls': '0',
+          'cc_load_policy': '0',
+          'iv_load_policy': '3',
+          'fs': '0',
           'loop': '1',
           'playlist': embedUrl.pathSegments.last,
           'modestbranding': '1',
-          'origin': 'https://com.example.toktik',
+          'origin': youtubeEmbedOrigin,
         },
       ),
       VideoSource.vimeo => embedUrl.replace(
@@ -278,18 +415,28 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       videoId: '${embedUrl.pathSegments.last}',
       playerVars: {
         playsinline: 1,
-        origin: 'https://com.example.toktik',
-        controls: 1,
-        rel: 0
+        origin: '$youtubeEmbedOrigin',
+        controls: 0,
+        rel: 0,
+        cc_load_policy: 0,
+        fs: 0
       },
       events: {
         onReady: function(event) {
           toktikReady = true;
+          TokTikPlayerReady.postMessage('ready');
+          try { event.target.unloadModule('captions'); event.target.unloadModule('cc'); } catch (_) {}
           if (toktikMuted) event.target.mute(); else event.target.unMute();
-          if (toktikPlaying) event.target.playVideo(); else event.target.pauseVideo();
+          if (toktikPlaying && $isActive) event.target.playVideo();
+          else { event.target.pauseVideo(); event.target.cueVideoById('${embedUrl.pathSegments.last}'); }
         },
         onError: function(event) {
           TokTikPlayerError.postMessage(String(event.data));
+        },
+        onStateChange: function(event) {
+          if (event.data === YT.PlayerState.PLAYING) TokTikPlayerState.postMessage('playing');
+          else if (event.data === YT.PlayerState.PAUSED) TokTikPlayerState.postMessage('paused');
+          else if (event.data === YT.PlayerState.BUFFERING) TokTikPlayerState.postMessage('buffering');
         }
       }
     });
@@ -304,6 +451,14 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     if (!toktikReady) return;
     if (toktikPlaying) toktikPlayer.playVideo(); else toktikPlayer.pauseVideo();
     return toktikPlaying;
+  }
+  function toktikPausePlayback() {
+    toktikPlaying = false;
+    if (toktikReady) toktikPlayer.pauseVideo();
+  }
+  function toktikActivate() {
+    toktikPlaying = true;
+    if (toktikReady) toktikPlayer.playVideo();
   }
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -320,6 +475,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     toktikPlayer = new Vimeo.Player(document.getElementById('toktik-player'));
     toktikPlayer.ready().then(function() {
       toktikReady = true;
+      TokTikPlayerReady.postMessage('ready');
       toktikPlayer.setMuted(toktikMuted);
       if (toktikPlaying) toktikPlayer.play(); else toktikPlayer.pause();
     }).catch(function(error) {
@@ -335,6 +491,10 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
     if (!toktikReady) return toktikPlaying;
     if (toktikPlaying) toktikPlayer.play(); else toktikPlayer.pause();
     return toktikPlaying;
+  }
+  function toktikPausePlayback() {
+    toktikPlaying = false;
+    if (toktikReady) toktikPlayer.pause();
   }
 </script>
 ''',
@@ -367,12 +527,77 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
       .replaceAll('>', '&gt;');
 
   void _releasePlayers() {
+    _preloadTimer?.cancel();
+    _preloadTimer = null;
+    _startupTimer?.cancel();
+    _startupTimer = null;
     _controller = null;
     final videoController = _videoController;
     _videoController = null;
-    if (videoController != null) unawaited(videoController.dispose());
+    if (videoController != null) {
+      unawaited(videoController.pause().catchError((_) {}));
+      unawaited(videoController.dispose());
+    }
     _isLoading = false;
     _progress = 0;
+    _isReady = false;
+  }
+
+  void _scheduleYouTubePreload() {
+    _preloadTimer?.cancel();
+    _preloadTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted && widget.shouldLoad && !widget.isActive) {
+        unawaited(_initializePlayer());
+      }
+    });
+  }
+
+  Future<void> _pauseBeforeRelease() async {
+    final controller = _controller;
+    if (controller == null) return;
+    try {
+      await controller.runJavaScript(
+        'if (typeof toktikPausePlayback === "function") toktikPausePlayback();',
+      );
+    } catch (_) {
+      // Releasing the WebView still terminates its player when JS is unavailable.
+    }
+  }
+
+  void _startReadyTimeout() {
+    _startupTimer?.cancel();
+    _startupTimer = Timer(const Duration(seconds: 8), () {
+      if (mounted && !_isReady && widget.isActive) {
+        if (widget.video.source == VideoSource.youtube) {
+          debugPrint('YouTube ${widget.video.id} error=ready-timeout baseUrl/origin=$youtubeEmbedOrigin');
+        }
+        setState(() => _error = 'El reproductor tardó demasiado en iniciar.');
+      }
+    });
+  }
+
+  void _reportYouTubeReady() {
+    if (widget.video.source != VideoSource.youtube || _loggedYoutubeReady) return;
+    _loggedYoutubeReady = true;
+    final elapsed = _youtubeStartupWatch?.elapsedMilliseconds;
+    debugPrint('YouTube ${widget.video.id} ready in ${elapsed ?? 0}ms baseUrl/origin=$youtubeEmbedOrigin');
+    _youtubeStartupWatch?.stop();
+  }
+
+  Future<void> _retry() async {
+    _releasePlayers();
+    if (mounted) {
+      setState(() {
+        _error = null;
+        _isReady = false;
+        _progress = 0;
+        if (kIsWeb && widget.video.source == VideoSource.youtube) {
+          _webRetryToken++;
+          _startReadyTimeout();
+        }
+      });
+    }
+    if (widget.isActive && !kIsWeb) await _initializePlayer();
   }
 
   Future<void> _toggleWebViewPlayback() async {
@@ -417,7 +642,44 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isActive) return const SizedBox.expand();
+    if (!widget.isActive) {
+      return widget.video.source == VideoSource.youtube && widget.shouldLoad
+          ? _buildThumbnailLoader()
+          : const SizedBox.expand();
+    }
+    if (_error != null &&
+        !kIsWeb &&
+        widget.video.source == VideoSource.youtube) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            _thumbnailUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black),
+          ),
+          const ColoredBox(color: Color.fromARGB(140, 0, 0, 0)),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('No se pudo abrir el reproductor de YouTube: $_error',
+                      textAlign: TextAlign.center),
+                  if (!ExternalVideoPlayer.canEmbedYouTube(
+                    widget.video.id.substring('youtube:'.length),
+                  ))
+                    TextButton(onPressed: _openYouTube, child: const Text('Abrir en YouTube'))
+                  else
+                    TextButton(onPressed: _retry, child: const Text('Reintentar')),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     if (_error != null && !kIsWeb) {
       return Center(
         child: Padding(
@@ -433,14 +695,32 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
                   onPressed: _openOriginalVideo,
                   child: Text('Abrir en ${_providerName(widget.video.source)}'),
                 ),
-              TextButton(
-                onPressed: () =>
-                    Navigator.of(context).popUntil((route) => route.isFirst),
-                child: const Text('Volver al feed local'),
-              ),
+              TextButton(onPressed: _retry, child: const Text('Reintentar')),
             ],
           ),
         ),
+      );
+    }
+    if (kIsWeb &&
+        widget.video.source == VideoSource.youtube &&
+        !ExternalVideoPlayer.canEmbedYouTube(
+          widget.video.id.substring('youtube:'.length),
+        )) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            _thumbnailUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black),
+          ),
+          Center(
+            child: TextButton(
+              onPressed: _openYouTube,
+              child: const Text('Abrir en YouTube'),
+            ),
+          ),
+        ],
       );
     }
     if (kIsWeb) {
@@ -465,9 +745,11 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
               watchUrl: widget.video.watchUrl,
               title: widget.video.title,
               providerName: _providerName(widget.video.source),
+              retryToken: _webRetryToken,
               onDocumentLoad: () {
                 // An iframe load event does not verify cross-origin playback.
-                if (mounted) setState(() => _progress = 100);
+                _startupTimer?.cancel();
+                if (mounted) setState(() { _progress = 100; _isReady = true; });
               },
               onDocumentError: () {
                 if (mounted) {
@@ -486,6 +768,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
               right: 0,
               child: IgnorePointer(child: LinearProgressIndicator()),
             ),
+          _buildThumbnailLoader(),
           if (_error != null)
             Positioned(
               top: 12,
@@ -496,9 +779,16 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   // CAMBIO: ya no existe el enlace debajo del reproductor.
-                  child: Text(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
                     '$_error Si el proveedor bloquea la inserción, '
                     'desliza al siguiente video.',
+                      ),
+                      if (widget.video.source == VideoSource.youtube)
+                        TextButton(onPressed: _retry, child: const Text('Reintentar')),
+                    ],
                   ),
                 ),
               ),
@@ -526,6 +816,7 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
               ),
             ),
           ),
+          _buildThumbnailLoader(),
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _toggleWebViewPlayback,
@@ -593,8 +884,40 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
             child: LinearProgressIndicator(value: _progress / 100),
           ),
         ),
+      _buildThumbnailLoader(),
     ],
   );
+
+  Widget _buildThumbnailLoader() => SizedBox.expand(
+    child: IgnorePointer(
+      child: AnimatedOpacity(
+        opacity: _isReady && widget.isActive ? 0 : 1,
+        duration: const Duration(milliseconds: 250),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (_thumbnailUrl.isNotEmpty)
+              Image.network(
+                _thumbnailUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black),
+              )
+            else
+              const ColoredBox(color: Colors.black),
+            const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  String get _thumbnailUrl {
+    if (widget.video.source == VideoSource.youtube) {
+      final id = widget.video.id.substring('youtube:'.length);
+      return 'https://img.youtube.com/vi/$id/hqdefault.jpg';
+    }
+    return widget.video.thumbnailUrl;
+  }
 
   Future<void> _openOriginalVideo() async {
     final controller = _controller;
@@ -610,6 +933,18 @@ class _ExternalVideoPlayerState extends State<ExternalVideoPlayer> {
               '$exception',
         );
       }
+    }
+  }
+
+  Future<void> _openYouTube() async {
+    final id = widget.video.id.substring('youtube:'.length);
+    final uri = Uri.https('www.youtube.com', '/watch', {'v': id});
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication) && mounted) {
+        setState(() => _error = 'No se pudo abrir YouTube en este dispositivo.');
+      }
+    } catch (error) {
+      if (mounted) setState(() => _error = 'No se pudo abrir YouTube: $error');
     }
   }
 

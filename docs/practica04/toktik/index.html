@@ -27,6 +27,26 @@
     footer a { color: var(--accent); }
     @media (max-width: 520px) { main { padding-top: 32px; } nav a { min-height: 0; padding: 17px; } strong { font-size: 16px; } small { font-size: 13px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    .architecture-section { margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--line); }
+    .architecture-section h2 { margin: 0 0 12px; font-size: clamp(24px, 4vw, 32px); }
+    .architecture-section h3 { margin: 30px 0 10px; font-size: 21px; }
+    .architecture-section p, .architecture-section li { color: var(--muted); line-height: 1.65; }
+    .architecture-section ul { padding-left: 22px; }
+    .doc-nav { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+    .doc-nav a { min-height: 0; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--mint); background: var(--surface); color: var(--accent); font-weight: 650; text-decoration: none; }
+    figure.diagram { margin: 16px 0 28px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    figure.diagram img { display: block; width: 100%; height: auto; }
+    figure.diagram figcaption { padding: 8px 6px 2px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    details.mermaid-source { margin: 14px 0 26px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    details.mermaid-source summary { padding: 12px 14px; color: var(--accent); cursor: pointer; font-weight: 650; }
+    details.mermaid-source pre { overflow-x: auto; margin: 0; padding: 0 14px 14px; color: var(--ink); font: 13px/1.55 Consolas, monospace; white-space: pre; }
+    .layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 18px 0; }
+    .layer-card { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+    .layer-card h4 { margin: 0 0 8px; }
+    .class-list { columns: 2; column-gap: 36px; }
+    .class-list li { break-inside: avoid; margin: 0 0 8px; }
+    .architecture-note { padding: 12px 15px; border-left: 4px solid var(--mint); background: var(--surface); }
+    @media (max-width: 620px) { .class-list { columns: 1; } }
   </style>
 </head>
 <body>
@@ -43,7 +63,97 @@
         <span><strong>Provider de búsqueda externa</strong><small>ExternalVideoSearchProvider, repositorio de enrutamiento y datasources de YouTube, Vimeo y PeerTube.</small></span>
         <span class="arrow" aria-hidden="true">→</span>
       </a>
+      <a href="#architecture-overview">
+        <span><strong>Arquitectura integrada</strong><small>For You local, Discover remoto, persistencia y capas Clean Architecture.</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
     </nav>
+    <section class="architecture-section" id="architecture-overview" aria-labelledby="overview-title">
+      <p class="eyebrow">Práctica 04 · TokTik</p>
+      <h2 id="overview-title">Arquitectura y funcionamiento</h2>
+      <p>TokTik es una aplicación Flutter de videos cortos con navegación vertical. For You reproduce clips locales; Discover reúne videos remotos de YouTube, Vimeo y PeerTube; Favorites muestra publicaciones marcadas con Me gusta. La interfaz conserva mute, permite pausar o reanudar con un toque y expande descripciones largas con «… más».</p>
+      <ul>
+        <li>Los temas de temporada (Halloween, Christmas, Normal y Valentine’s) ajustan paleta, tipografía, audio e iconografía; la fecha del dispositivo selecciona el tema y las preferencias permiten un override.</li>
+        <li>Los likes de videos locales y externos se persisten localmente. El mute también se guarda para sesiones posteriores.</li>
+        <li>Discover consulta YouTube, Vimeo y PeerTube a través de un repositorio y sus datasources específicos. Vimeo puede pasar por el backend local configurado.</li>
+      </ul>
+      <nav class="doc-nav" aria-label="Diagramas de arquitectura">
+        <a href="#for-you-architecture">Diagrama 1 · For You local</a>
+        <a href="#discover-architecture">Diagrama 2 · Discover remoto</a>
+      </nav>
+
+      <h3 id="for-you-architecture">Diagrama 1 · For You y persistencia local</h3>
+      <p>El código actual utiliza <code>DiscoverProvider</code> para administrar todas las secciones, también For You. No hay una clase <code>ForYouProvider</code> ni una clase llamada <code>LocalVideoDatasource</code>: sus equivalentes concretos son <code>ForYouRepositoryImpl</code> y <code>LocalForYouVideoDatasource</code>.</p>
+      <figure class="diagram">
+        <img src="images/for_you.svg" alt="Diagrama de For You: UI, DiscoverProvider, repositorio, datasource local, mapper, VideoPost, assets y preferencias." loading="lazy">
+        <figcaption>El mapper transforma metadatos declarados en <code>lib/shared/data/local_video_posts.dart</code> en entidades <code>VideoPost</code>. Cada <code>videoUrl</code> apunta a un asset de <code>assets/videos/</code>.</figcaption>
+      </figure>
+      <details class="mermaid-source"><summary>Ver código Mermaid del diagrama local</summary><pre><code>flowchart LR
+  UI["DiscoverScreen · _FeedPage · For You"] --&gt; State["DiscoverProvider · FeedSection.forYou"]
+  State --&gt; Contract["ForYouRepository · domain"]
+  Contract --&gt; Repo["ForYouRepositoryImpl"]
+  Repo --&gt; Source["LocalForYouVideoDatasource"]
+  Source --&gt; Data["videoPosts · local_video_posts.dart"]
+  Data --&gt; Mapper["LocalVideoModel · mapLocalVideoPosts()"]
+  Mapper --&gt; Entity["VideoPost · domain entity"]
+  Data --&gt; Assets["videoUrl · assets/videos/*.mp4"]
+  UI --&gt; Likes["LikesProvider"]
+  Likes --&gt; Prefs["SharedPreferencesRepository · likes"]
+  UI --&gt; Prefs
+  Season["SeasonProvider · theme override"] --&gt; Prefs
+</code></pre></details>
+
+      <h3 id="discover-architecture">Diagrama 2 · Discover remoto</h3>
+      <p>Los proveedores externos producen entidades <code>ExternalVideo</code>, no <code>VideoPost</code>. <code>DiscoverProvider</code> tolera fallos por fuente, intercala resultados, pagina al acercarse al final y usa una caché en memoria, un máximo de dos solicitudes simultáneas y espera incremental ante HTTP 429. Los IDs vistos y los videos de YouTube no embebibles se guardan en preferencias locales.</p>
+      <figure class="diagram">
+        <img src="images/discover.svg" alt="Diagrama de Discover: repositorio externo, datasources de YouTube, Vimeo y PeerTube, backend Vimeo, mappers, caché y preferencias." loading="lazy">
+        <figcaption>Vimeo consulta <code>BACKEND_BASE_URL/api/vimeo/search</code> cuando hay backend configurado; PeerTube usa una URL de instancia configurable.</figcaption>
+      </figure>
+      <details class="mermaid-source"><summary>Ver código Mermaid del diagrama remoto</summary><pre><code>flowchart LR
+  UI["DiscoverScreen · Discover"] --&gt; State["DiscoverProvider · shuffle, paging, source errors"]
+  State --&gt; Contract["ExternalVideoRepository · domain"]
+  Contract --&gt; Repo["ExternalVideoRepositoryImpl · source routing"]
+  Repo --&gt; YT["YouTubeVideoDatasource"]
+  Repo --&gt; VM["VimeoVideoDatasource"]
+  Repo --&gt; PT["PeerTubeVideoDatasource"]
+  YT --&gt; YTM["YouTubeVideoModel"] --&gt; External["ExternalVideo · domain entity"]
+  VM --&gt; Backend["Vimeo backend · /api/vimeo/search"]
+  Backend --&gt; VimeoAPI["Vimeo API · /videos"]
+  VimeoAPI --&gt; VMM["VimeoVideoModel"] --&gt; External
+  PT --&gt; PTAPI["PeerTube API · /api/v1/videos"]
+  PTAPI --&gt; PTM["PeerTubeVideoModel"] --&gt; External
+  State --&gt; Cache["Page cache · max 2 requests · backoff on 429"]
+  State --&gt; Prefs["SharedPreferencesRepository · seen and blocked IDs"]
+  State --&gt; Player["VideoScrollableView · ExternalVideoPlayer"]
+</code></pre></details>
+
+      <h3>Capas y regla de dependencias</h3>
+      <div class="layer-grid">
+        <article class="layer-card"><h4>Presentation</h4><p><code>DiscoverScreen</code>, widgets de feed y reproductores, <code>DiscoverProvider</code>, <code>LikesProvider</code> y providers de temporada.</p></article>
+        <article class="layer-card"><h4>Domain</h4><p>Entidades <code>VideoPost</code> y <code>ExternalVideo</code>, contratos de repositorio/datasource y excepciones de fuentes externas.</p></article>
+        <article class="layer-card"><h4>Infrastructure</h4><p>Repositorios concretos, datasources HTTP/locales, modelos y mappers, integración de preferencias y configuración de APIs.</p></article>
+      </div>
+      <p class="architecture-note"><strong>Regla Clean Architecture:</strong> las políticas y contratos viven en Domain; Infrastructure implementa esos contratos, y Presentation coordina la UI mediante providers. <code>main.dart</code> conecta las implementaciones concretas. En el código actual, <code>DiscoverScreen</code> lee/escribe mute usando directamente <code>SharedPreferencesRepository</code>; esta dependencia de Presentation hacia Infrastructure se documenta como una excepción existente.</p>
+
+      <h3>Clases principales y rutas</h3>
+      <ul class="class-list">
+        <li><code>DiscoverProvider</code> — <code>lib/presentation/providers/discover_provider.dart</code></li>
+        <li><code>LikesProvider</code> — <code>lib/presentation/providers/likes_provider.dart</code></li>
+        <li><code>DiscoverScreen</code>, <code>_FeedPage</code> — <code>lib/presentation/screens/discover/discover_screen.dart</code></li>
+        <li><code>VideoScrollableView</code> — <code>lib/presentation/widgets/shared/video_scrollable_view.dart</code></li>
+        <li><code>FullScreenPlayer</code>, <code>ExternalVideoPlayer</code> — <code>lib/presentation/widgets/video/</code></li>
+        <li><code>VideoPost</code>, <code>ExternalVideo</code>, <code>VideoSource</code> — <code>lib/domain/entities/</code></li>
+        <li><code>ForYouRepository</code> — <code>lib/domain/repositories/for_you_repository.dart</code>; implementación en <code>lib/infrastructure/repositories/for_you_repository_impl.dart</code></li>
+        <li><code>LocalForYouVideoDatasource</code>, <code>mapLocalVideoPosts</code>, <code>LocalVideoModel</code> — <code>lib/infrastructure/datasources/for_you_video_datasource_impl.dart</code>, <code>lib/infrastructure/datasources/local_video_posts_mapper.dart</code>, <code>lib/infrastructure/models/local_video_model.dart</code></li>
+        <li><code>ExternalVideoRepository</code>, <code>PaginatedExternalVideoRepository</code> — <code>lib/domain/repositories/external_video_repository.dart</code></li>
+        <li><code>ExternalVideoRepositoryImpl</code> — <code>lib/infrastructure/repositories/external_video_repository_impl.dart</code></li>
+        <li><code>YouTubeVideoDatasource</code>, <code>VimeoVideoDatasource</code>, <code>PeerTubeVideoDatasource</code> — <code>lib/infrastructure/datasources/</code></li>
+        <li><code>YouTubeVideoModel</code>, <code>VimeoVideoModel</code>, <code>PeerTubeVideoModel</code> — <code>lib/infrastructure/models/</code></li>
+        <li><code>SharedPreferencesRepository</code> — <code>lib/infrastructure/repositories/shared_preferences_repository.dart</code></li>
+        <li><code>SeasonProvider</code>, <code>SeasonalAudioProvider</code>, <code>Season</code> — <code>lib/presentation/providers/</code> y <code>lib/domain/entities/season.dart</code></li>
+        <li><code>Vimeo backend</code> — <code>Practica04/vimeo_backend/server.js</code></li>
+      </ul>
+    </section>
     <footer><a href="../../">Volver al índice de diagramas</a>. Los diagramas reflejan las dependencias configuradas en <code>lib/main.dart</code>.</footer>
   </main>
 </body>

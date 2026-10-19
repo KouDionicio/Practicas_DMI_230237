@@ -114,6 +114,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        Provider<SharedPreferencesRepository>.value(value: preferencesRepository),
         ChangeNotifierProvider.value(value: seasonProvider),
         ChangeNotifierProvider(
           create: (_) => LikesProvider(
@@ -156,6 +157,7 @@ class MyApp extends StatelessWidget {
             forYouRepository: forYouRepository,
             favoritesRepository: favoritesRepository,
             externalVideoRepository: context.read<ExternalVideoRepository>(),
+            preferencesRepository: preferencesRepository,
           )..loadNextPage(),
         ),
       ],

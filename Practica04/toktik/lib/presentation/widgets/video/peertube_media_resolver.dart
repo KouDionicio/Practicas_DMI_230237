@@ -81,16 +81,33 @@ class PeerTubeMediaResolver {
   }
 
   static Uri? _firstMediaUrl(Map<String, dynamic> video, Uri requestUrl) {
+    final candidates = <({Uri uri, int score})>[];
     final files = video['files'];
     if (files is List) {
       for (final file in files) {
         if (file is Map<String, dynamic>) {
           final url = _trustedHttpsUrl(file['fileUrl'], requestUrl);
-          if (url != null) return url;
+          final resolution = file['resolution'];
+          final label = resolution is Map ? resolution['label'] : null;
+          final height = resolution is Map ? resolution['id'] : null;
+          final fileName = url?.path.toLowerCase() ?? '';
+          if (url != null && (fileName.endsWith('.mp4') || fileName.contains('.mp4?'))) {
+            final pixels = height is num ? height.toInt() : 0;
+            final text = label is String ? label : '';
+            final score = pixels == 720 || text.contains('720')
+                ? 3
+                : pixels == 480 || text.contains('480')
+                ? 2
+                : 1;
+            candidates.add((uri: url, score: score));
+          }
         }
       }
     }
+    candidates.sort((a, b) => b.score.compareTo(a.score));
+    if (candidates.isNotEmpty) return candidates.first.uri;
 
+    // Prefer an HLS playlist only when no progressive MP4 is available.
     final playlists = video['streamingPlaylists'];
     if (playlists is List) {
       for (final playlist in playlists) {

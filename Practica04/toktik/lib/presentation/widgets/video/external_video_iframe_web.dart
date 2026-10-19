@@ -2,12 +2,14 @@ import 'dart:js_interop';
 
 import 'package:flutter/widgets.dart';
 import 'package:web/web.dart' as web;
+import 'youtube_embed_config.dart';
 
 Widget buildExternalVideoIframe({
   required Uri embedUrl,
   required Uri watchUrl,
   required String title,
   required String providerName,
+  required int retryToken,
   required bool isMuted,
   required VoidCallback onDocumentLoad,
   required VoidCallback onDocumentError,
@@ -20,18 +22,25 @@ Widget buildExternalVideoIframe({
           queryParameters: {
             'autoplay': '1',
             'mute': isMuted ? '1' : '0',
-            'controls': '1',
+            'controls': '0',
+            'enablejsapi': '1',
+            'cc_load_policy': '0',
+            'iv_load_policy': '3',
+            'fs': '0',
             'loop': '1',
             'playlist': videoId, // necesario para que el loop funcione
             'playsinline': '1',
             'rel': '0',
+            'origin': youtubeEmbedOrigin,
           },
         )
       : embedUrl;
 
   return HtmlElementView.fromTagName(
-    // al cambiar mute cambia la URL y se recrea el iframe
-    key: ValueKey(playerUrl.toString()),
+    // El iframe de YouTube conserva su identidad al alternar mute.
+    key: ValueKey(providerName == 'YouTube'
+        ? 'youtube:$videoId:$retryToken'
+        : playerUrl.toString()),
     tagName: 'div',
     onElementCreated: (element) {
       final container = element as web.HTMLDivElement;

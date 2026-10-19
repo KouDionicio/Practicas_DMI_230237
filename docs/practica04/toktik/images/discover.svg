@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 860" role="img" aria-labelledby="title desc">
+<title id="title">Arquitectura remota de Discover en TokTik</title><desc id="desc">DiscoverProvider consulta el contrato ExternalVideoRepository implementado por ExternalVideoRepositoryImpl, que enruta a YouTube, Vimeo mediante backend local y PeerTube. Los modelos generan ExternalVideo. El provider limita concurrencia, cachea páginas y persiste vistos y videos no embebibles.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0L10 4L0 8Z" fill="#655e6d"/></marker><style>.bg{fill:#f5f2f8}.panel{fill:#fff;stroke:#dcd5e4;stroke-width:2}.node{fill:#fff;stroke:#59477d;stroke-width:2}.green{stroke:#438c83}.orange{stroke:#c47b26}.rose{stroke:#b65070}.title{font:700 27px 'Segoe UI',sans-serif;fill:#282330}.label{font:700 16px 'Segoe UI',sans-serif;fill:#282330}.sub{font:13px 'Segoe UI',sans-serif;fill:#655e6d}.edge{fill:none;stroke:#655e6d;stroke-width:2.3;marker-end:url(#arrow)}.group{font:700 14px 'Segoe UI',sans-serif;fill:#438c83;letter-spacing:1px}</style></defs>
+<rect class="bg" width="1600" height="860" rx="18"/><text class="title" x="42" y="50">Discover · proveedores remotos</text>
+<rect class="panel" x="24" y="75" width="1552" height="540" rx="16"/><text class="group" x="48" y="104">PRESENTATION → DOMAIN → INFRASTRUCTURE → PROVIDERS</text>
+<path class="edge" d="M245 185H285"/><path class="edge" d="M545 185H585"/><path class="edge" d="M810 185H850"/>
+<rect class="node" x="35" y="140" width="210" height="90" rx="14"/><text class="label" x="56" y="175">DiscoverScreen</text><text class="sub" x="56" y="202">UI · pestaña Discover</text>
+<rect class="node" x="285" y="140" width="260" height="90" rx="14"/><text class="label" x="306" y="175">DiscoverProvider</text><text class="sub" x="306" y="202">mezcla y páginas incrementales</text>
+<rect class="node" x="585" y="140" width="225" height="90" rx="14"/><text class="label" x="603" y="175">ExternalVideoRepository</text><text class="sub" x="603" y="202">contrato de dominio</text>
+<rect class="node" x="850" y="140" width="260" height="90" rx="14"/><text class="label" x="868" y="175">ExternalVideoRepositoryImpl</text><text class="sub" x="868" y="202">selección y paginación</text>
+<path class="edge" d="M980 230V270H310V315"/><path class="edge" d="M980 270V315"/><path class="edge" d="M980 270H1370V315"/>
+<rect class="node green" x="185" y="315" width="250" height="90" rx="14"/><text class="label" x="206" y="350">YouTubeVideoDatasource</text><text class="sub" x="206" y="378">Data API · pageToken</text>
+<rect class="node green" x="530" y="315" width="250" height="90" rx="14"/><text class="label" x="550" y="350">VimeoVideoDatasource</text><text class="sub" x="550" y="378">oEmbed · VimeoVideoModel</text>
+<rect class="node green" x="875" y="315" width="250" height="90" rx="14"/><text class="label" x="895" y="350">PeerTubeVideoDatasource</text><text class="sub" x="895" y="378">configurable instance URL</text>
+<rect class="node orange" x="1220" y="315" width="300" height="90" rx="14"/><text class="label" x="1240" y="350">Vimeo backend local</text><text class="sub" x="1240" y="378">/api/vimeo/search → Vimeo API</text>
+<path class="edge" d="M435 360H485"/><path class="edge" d="M780 360H830"/><path class="edge" d="M1125 360H1220"/>
+<text class="sub" x="448" y="344">mapper</text><text class="sub" x="793" y="344">mapper</text><text class="sub" x="1134" y="344">proxy</text>
+<rect class="node" x="185" y="465" width="250" height="90" rx="14"/><text class="label" x="205" y="500">YouTubeVideoModel</text><text class="sub" x="205" y="528">→ ExternalVideo</text>
+<rect class="node" x="530" y="465" width="250" height="90" rx="14"/><text class="label" x="550" y="500">VimeoVideoModel</text><text class="sub" x="550" y="528">→ ExternalVideo</text>
+<rect class="node" x="875" y="465" width="250" height="90" rx="14"/><text class="label" x="895" y="500">PeerTubeVideoModel</text><text class="sub" x="895" y="528">→ ExternalVideo</text>
+<path class="edge" d="M310 405V465"/><path class="edge" d="M655 405V465"/><path class="edge" d="M1000 405V465"/><path class="edge" d="M1370 405V450H780"/>
+<path class="edge" d="M310 555V600H1230V490H1245"/><path class="edge" d="M655 555V580H1230V520H1245"/><path class="edge" d="M1000 555H1245"/><rect class="node" x="1245" y="465" width="280" height="90" rx="14"/><text class="label" x="1265" y="500">ExternalVideo</text><text class="sub" x="1265" y="528">entidad de dominio remota</text>
+<rect class="panel" x="24" y="640" width="1552" height="190" rx="16"/><text class="group" x="48" y="670">RESILIENCIA · REPRODUCCIÓN · PERSISTENCIA</text>
+<path class="edge" d="M415 230V700"/><path class="edge" d="M415 700H455"/><path class="edge" d="M690 230V700H800"/><path class="edge" d="M980 230V700H1140"/>
+<rect class="node orange" x="455" y="695" width="345" height="90" rx="14"/><text class="label" x="475" y="730">Caché en memoria</text><text class="sub" x="475" y="758">máx. 2 solicitudes · backoff HTTP 429</text>
+<rect class="node rose" x="830" y="695" width="300" height="90" rx="14"/><text class="label" x="850" y="730">SharedPreferencesRepository</text><text class="sub" x="850" y="758">vistos · IDs no embebibles</text>
+<rect class="node" x="1160" y="695" width="360" height="90" rx="14"/><text class="label" x="1180" y="730">VideoScrollableView · ExternalVideoPlayer</text><text class="sub" x="1180" y="758">iframes YouTube · reproducción remota</text>
+</svg>

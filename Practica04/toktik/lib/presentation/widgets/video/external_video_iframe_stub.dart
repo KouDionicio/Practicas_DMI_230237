@@ -5,6 +5,7 @@ Widget buildExternalVideoIframe({
   required Uri watchUrl,
   required String title,
   required String providerName,
+  required int retryToken,
   required bool isMuted,
   required VoidCallback onDocumentLoad,
   required VoidCallback onDocumentError,

@@ -51,12 +51,12 @@ class VimeoVideoModel {
     );
   }
 
-  ExternalVideo toEntity() => ExternalVideo(
+  ExternalVideo toEntity({String? oEmbedThumbnailUrl}) => ExternalVideo(
     id: 'vimeo:$id',
     source: VideoSource.vimeo,
     title: title,
     description: description,
-    thumbnailUrl: thumbnailUrl,
+    thumbnailUrl: oEmbedThumbnailUrl ?? thumbnailUrl,
     watchUrl: Uri.https('vimeo.com', '/$id'),
     embedUrl: Uri.https('player.vimeo.com', '/video/$id'),
   );

@@ -54,7 +54,9 @@ class PeerTubeVideoModel {
 
     return PeerTubeVideoModel(
       uuid: uuid,
-      title: _optionalText(json, 'name'),
+      title: _optionalText(json, 'name').trim().isEmpty
+          ? 'Video de PeerTube'
+          : _optionalText(json, 'name'),
       description: _optionalText(json, 'description'),
       thumbnailUrl: _trustedThumbnailUrl(
         json['thumbnailPath'] ?? json['thumbnailUrl'],

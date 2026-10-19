@@ -66,9 +66,13 @@ class _FullScreenPlayerState extends State<FullScreenPlayer>
 
   Future<void> _initialize() async {
     if (_controller != null || !widget.isActive) return;
-    final controller = VideoPlayerController.asset(
-      localVideoAssetForPlatform(widget.videoUrl, defaultTargetPlatform),
+    assert(widget.videoUrl.trim().isNotEmpty, 'Local video asset path is empty.');
+    final assetPath = localVideoAssetForPlatform(
+      widget.videoUrl,
+      defaultTargetPlatform,
     );
+    assert(assetPath.trim().isNotEmpty, 'Local video asset path is empty.');
+    final controller = VideoPlayerController.asset(assetPath);
     _controller = controller;
     try {
       await controller.initialize();

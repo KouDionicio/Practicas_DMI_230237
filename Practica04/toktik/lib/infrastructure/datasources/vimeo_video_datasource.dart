@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:toktik/domain/datasources/external_video_datasource.dart';
 import 'package:toktik/domain/entities/external_video.dart';
+import 'package:toktik/domain/entities/external_video_page.dart';
 import 'package:toktik/domain/errors/external_video_exception.dart';
 import 'package:toktik/infrastructure/datasources/external_video_http_helpers.dart';
 import 'package:toktik/infrastructure/models/vimeo_video_model.dart';
 
-class VimeoVideoDatasource implements ExternalVideoDatasource {
+class VimeoVideoDatasource implements PaginatedExternalVideoDatasource {
   VimeoVideoDatasource({
     required this.baseUrl,
     this.token,
@@ -19,11 +21,17 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
 
   @override
   Future<List<ExternalVideo>> search(String query) async {
+    return (await searchPage(query)).videos;
+  }
+
+  @override
+  Future<ExternalVideoPage> searchPage(String query, {String? pageToken}) async {
     final normalizedQuery = normalizeExternalVideoQuery(query);
-    if (normalizedQuery == null) return const [];
+    if (normalizedQuery == null) return const ExternalVideoPage([]);
 
     final backendUrl = baseUrl;
-    if (backendUrl == null) return _searchVimeoApi(normalizedQuery);
+    final page = int.tryParse(pageToken ?? '') ?? 1;
+    if (backendUrl == null) return _searchVimeoApi(normalizedQuery, page);
 
     if ((backendUrl.scheme != 'https' &&
             !(kDebugMode && backendUrl.scheme == 'http')) ||
@@ -41,7 +49,7 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
       path:
           '${backendUrl.path.replaceFirst(RegExp(r'/$'), '')}'
           '/api/vimeo/search',
-      queryParameters: {'query': normalizedQuery},
+      queryParameters: {'query': normalizedQuery, 'page': '$page', 'per_page': '25'},
     );
     final client = this.client;
     try {
@@ -50,7 +58,12 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
         provider: 'Vimeo backend',
         client: client,
       );
-      return _mapResults(response, provider: 'Vimeo backend');
+      final videos = await _mapResults(response, provider: 'Vimeo backend');
+      final hasMore = _hasNextPage(response) ?? videos.length >= 25;
+      return ExternalVideoPage(
+        videos,
+        nextPageToken: hasMore ? '${page + 1}' : null,
+      );
     } on ExternalVideoNetworkException {
       final key = token?.trim();
       if (key == null || key.isEmpty) {
@@ -59,11 +72,11 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
           'configurado para la conexión directa.',
         );
       }
-      return _searchVimeoApi(normalizedQuery);
+      return _searchVimeoApi(normalizedQuery, page);
     }
   }
 
-  Future<List<ExternalVideo>> _searchVimeoApi(String query) async {
+  Future<ExternalVideoPage> _searchVimeoApi(String query, int page) async {
     final key = token?.trim();
     if (key == null || key.isEmpty) {
       throw const ExternalVideoConfigurationException(
@@ -75,6 +88,7 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
     final uri = Uri.https('api.vimeo.com', '/videos', {
       'query': query,
       'per_page': '25',
+      'page': '$page',
       'fields': 'uri,name,description,pictures.sizes.link',
     });
     final response = await getExternalVideoResponse(
@@ -86,15 +100,56 @@ class VimeoVideoDatasource implements ExternalVideoDatasource {
         'Authorization': 'Bearer $key',
       },
     );
-    return _mapResults(response, provider: 'Vimeo');
+    final videos = await _mapResults(response, provider: 'Vimeo');
+    final hasMore = _hasNextPage(response) ?? videos.length >= 25;
+    return ExternalVideoPage(videos, nextPageToken: hasMore ? '${page + 1}' : null);
   }
 
-  List<ExternalVideo> _mapResults(
+  bool? _hasNextPage(http.Response response) {
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) return null;
+    final paging = decoded['paging'];
+    if (paging is! Map<String, dynamic> || !paging.containsKey('next')) {
+      return null;
+    }
+    final next = paging['next'];
+    return next is String && next.isNotEmpty;
+  }
+
+  Future<List<ExternalVideo>> _mapResults(
     http.Response response, {
     required String provider,
-  }) {
-    return collectionItems(response, provider: provider)
-        .map((json) => VimeoVideoModel.fromJson(json).toEntity())
-        .toList();
+  }) async {
+    final models = collectionItems(response, provider: provider)
+        .map(VimeoVideoModel.fromJson)
+        .toList(growable: false);
+    final validated = await Future.wait(models.map((model) async {
+      try {
+        final oEmbedUri = Uri.https('vimeo.com', '/api/oembed.json', {
+          'url': model.toEntity().watchUrl.toString(),
+        });
+        final result = await getExternalVideoResponse(
+          oEmbedUri,
+          provider: 'Vimeo oEmbed',
+          client: client,
+        );
+        if (result.statusCode < 200 || result.statusCode >= 300) return null;
+        final decoded = jsonDecode(result.body);
+        if (decoded is! Map<String, dynamic> ||
+            decoded['html'] is! String ||
+            (decoded['html'] as String).isEmpty) {
+          return null;
+        }
+        final thumbnail = decoded['thumbnail_url'];
+        return model.toEntity(
+          oEmbedThumbnailUrl: thumbnail is String && thumbnail.isNotEmpty
+              ? thumbnail
+              : null,
+        );
+      } catch (_) {
+        return null;
+      }
+    }));
+    return validated.whereType<ExternalVideo>().toList(growable: false);
   }
 }
