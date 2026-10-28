@@ -1,76 +1,66 @@
 import 'package:flutter/material.dart';
 
-class ProgressScreen extends StatelessWidget {
+final Stream<double> _progressStream = Stream.periodic(
+  const Duration(milliseconds: 300),
+  (tick) => (tick % 101) / 100,
+);
 
+class ProgressScreen extends StatelessWidget {
   static const name = 'progress_screen';
 
   const ProgressScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Progress Indicators'),
-      ),
-      body: const _ProgressView(),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Indicadores de progreso')),
+    body: const _ProgressView(),
+  );
 }
 
 class _ProgressView extends StatelessWidget {
   const _ProgressView();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
+  Widget build(BuildContext context) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: const [
-          SizedBox(height: 30),
-          Text('Circula progress indicator'),
-          SizedBox(height: 10),
-          CircularProgressIndicator( strokeWidth: 2, backgroundColor: Colors.black45 ),
-          
-          SizedBox(height: 20),
-          Text('Circular y Linear controlado'),
-          SizedBox(height: 10),
-          _ControlledProgresIndicator(),
-
+          Text('Progreso circular indeterminado'),
+          SizedBox(height: 12),
+          CircularProgressIndicator(strokeWidth: 3),
+          SizedBox(height: 24),
+          Text('Progreso circular y lineal determinado'),
+          SizedBox(height: 12),
+          _ControlledProgressIndicator(),
+          SizedBox(height: 24),
+          Text('Progreso lineal indeterminado'),
+          SizedBox(height: 12),
+          LinearProgressIndicator(),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
-
-class _ControlledProgresIndicator extends StatelessWidget {
-  const _ControlledProgresIndicator();
+class _ControlledProgressIndicator extends StatelessWidget {
+  const _ControlledProgressIndicator();
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: Stream.periodic( const Duration( milliseconds: 300 ), (value) {
-        return (value * 2) / 100; // 0.0, 1.0
-      }).takeWhile((value) => value < 100 ),
-      builder: (context, snapshot) {
-
-        final progressValue = snapshot.data ?? 0;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator( value: progressValue, strokeWidth: 2, backgroundColor: Colors.black12, ),
-              const SizedBox(width: 20,),
-              Expanded(
-                child: LinearProgressIndicator(value: progressValue )
-              ),
-              
-            ],
-          ),
-        );
-
-      },
-    );
-  }
+  Widget build(BuildContext context) => StreamBuilder<double>(
+    stream: _progressStream,
+    builder: (context, snapshot) {
+      final progress = snapshot.data ?? 0.0;
+      return Row(
+        children: [
+          CircularProgressIndicator(value: progress, strokeWidth: 3),
+          const SizedBox(width: 20),
+          Expanded(child: LinearProgressIndicator(value: progress)),
+          const SizedBox(width: 12),
+          Text('${(progress * 100).round()}%'),
+        ],
+      );
+    },
+  );
 }

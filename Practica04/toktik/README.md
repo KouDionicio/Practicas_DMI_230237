@@ -1,181 +1,360 @@
 # Práctica 04: TokTik
 
-Aplicación Flutter de videos verticales con scroll tipo TikTok, temas por temporada y videos locales y remotos (YouTube, Vimeo y PeerTube), siguiendo Clean Architecture.
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" valign="middle">
+        <img src="../../LOGOS/LOGO%20UTXJ%20PNG.png" alt="Logotipo de la UTXJ" height="90">
+      </td>
+      <td align="center" valign="middle">
+        <img src="../../LOGOS/LOGO%20TIC%20(4).png" alt="Logotipo de Tecnologías de la Información y Comunicación" height="90">
+      </td>
+    </tr>
+  </table>
+
+  ### Desarrollo Móvil Integral
+
+  **Aplicación móvil de videos verticales con Flutter**
+
+  [![Flutter](https://img.shields.io/badge/Flutter-Framework-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
+  [![Dart](https://img.shields.io/badge/Dart-Lenguaje-0175C2?logo=dart&logoColor=white)](https://dart.dev/)
+  [![Android](https://img.shields.io/badge/Android-Plataforma-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+  [![YouTube](https://img.shields.io/badge/YouTube-API-FF0000?logo=youtube&logoColor=white)](https://developers.google.com/youtube/v3)
+  [![Vimeo](https://img.shields.io/badge/Vimeo-Video-1AB7EA?logo=vimeo&logoColor=white)](https://developer.vimeo.com/)
+  [![GitHub](https://img.shields.io/badge/GitHub-Código%20fuente-181717?logo=github&logoColor=white)](https://github.com/)
+
+  **[Ver repositorio en GitHub](https://github.com/KouDionicio/Practicas_DMI_230237)**
+
+  **[Probar TokTik en Appetize](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)**
+
+  **[Ver diagramas de arquitectura](https://koudionicio.github.io/Practicas_DMI_230237/practica04/toktik/)**
+</div>
+
+---
+
+## Descripción
+
+TokTik es una aplicación desarrollada con Flutter y Dart que reproduce videos en formato vertical mediante una experiencia de navegación inspirada en las plataformas de videos cortos.
+
+Integra videos locales y contenido remoto de YouTube, Vimeo y PeerTube. Su arquitectura sigue el enfoque **Clean Architecture**, separando la presentación, las reglas de negocio y el acceso a datos.
+
+La interfaz también incorpora temas por temporada, reproducción de video, favoritos persistentes, controles de sonido y una experiencia visual adaptable.
+
+## Objetivo
+
+Desarrollar una aplicación móvil que integre reproducción multimedia, consumo de servicios externos, administración del estado y persistencia local, aplicando principios de arquitectura limpia y buenas prácticas de desarrollo con Flutter.
+
+## Tecnologías utilizadas
+
+| Tecnología | Icono | Aplicación |
+|---|---|---|
+| **Flutter** | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg" width="28" alt="Flutter"> | Construcción de interfaces móviles. |
+| **Dart** | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dart/dart-original.svg" width="28" alt="Dart"> | Lenguaje de programación. |
+| **Android** | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" width="28" alt="Android"> | Plataforma de ejecución y pruebas. |
+| **YouTube Data API** | <img src="https://cdn.simpleicons.org/youtube/FF0000" width="28" alt="YouTube"> | Búsqueda y consulta de videos. |
+| **Vimeo** | <img src="https://cdn.simpleicons.org/vimeo/1AB7EA" width="28" alt="Vimeo"> | Integración con videos y reproductor oficial. |
+| **PeerTube** | <img src="https://cdn.simpleicons.org/peertube/F1680D" width="28" alt="PeerTube"> | Consulta de contenido desde instancias compatibles. |
+| **Shared Preferences** | <img src="https://cdn.simpleicons.org/flutter/02569B" width="28" alt="Persistencia local"> | Persistencia local de preferencias y favoritos. |
+| **Git y GitHub** | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="28" alt="GitHub"> | Control de versiones y alojamiento del código. |
 
 ## Funcionalidades
 
-- **For You:** feed de videos locales (`assets/videos/`).
-- **Discover:** videos remotos de YouTube, Vimeo y PeerTube, mezclados e intercalados. Si una fuente falla, las demás siguen apareciendo. Pagina al llegar cerca del final y deja al final los videos ya vistos.
-- **Favorites:** videos con like, leídos desde `shared_preferences`.
-- **Likes persistentes:** al desmarcar el corazón resta 1 y al marcarlo suma 1; el contador se guarda en el dispositivo.
-- **Mute global:** un solo control de sonido compartido entre videos y secciones.
-- **Descripción extensa:** se contrae con "... más" y se expande en una zona con scroll vertical.
-- **Temas por temporada:** Halloween (1–31 oct.), Navidad (1 dic.–6 ene.), San Valentín (1–14 feb.) y Normal el resto del año. Cambian tipografía, audio, iconografía y paleta, según la fecha del dispositivo. Se puede elegir una temporada manualmente para pruebas (guardada en local storage).
-- **Splash animado** de 3 segundos con el audio de la temporada.
+- **For You:** feed vertical de videos locales desde `assets/videos/`.
+- **Discover:** contenido remoto de YouTube, Vimeo y PeerTube, mezclado e intercalado. Si una fuente falla, las demás pueden seguir proporcionando contenido.
+- **Paginación:** carga progresiva de videos al aproximarse al final de la lista y reorganización del contenido visto.
+- **Favorites:** sección de videos marcados con «Me gusta», persistidos mediante `shared_preferences`.
+- **Likes persistentes:** el contador aumenta o disminuye al marcar o desmarcar el corazón y conserva el estado en el dispositivo.
+- **Mute global:** control de sonido compartido entre videos y secciones.
+- **Descripciones extensas:** texto contraíble mediante «... más», con una zona expandible de desplazamiento vertical.
+- **Temas por temporada:** Halloween, Navidad, San Valentín y Normal, con cambios de tipografía, audio, iconografía y paleta de colores.
+- **Selección manual de temporada:** permite probar los distintos temas y conservar la preferencia localmente.
+- **Splash animado:** pantalla inicial de tres segundos con audio asociado a la temporada activa.
 
-## Arquitectura
+## Arquitectura: Clean Architecture
 
-| Capa | Contenido |
+| Capa | Responsabilidad |
 |---|---|
-| `lib/presentation/` | Pantallas, widgets de reproducción y providers (`DiscoverProvider`, likes, temporada, audio) |
-| `lib/domain/` | Entidades (`VideoPost`, `ExternalVideo`), reglas de temporada y contratos de datasources y repositorios |
-| `lib/infrastructure/` | Datasources (local, YouTube, Vimeo, PeerTube), modelos, mappers, repositorios y `shared_preferences` |
+| `lib/presentation/` | Pantallas, widgets de reproducción y providers, incluidos `DiscoverProvider`, favoritos, temporada y audio. |
+| `lib/domain/` | Entidades como `VideoPost` y `ExternalVideo`, reglas de temporada y contratos de datasources y repositorios. |
+| `lib/infrastructure/` | Datasources locales y remotos, modelos, mappers, repositorios y persistencia mediante `shared_preferences`. |
 
-Los providers solo hablan con los repositorios, nunca con los datasources directamente.
+Los providers se comunican con los repositorios y no acceden directamente a los datasources, manteniendo separadas las responsabilidades de cada capa.
 
 ## Diagramas de arquitectura
 
-[Ver diagramas en GitHub Pages](https://koudionicio.github.io/Practicas_DMI_230237/practica04/toktik/)
+La documentación visual del proyecto está disponible en GitHub Pages.
+
+- [Abrir diagramas de TokTik](https://koudionicio.github.io/Practicas_DMI_230237/practica04/toktik/)
+- [Consultar el repositorio completo](https://github.com/KouDionicio/Practicas_DMI_230237)
 
 ## Fuentes de video
 
-| Fuente | Reproducción |
+| Fuente | Método de reproducción |
 |---|---|
-| Local | `video_player` con assets |
-| YouTube | Iframe embebido en `WebView` (captions desactivados) |
-| Vimeo | Reproductor oficial embebido; metadatos vía `vimeo_backend` |
-| PeerTube | `video_player` con el mp4 o HLS de la API de la instancia |
+| Local | `video_player` con archivos de `assets/videos/`. |
+| YouTube | Reproductor IFrame integrado en `WebView`, con subtítulos desactivados. |
+| Vimeo | Reproductor oficial embebido y metadatos mediante `vimeo_backend`. |
+| PeerTube | `video_player` con archivos MP4 o flujos HLS proporcionados por la API de la instancia. |
 
-Configuración en `.env` (copiar de `.env.example`): `YOUTUBE_API_KEY`, `VIMEO_TOKEN`, `BACKEND_BASE_URL` y `PEERTUBE_BASE_URL`.
+### Configuración de servicios
 
-## Iconografía
+Crea un archivo `.env` a partir de `.env.example` y configura las variables necesarias para el entorno:
 
-### Temporadas
+```dotenv
+YOUTUBE_API_KEY=tu_api_key
+VIMEO_TOKEN=tu_token
+BACKEND_BASE_URL=http://localhost:3000
+PEERTUBE_BASE_URL=https://tu-instancia-peertube
+```
+
+Los valores anteriores son ejemplos de configuración; utiliza las direcciones y credenciales correspondientes al entorno real. No publiques claves ni tokens en el repositorio.
+
+Para Vimeo, inicia el backend desde `Practica04/vimeo_backend/` cuando sea necesario.
+
+## Iconografía y temas por temporada
+
+### Iconos de temporada
 
 | Temporada | Icono | Archivo |
 |---|---|---|
-| Normal | <img src="assets/icons/normal.png" width="48"> | `assets/icons/normal.png` |
-| Halloween | <img src="assets/icons/halloween.png" width="48"> | `assets/icons/halloween.png` |
-| Navidad | <img src="assets/icons/navidad.png" width="48"> | `assets/icons/navidad.png` |
-| San Valentín | <img src="assets/icons/san_valentin.png" width="48"> | `assets/icons/san_valentin.png` |
+| Normal | <img src="assets/icons/normal.png" alt="Icono Normal" width="44"> | `assets/icons/normal.png` |
+| Halloween | <img src="assets/icons/halloween.png" alt="Icono Halloween" width="44"> | `assets/icons/halloween.png` |
+| Navidad | <img src="assets/icons/navidad.png" alt="Icono Navidad" width="44"> | `assets/icons/navidad.png` |
+| San Valentín | <img src="assets/icons/san_valentin.png" alt="Icono San Valentín" width="44"> | `assets/icons/san_valentin.png` |
 
-### Acciones
+### Acciones de la interfaz
 
-| Acción | Icono |
+| Acción | Iconos utilizados |
 |---|---|
 | Me gusta | `favorite` / `favorite_border` |
 | Sonido | `volume_up` / `volume_off` |
-| Reproducir / pausar | `play_arrow` / `pause` |
+| Reproducir o pausar | `play_arrow` / `pause` |
 | Búsqueda externa | `search` |
-| Ajustes de temporada | PNG de la temporada activa |
+| Ajustes de temporada | PNG correspondiente a la temporada activa |
+
+### Calendario de temporadas
+
+| Temporada | Periodo |
+|---|---|
+| Halloween | Del 1 al 31 de octubre. |
+| Navidad | Del 1 de diciembre al 6 de enero. |
+| San Valentín | Del 1 al 14 de febrero. |
+| Normal | El resto del año. |
+
+La temporada automática depende de la fecha del dispositivo. La selección manual permite validar la interfaz y sus recursos visuales durante las pruebas.
 
 ## Demostración en video
 
-| Funcionalidad | Video |
-|---|---|
-| Temas por temporada | <video src="assets/video/temas.mp4" controls muted width="220"></video> |
-| For You / Discover / Favorites | <video src="assets/video/secciones.mp4" controls muted width="220"></video> |
-| Likes y mute | <video src="assets/video/likes_mute.mp4" controls muted width="220"></video> |
-| YouTube, Vimeo y PeerTube | <video src="assets/video/proveedores.mp4" controls muted width="220"></video> |
+Los siguientes videos documentan las principales funcionalidades. Las dimensiones se limitan para evitar que los archivos ocupen demasiado espacio en el README.
 
-Si el video no se muestra, ábrelo con estos enlaces:
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Temas por temporada</strong><br><br>
+      <video src="assets/video/temas.mp4" controls muted width="260"></video><br>
+      <a href="assets/video/temas.mp4">Abrir video</a>
+    </td>
+    <td align="center" width="50%">
+      <strong>For You, Discover y Favorites</strong><br><br>
+      <video src="assets/video/secciones.mp4" controls muted width="260"></video><br>
+      <a href="assets/video/secciones.mp4">Abrir video</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Likes y control de sonido</strong><br><br>
+      <video src="assets/video/likes_mute.mp4" controls muted width="260"></video><br>
+      <a href="assets/video/likes_mute.mp4">Abrir video</a>
+    </td>
+    <td align="center" width="50%">
+      <strong>YouTube, Vimeo y PeerTube</strong><br><br>
+      <video src="assets/video/proveedores.mp4" controls muted width="260"></video><br>
+      <a href="assets/video/proveedores.mp4">Abrir video</a>
+    </td>
+  </tr>
+</table>
 
-| Funcionalidad | Enlace |
-|---|---|
-| Temas por temporada | [Ver video](assets/video/temas.mp4) |
-| For You / Discover / Favorites | [Ver video](assets/video/secciones.mp4) |
-| Likes y mute | [Ver video](assets/video/likes_mute.mp4) |
-| YouTube, Vimeo y PeerTube | [Ver video](assets/video/proveedores.mp4) |
+> Nota: la reproducción de videos incrustados depende de la plataforma donde se visualice el README. Si GitHub no muestra el reproductor, utiliza el enlace «Abrir video» debajo de cada demostración.
 
-## Ejecutar
+## Ejecución local
 
-Desde `Practica04/toktik/`:
+Desde la carpeta `Practica04/toktik/`, ejecuta:
 
-```sh
+```bash
 flutter pub get
 flutter analyze
 flutter run
 ```
 
-Para Vimeo, iniciar antes el backend desde `Practica04/vimeo_backend/` con `npm start`.
+Para utilizar la integración de Vimeo, inicia el backend desde `Practica04/vimeo_backend/`:
+
+```bash
+npm install
+npm start
+```
+
+Comprueba que las variables de entorno y las direcciones de los servicios coincidan con tu entorno de ejecución.
 
 ## Publicación en Appetize
 
-Appetize.io ejecuta aplicaciones Android desde el navegador, sin instalarlas en un teléfono ni publicarlas en Google Play. Es una publicación para demostración y pruebas.
+[![Appetize](https://img.shields.io/badge/Appetize-Demo%20Android-6C5CE7)](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)
 
-**Enlace de la app:** [https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)
+**[Abrir TokTik en Appetize.io](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)**
+
+Appetize permite ejecutar aplicaciones Android desde el navegador sin instalarlas directamente en un teléfono ni publicarlas en Google Play.
 
 ### Preparación
 
-- Permiso `INTERNET` declarado en `android/app/src/main/AndroidManifest.xml` (necesario en release para cargar videos remotos).
-- `.env` fuera de Git. Se usa una API key de YouTube restringida a YouTube Data API v3 y un token de Vimeo de solo lectura.
-- Vimeo en Appetize: como la app corre en la nube y no alcanza el backend local de la PC, `BACKEND_BASE_URL` se deja vacío y Flutter usa directamente `VIMEO_TOKEN`.
+- Permiso `INTERNET` declarado en `android/app/src/main/AndroidManifest.xml`.
+- Archivo `.env` excluido del control de versiones.
+- API key de YouTube restringida a YouTube Data API v3.
+- Token de Vimeo con permisos de solo lectura.
+- Para una aplicación que se ejecuta en la nube, el backend local de la computadora no es accesible mediante `localhost` desde el dispositivo virtual. Configura una URL accesible desde el entorno de Appetize o utiliza la alternativa implementada por la aplicación.
 
-### Comandos
+### Compilación para Android
 
-```sh
-cd Practica04/toktik
+Desde la carpeta del proyecto:
+
+```bash
 flutter pub get
 flutter analyze
 flutter build apk --release
 ```
 
+El APK se genera en:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+### Datos de la publicación documentada
+
 | Dato | Valor |
 |---|---|
-| Archivo | `build/app/outputs/flutter-apk/app-release.apk` |
-| Tamaño | 155.9 MB |
-| Versión | 1.0.0 (build 1) |
+| Archivo | `app-release.apk` |
+| Tamaño reportado | 155.9 MB |
+| Versión reportada | 1.0.0 (build 1) |
 | Identificador | `com.example.toktik` |
-
-### Procedimiento
-
-1. Crear una cuenta en [appetize.io](https://appetize.io/) y entrar a *Upload App*.
-2. Subir `app-release.apk` y esperar a que se procese.
-3. Elegir el dispositivo Android virtual y la versión del sistema.
-4. Iniciar la sesión, probar la app y copiar el enlace público.
-5. Abrir el enlace en una ventana de incógnito para comprobar que funciona en una sesión independiente.
 
 ### Dispositivo de prueba
 
-| Dispositivo | Sistema | Escala |
+| Dispositivo | Sistema operativo | Escala |
 |---|---|---|
-| Pixel 7 | Android 13.0 | Auto |
+| Pixel 7 virtual | Android 13.0 | Automática |
 
-### Pruebas
+### Resultados de pruebas registrados
 
-| Prueba | Resultado | Notas |
+| Prueba | Resultado | Observaciones |
 |---|---|---|
-| Instalación y apertura de la app | ✅ | La app aparece en el launcher y abre correctamente |
-| For You (videos locales) | ✅ | Reproduce el video local con los iconos de la temporada (Halloween) |
-| Discover: YouTube | ✅ | El reproductor de YouTube carga y se puede pausar |
-| Discover: Vimeo | ⚠️ | Muestra el error con "Abrir en Vimeo" y "Reintentar" (ver incidencias) |
-| Discover: PeerTube | TODO | |
-| Favorites y likes | ✅ | El video con like aparece en Favorites con el corazón marcado |
-| Mute | ✅ | El icono de sonido muestra el estado silenciado |
-| Descripción "... más" | TODO | |
-| Cambio de tema por temporada | TODO | |
-| Interfaz sin desbordes ni cortes | ✅ | Se adapta a la pantalla del Pixel 7 |
+| Instalación y apertura | ✅ | La aplicación aparece en el launcher y abre correctamente. |
+| For You: videos locales | ✅ | Reproduce videos locales con iconografía de la temporada. |
+| Discover: YouTube | ✅ | El reproductor carga y permite pausar. |
+| Discover: Vimeo | ⚠️ | Se reportó un error del reproductor con opciones para abrir Vimeo o reintentar. |
+| Discover: PeerTube | ⏳ | Pendiente de validar. |
+| Favorites y likes | ✅ | Los videos marcados aparecen en Favorites. |
+| Control de sonido | ✅ | El icono refleja el estado de silencio. |
+| Descripción «... más» | ⏳ | Pendiente de validar. |
+| Cambio de temporada | ⏳ | Pendiente de validar. |
+| Adaptación de interfaz | ✅ | Se reportó una visualización correcta en el Pixel 7. |
 
-Resultados: ✅ funciona, ⚠️ funciona con detalles, ❌ falla.
+**Leyenda:** ✅ funciona según la prueba registrada · ⚠️ funciona con limitaciones · ⏳ pendiente de validar.
 
-### Capturas
+Los resultados corresponden a las pruebas documentadas y deben actualizarse si se realizan nuevas validaciones.
 
-**Compilación y publicación**
+## Evidencias de compilación y ejecución
 
-| APK generado | Archivo del APK | App subida | 
+### Compilación y publicación
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <strong>APK generado</strong><br><br>
+      <img src="assets/evidencia/01_build.png" alt="Evidencia de compilación" width="200">
+    </td>
+    <td align="center" width="33%">
+      <strong>Archivo APK</strong><br><br>
+      <img src="assets/evidencia/02_apk.png" alt="Evidencia del archivo APK" width="200">
+    </td>
+    <td align="center" width="33%">
+      <strong>Aplicación subida</strong><br><br>
+      <img src="assets/evidencia/03_subida.png" alt="Evidencia de la subida a Appetize" width="200">
+    </td>
+  </tr>
+</table>
+
+### Ejecución en Pixel 7 (Android 13.0)
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <strong>Dispositivo y launcher</strong><br><br>
+      <img src="assets/evidencia/04_pixel7_inicio.png" alt="Evidencia del dispositivo y launcher" width="200">
+    </td>
+    <td align="center" width="33%">
+      <strong>For You</strong><br><br>
+      <img src="assets/evidencia/05_foryou.png" alt="Evidencia del feed For You" width="200">
+    </td>
+    <td align="center" width="33%">
+      <strong>Favorites con YouTube</strong><br><br>
+      <img src="assets/evidencia/06_favorites_youtube.png" alt="Evidencia de favoritos con YouTube" width="200">
+    </td>
+  </tr>
+</table>
+
+### Evidencias adicionales
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="images/1.png" alt="Evidencia adicional 1" width="160">
+    </td>
+    <td align="center" width="33%">
+      <img src="images/2.png" alt="Evidencia adicional 2" width="160">
+    </td>
+    <td align="center" width="33%">
+      <img src="images/3.png" alt="Evidencia adicional 3" width="160">
+    </td>
+  </tr>
+</table>
+
+Las imágenes deben existir en las rutas indicadas. Si alguna evidencia se movió o cambió de nombre, actualiza su ruta para evitar imágenes rotas.
+
+## Incidencias conocidas
+
+| Incidencia | Causa registrada | Comportamiento o alternativa |
 |---|---|---|
-| <img src="assets/evidencia/01_build.png" width="200"> | <img src="assets/evidencia/02_apk.png" width="200"> | <img src="assets/evidencia/03_subida.png" width="200"> | 
+| Vimeo muestra un error al abrir el reproductor en Appetize | Se reportó una respuesta HTTP 403 asociada a la verificación de Cloudflare. | La interfaz ofrece abrir Vimeo o reintentar. El comportamiento puede variar según la red y el entorno de ejecución. |
+| APK de aproximadamente 155.9 MB | Incluye videos locales y binarios para varias arquitecturas. | Puede reducirse con compilaciones separadas por ABI y optimizando los videos locales. |
 
-**Ejecución en Pixel 7 (Android 13.0)**
+## Ventajas y limitaciones
 
-| Dispositivo y launcher | For You | Favorites con YouTube |
-|---|---|---|
-| <img src="assets/evidencia/04_pixel7_inicio.png" width="200"> | <img src="assets/evidencia/05_foryou.png" width="200"> | <img src="assets/evidencia/06_favorites_youtube.png" width="200"> | 
+**Ventajas**
+- No requiere un dispositivo físico para realizar una demostración en Appetize.
+- Permite compartir la aplicación mediante un enlace.
+- Integra videos locales y varias fuentes externas.
+- Mantiene favoritos y preferencias mediante almacenamiento local.
+- Organiza el código mediante Clean Architecture.
 
-### Incidencias
+**Limitaciones**
+- La cuenta gratuita de Appetize puede tener límites de uso.
+- La reproducción multimedia puede rendir de manera distinta a la de un dispositivo físico.
+- Algunos servicios externos pueden bloquear solicitudes desde entornos virtuales.
+- Los servicios locales de la computadora no son accesibles automáticamente desde una aplicación ejecutada en la nube.
 
-| Incidencia | Causa | Solución |
-|---|---|---|
-| Vimeo muestra "No se pudo abrir el reproductor oficial" (HTTP 403 de `challenges.cloudflare.com`) | Cloudflare bloquea la verificación anti-bots desde las IP del emulador en la nube | La app muestra el error con "Abrir en Vimeo" y "Reintentar" sin romper el feed; las demás fuentes siguen funcionando. En un teléfono físico reproduce con normalidad |
-| APK de 155.9 MB | Incluye los 9 videos locales y los binarios de varias arquitecturas | Se subió completo; se puede reducir con `--split-per-abi` y comprimiendo los videos de `assets/videos/` |
+## Conclusión
 
-### Ventajas y limitaciones
+TokTik integra reproducción de videos verticales, consumo de servicios externos, favoritos persistentes y personalización visual por temporadas en una aplicación Flutter organizada mediante Clean Architecture.
 
-- **Ventajas:** no requiere dispositivo físico, se comparte con un enlace y permite probar varias pantallas y versiones de Android.
-- **Limitaciones:** minutos de uso limitados en la cuenta gratuita (30 min), rendimiento y reproducción de video menores que en un teléfono real, bloqueos de servicios como Vimeo (Cloudflare) y sin acceso a servicios locales de la PC.
+La documentación, las demostraciones y las evidencias complementan el código fuente y facilitan la revisión de las funcionalidades y del proceso de publicación.
 
-## Evidencia
+---
 
-| 1 | 2 | 3 |
-|---|---|---|
-| <img src="images/1.png" width="160"> | <img src="images/2.png" width="160"> | <img src="images/3.png" width="160"> |
+<div align="center">
+
+**Práctica 04 · Desarrollo Móvil Integral**
+
+*Flutter · Dart · Clean Architecture*
+
+[Ver repositorio en GitHub](https://github.com/KouDionicio/Practicas_DMI_230237) · [Probar en Appetize](https://appetize.io/app/b_yw4zidsh4wkzeww7mkpnrzsxki)
+
+</div>

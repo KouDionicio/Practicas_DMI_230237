@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Práctica 05 · Arquitectura general de Widgets App", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [100, 20], "cols": 3, "gapX": 70, "gapY": 0, "cellW": 210, "cellH": 84 },
+  "components": [
+    { "id": "flutterApp", "type": "frontend", "label": "Widgets App", "sublabel": "Flutter · Material Design 3", "row": 0, "col": 1 },
+    { "id": "goRouter", "type": "backend", "label": "GoRouter", "sublabel": "Rutas y navegación", "row": 1, "col": 0 },
+    { "id": "screens", "type": "frontend", "label": "Pantallas", "sublabel": "Catálogo de demostraciones", "row": 1, "col": 1 },
+    { "id": "riverpod", "type": "backend", "label": "Riverpod", "sublabel": "Contador y tema", "row": 1, "col": 2 },
+    { "id": "theme", "type": "backend", "label": "AppTheme", "sublabel": "Esquemas claro y oscuro", "row": 2, "col": 2 },
+    { "id": "assets", "type": "database", "label": "Assets", "sublabel": "Capturas de evidencia", "row": 2, "col": 0 },
+    { "id": "remoteImages", "type": "external", "label": "Picsum Photos", "sublabel": "Imágenes de tarjetas y lista", "row": 2, "col": 1 }
+  ],
+  "connections": [
+    { "from": "flutterApp", "to": "goRouter" },
+    { "from": "flutterApp", "to": "screens" },
+    { "from": "flutterApp", "to": "riverpod" },
+    { "from": "riverpod", "to": "theme" },
+    { "from": "screens", "to": "assets" },
+    { "from": "screens", "to": "remoteImages" }
+  ]
+}

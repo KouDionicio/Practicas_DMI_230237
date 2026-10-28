@@ -1,0 +1,132 @@
+{
+    "schema_version":  1,
+    "diagram_type":  "architecture",
+    "meta":  {
+                 "title":  "Practica 05 - Pantallas, rutas y estado",
+                 "quality_profile":  "showcase"
+             },
+    "layout":  {
+                   "mode":  "grid",
+                   "cols":  3,
+                   "gapX":  90,
+                   "gapY":  0,
+                   "cellW":  270,
+                   "cellH":  120,
+                   "origin":  [
+                                  100,
+                                  50
+                              ]
+               },
+    "components":  [
+                       {
+                           "id":  "router",
+                           "type":  "backend",
+                           "label":  "GoRouter",
+                           "sublabel":  "app_router.dart - eleven routes",
+                           "row":  0,
+                           "col":  1,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "home",
+                           "type":  "frontend",
+                           "label":  "HomeScreen",
+                           "sublabel":  "Catalog, SideMenu, appMenuItems",
+                           "row":  1,
+                           "col":  1,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "demos",
+                           "type":  "frontend",
+                           "label":  "Widget screens",
+                           "sublabel":  "Botones, tarjetas, progreso, mensajes, controles",
+                           "row":  2,
+                           "col":  0,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "tutorial",
+                           "type":  "frontend",
+                           "label":  "AppTutorialScreen",
+                           "sublabel":  "/tutorial - PageView, animate_do",
+                           "row":  2,
+                           "col":  1,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "infinite",
+                           "type":  "frontend",
+                           "label":  "InfiniteScrollScreen",
+                           "sublabel":  "/infinite - loading and refresh",
+                           "row":  2,
+                           "col":  2,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "counter",
+                           "type":  "backend",
+                           "label":  "CounterScreen",
+                           "sublabel":  "/counter-river - counterProvider",
+                           "row":  3,
+                           "col":  0,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       },
+                       {
+                           "id":  "themeScreen",
+                           "type":  "frontend",
+                           "label":  "Tema + ThemeNotifier",
+                           "sublabel":  "ruta /theme-changer - AppTheme y Riverpod",
+                           "row":  3,
+                           "col":  2,
+                           "size":  [
+                                        220,
+                                        92
+                                    ]
+                       }
+                   ],
+    "connections":  [
+                        {
+                            "from":  "router",
+                            "to":  "home"
+                        },
+                        {
+                            "from":  "home",
+                            "to":  "demos"
+                        },
+                        {
+                            "from":  "home",
+                            "to":  "tutorial"
+                        },
+                        {
+                            "from":  "home",
+                            "to":  "infinite"
+                        },
+                        {
+                            "from":  "home",
+                            "to":  "counter"
+                        },
+                        {
+                            "from":  "home",
+                            "to":  "themeScreen"
+                        }
+                    ]
+}

@@ -1,11 +1,21 @@
 import 'package:go_router/go_router.dart';
-import '../../presentation/screen/screens.dart';
+
+import '../../presentation/screen/animated/animated_screen.dart';
+import '../../presentation/screen/app_tutorial/app_tutorial_screen.dart';
+import '../../presentation/screen/buttons/buttons_screen.dart';
+import '../../presentation/screen/cards/cards_screen.dart';
+import '../../presentation/screen/counter/counter_screen.dart';
+import '../../presentation/screen/home/home_screen.dart';
+import '../../presentation/screen/infinite_scroll/infinite_scroll_screen.dart';
+import '../../presentation/screen/progress/progress_screen.dart';
+import '../../presentation/screen/snackbar/snackbar_screen.dart';
+import '../../presentation/screen/theme_changer/theme_changer_screen.dart';
+import '../../presentation/screen/ui_controls/ui_controls_screen.dart';
 
 // GoRouter configuration
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-
     GoRoute(
       path: '/',
       name: HomeScreen.name,
