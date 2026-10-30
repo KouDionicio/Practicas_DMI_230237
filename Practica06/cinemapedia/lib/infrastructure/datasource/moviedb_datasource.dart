@@ -1,19 +1,20 @@
 import 'package:dio/dio.dart';
 
-import 'package:cinemapedia/config/constants/environment.dart';
 import 'package:cinemapedia/domain/datasources/movies_datasource.dart';
-
 import 'package:cinemapedia/infrastructure/mappers/movie_mapper.dart';
 import 'package:cinemapedia/infrastructure/models/moviedb/moviedb_response.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 
-
 class MoviedbDatasource extends MoviesDatasource {
+  static const _apiKey = String.fromEnvironment(
+    'TMDB_API_KEY',
+    defaultValue: 'YOUR_TMDB_API_KEY',
+  );
 
   final dio = Dio(BaseOptions(
     baseUrl: 'https://api.themoviedb.org/3',
     queryParameters: {
-      'api_key': Environment.theMovieDbKey,
+      'api_key': _apiKey,
       'language': 'es-MX'
     }
   ));

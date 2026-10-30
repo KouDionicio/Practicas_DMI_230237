@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 
-import 'package:cinemapedia/preesentation/screens/screens.dart';
+import 'package:cinemapedia/presentation/screens/screens.dart';
 
 final appRouter= GoRouter(
     initialLocation: '/',
@@ -11,4 +11,4 @@ final appRouter= GoRouter(
             builder: (context, state) => const HomeScreen()
         )
     ]
-)
+);
