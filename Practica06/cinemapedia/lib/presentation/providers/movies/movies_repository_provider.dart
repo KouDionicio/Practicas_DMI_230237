@@ -5,4 +5,4 @@ import 'package:cinemapedia/domain/repositories/movies_repository.dart';
 
 final movieRepositoryProvider = Provider((ref){
     return MovieRepositoryImpl(MoviesDatasource());
-})
+});
