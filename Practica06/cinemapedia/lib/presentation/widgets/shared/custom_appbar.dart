@@ -10,49 +10,56 @@ class CustomAppbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final colors = Theme.of(context).colorScheme;
-    final titleStyle = Theme.of(context).textTheme.titleMedium;
+    final titleStyle = Theme.of(
+      context,
+    ).textTheme.titleMedium?.copyWith(fontSize: 19, letterSpacing: -.4);
 
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric( horizontal: 10 ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: SizedBox(
           width: double.infinity,
           child: Row(
             children: [
-              Icon( Icons.movie_outlined, color: colors.primary ),
-              const SizedBox( width: 5 ),
-              Text('Cinemapedia', style: titleStyle ),
-      
+              IconButton(
+                tooltip: 'Abrir menú',
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                icon: const Icon(Icons.menu_rounded),
+              ),
+              Icon(Icons.local_movies_rounded, color: colors.primary, size: 21),
+              const SizedBox(width: 7),
+              Text('Cinemapedia', style: titleStyle),
+
               const Spacer(),
-      
-              IconButton(onPressed: () {
 
-                final searchedMovies = ref.read( searchedMoviesProvider );
-                final searchQuery = ref.read(searchQueryProvider);
-                
-                showSearch<Movie?>(
-                  query: searchQuery,
-                  context: context, 
-                  delegate: SearchMovieDelegate(
-                    initialMovies: searchedMovies,
-                    searchMovies: ref.read( searchedMoviesProvider.notifier ).searchMoviesByQuery
-                  )
-                ).then((movie) {
-                  if ( movie == null ) return;
+              IconButton(
+                onPressed: () {
+                  final searchedMovies = ref.read(searchedMoviesProvider);
+                  final searchQuery = ref.read(searchQueryProvider);
 
-                  context.push('/movie/${ movie.id }');
-                });
+                  showSearch<Movie?>(
+                    query: searchQuery,
+                    context: context,
+                    delegate: SearchMovieDelegate(
+                      initialMovies: searchedMovies,
+                      searchMovies: ref
+                          .read(searchedMoviesProvider.notifier)
+                          .searchMoviesByQuery,
+                    ),
+                  ).then((movie) {
+                    if (!context.mounted || movie == null) return;
 
-              }, 
-              icon: const Icon(Icons.search)
-              )
+                    context.push('/movie/${movie.id}');
+                  });
+                },
+                icon: const Icon(Icons.search),
+              ),
             ],
           ),
         ),
-      )
+      ),
     );
   }
 }

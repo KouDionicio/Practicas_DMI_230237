@@ -5,37 +5,33 @@ import 'package:flutter_riverpod/legacy.dart';
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
-final searchedMoviesProvider = StateNotifierProvider<SearchedMoviesNotifier, List<Movie>>((ref) {
+final searchedMoviesProvider =
+    StateNotifierProvider<SearchedMoviesNotifier, List<Movie>>((ref) {
+      final movieRepository = ref.watch(movieRepositoryProvider);
 
-  final movieRepository = ref.read( movieRepositoryProvider );
-
-  return SearchedMoviesNotifier(
-    searchMovies: movieRepository.searchMovies, 
-    ref: ref
-  );
-});
-
+      return SearchedMoviesNotifier(
+        searchMovies: movieRepository.searchMovies,
+        ref: ref,
+      );
+    });
 
 typedef SearchMoviesCallback = Future<List<Movie>> Function(String query);
 
 class SearchedMoviesNotifier extends StateNotifier<List<Movie>> {
-
   final SearchMoviesCallback searchMovies;
   final Ref ref;
+  int _requestId = 0;
 
-  SearchedMoviesNotifier({
-    required this.searchMovies,
-    required this.ref,
-  }): super([]);
+  SearchedMoviesNotifier({required this.searchMovies, required this.ref})
+    : super([]);
 
-
-  Future<List<Movie>> searchMoviesByQuery( String query ) async{
-    
+  Future<List<Movie>> searchMoviesByQuery(String query) async {
+    final requestId = ++_requestId;
     final List<Movie> movies = await searchMovies(query);
+    if (!mounted || requestId != _requestId) return movies;
     ref.read(searchQueryProvider.notifier).update((state) => query);
 
     state = movies;
     return movies;
   }
-
 }
