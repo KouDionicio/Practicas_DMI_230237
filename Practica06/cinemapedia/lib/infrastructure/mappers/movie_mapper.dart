@@ -1,6 +1,6 @@
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/infrastructure/models/moviedb/movie_details.dart';
-import 'package:cinemapedia/infrastructure/models/moviedb/movie_details.dart';
+import 'package:cinemapedia/infrastructure/models/moviedb/movie_moviedb.dart';
 
 class MovieMapper {
 
@@ -30,7 +30,7 @@ class MovieMapper {
       adult: moviedb.adult,
       backdropPath: (moviedb.backdropPath != '')
         ? 'https://image.tmdb.org/t/p/w500${ moviedb.backdropPath }'
-        : 'https://sd.keepcalms.com/i-w600/keep-calm-poster-not-found.jpg',,
+        : 'https://sd.keepcalms.com/i-w600/keep-calm-poster-not-found.jpg',
       genreIds: moviedb.genres.map((e) => e.name).toList(),
       id: moviedb.id, 
       originalLanguage: moviedb.originalLanguage, 
