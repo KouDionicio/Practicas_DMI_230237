@@ -8,7 +8,7 @@ import 'package:cinemapedia/presentation/providers/settings/country_provider.dar
 class HomeScreen extends StatelessWidget {
   static const name = 'home-screen';
 
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, chidldView});
 
   @override
   Widget build(BuildContext context) {
