@@ -294,7 +294,6 @@ Las siguientes capturas ilustran las diferentes pantallas de la aplicación. Se 
   </tr>
 </table>
 
-> **Importante:** verifica que las dieciséis imágenes existan en `assets/evidencias/` y que sus nombres y extensiones coincidan exactamente. Las capturas documentan la interfaz, pero no sustituyen los resultados de las pruebas automatizadas.
 
 ##  Estado de publicación
 
