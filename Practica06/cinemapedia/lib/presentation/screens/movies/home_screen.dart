@@ -8,22 +8,26 @@ import 'package:cinemapedia/presentation/views/views.dart';
 class HomeScreen extends StatelessWidget {
 
   static const name = 'home-screen';
+  static const pageCount = 3;
   final int pageIndex;
 
   const HomeScreen({
-    super.key, 
+    super.key,
     required this.pageIndex
   });
 
   final viewRoutes =  const <Widget>[
     HomeView(),
-    SizedBox(), // <--- categorias View
+    CategoriesView(),
     FavoritesView(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Menú hamburguesa: se abre con el botón o deslizando desde el borde.
+      drawer: SideMenu(currentIndex: pageIndex),
+      drawerEnableOpenDragGesture: true,
       body: IndexedStack(
         index: pageIndex,
         children: viewRoutes,

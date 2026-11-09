@@ -1,4 +1,7 @@
 import 'package:cinemapedia/config/helpers/human_formats.dart';
+import 'package:cinemapedia/config/helpers/l10n_helpers.dart';
+import 'package:cinemapedia/config/theme/app_theme.dart';
+import 'package:cinemapedia/presentation/widgets/shared/pressable_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
@@ -15,7 +18,7 @@ class MovieHorizontalListview extends StatefulWidget {
   const MovieHorizontalListview({
     super.key,
     required this.movies,
-    this.title, 
+    this.title,
     this.subTitle,
     this.loadNextPage
   });
@@ -32,7 +35,7 @@ class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
   @override
   void initState() {
     super.initState();
-    
+
     scrollController.addListener(() {
       if ( widget.loadNextPage == null ) return;
 
@@ -55,7 +58,7 @@ class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 350,
+      height: 370,
       child: Column(
         children: [
 
@@ -68,6 +71,7 @@ class _MovieHorizontalListviewState extends State<MovieHorizontalListview> {
               controller: scrollController,
               itemCount: widget.movies.length,
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
                 return FadeInRight(child: _Slide(movie: widget.movies[index]));
@@ -92,68 +96,74 @@ class _Slide extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final textStyles = Theme.of(context).textTheme;
+    final locale = context.l10n.localeName;
 
     return Container(
       margin: const EdgeInsets.symmetric( horizontal: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          
-          //* Imagen
-          SizedBox(
-            width: 150,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                movie.posterPath,
-                fit: BoxFit.cover,
+      width: 150,
+      child: PressableScale(
+        // Antes el toque solo funcionaba cuando la imagen terminaba de cargar.
+        onTap: () => context.push('/home/0/movie/${ movie.id }'),
+        semanticLabel: movie.title,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            //* Imagen
+            ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: SizedBox(
                 width: 150,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if ( loadingProgress != null ) {
-                    return const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Center(child: CircularProgressIndicator(strokeWidth: 2 )),
-                    );
-                  }
-                  return GestureDetector(
-                    onTap: () => context.push('/home/0/movie/${ movie.id }'),
-                    child: FadeIn(child: child),
-                  );
-                  
-                },
+                height: 225,
+                child: Image.network(
+                  movie.posterPath,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if ( loadingProgress != null ) {
+                      return const ColoredBox(
+                        color: AppColors.surfaceHigh,
+                        child: Center(child: CircularProgressIndicator(strokeWidth: 2 )),
+                      );
+                    }
+                    return FadeIn(child: child);
+                  },
+                  errorBuilder: (context, error, stackTrace) => const ColoredBox(
+                    color: AppColors.surfaceHigh,
+                    child: Center(child: Icon(Icons.broken_image_outlined, color: AppColors.textSecondary)),
+                  ),
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 5),
+            const SizedBox(height: 8),
 
-          //* Title
-          SizedBox(
-            width: 150,
-            child: Text(
+            //* Title
+            Text(
               movie.title,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: textStyles.titleSmall,
             ),
-          ),
 
-          //* Rating
-          SizedBox(
-            width: 150,
-            child: Row(
+            const SizedBox(height: 2),
+
+            //* Rating
+            Row(
               children: [
-                Icon( Icons.star_half_outlined, color: Colors.yellow.shade800 ),
+                const Icon( Icons.star_rounded, color: AppColors.star, size: 18 ),
                 const SizedBox( width: 3 ),
-                Text('${ movie.voteAverage }', style: textStyles.bodyMedium?.copyWith( color: Colors.yellow.shade800 )),
+                Text(
+                  HumanFormats.decimal(movie.voteAverage, locale),
+                  style: textStyles.bodyMedium?.copyWith( color: AppColors.star, fontWeight: FontWeight.w700 ),
+                ),
                 const Spacer(),
-                Text( HumanFormats.number(movie.popularity), style: textStyles.bodySmall ),
-          
+                const Icon( Icons.local_fire_department_outlined, size: 14, color: AppColors.textSecondary ),
+                Text( HumanFormats.number(movie.popularity, 0, locale), style: textStyles.bodySmall ),
               ],
-            ),
-          )
+            )
 
-
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -175,22 +185,37 @@ class _Title extends StatelessWidget {
     final titleStyle = Theme.of(context).textTheme.titleLarge;
 
     return Container(
-      padding: const EdgeInsets.only( top: 10),
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.only( top: 14, bottom: 6 ),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          
+
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              gradient: AppColors.brandGradient,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 8),
+
           if ( title != null )
-            Text(title!, style: titleStyle ),
-          
-          const Spacer(),
+            Expanded(child: Text(title!, style: titleStyle, overflow: TextOverflow.ellipsis )),
 
           if ( subTitle != null )
-            FilledButton.tonal(
-              style: const ButtonStyle( visualDensity: VisualDensity.compact ),
-              onPressed: (){}, 
-              child: Text( subTitle! )
-          )
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.violet.withValues(alpha: .18),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.violet.withValues(alpha: .4)),
+              ),
+              child: Text(
+                subTitle!,
+                style: const TextStyle(color: AppColors.violetLight, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            )
 
         ],
       ),

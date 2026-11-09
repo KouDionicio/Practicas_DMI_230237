@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cinemapedia/config/helpers/l10n_helpers.dart';
 
 
 class CustomBottomNavigation extends StatelessWidget {
@@ -7,46 +8,39 @@ class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
 
   const CustomBottomNavigation({
-    super.key, 
+    super.key,
     required this.currentIndex
   });
 
   void onItemTapped( BuildContext context, int index ) {
-    // context.go('');
-    switch(index) {
-      case 0:
-        context.go('/home/0');
-        break;
-      
-      case 1:
-        context.go('/home/1');
-        break;
-
-      case 2:
-        context.go('/home/2');
-        break;
-    }
+    if ( index == currentIndex ) return;
+    context.go('/home/$index');
   }
 
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (value) => onItemTapped(context, value),
       elevation: 0,
-      items: const [
+      items: [
         BottomNavigationBarItem(
-          icon: Icon( Icons.home_max ),
-          label: 'Inicio'
+          icon: const Icon( Icons.home_outlined ),
+          activeIcon: const Icon( Icons.home_rounded ),
+          label: l10n.navHome
         ),
         BottomNavigationBarItem(
-          icon: Icon( Icons.label_outline ),
-          label: 'Categorías'
+          icon: const Icon( Icons.category_outlined ),
+          activeIcon: const Icon( Icons.category_rounded ),
+          label: l10n.navCategories
         ),
         BottomNavigationBarItem(
-          icon: Icon( Icons.favorite_outline ),
-          label: 'Favoritos'
+          icon: const Icon( Icons.favorite_outline_rounded ),
+          activeIcon: const Icon( Icons.favorite_rounded ),
+          label: l10n.navFavorites
         ),
       ]
     );

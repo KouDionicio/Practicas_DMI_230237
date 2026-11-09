@@ -1,0 +1,363 @@
+{
+  "@@locale": "es",
+  "appTagline": "Tu enciclopedia de cine",
+  "@appTagline": {
+    "description": "Eslogan bajo el nombre de la app"
+  },
+  "splashLoading": "Preparando tu cartelera…",
+  "@splashLoading": {
+    "description": "Texto de la pantalla de carga"
+  },
+  "menuOpenTooltip": "Abrir menú",
+  "@menuOpenTooltip": {
+    "description": "Tooltip del botón hamburguesa"
+  },
+  "menuCloseTooltip": "Cerrar menú",
+  "@menuCloseTooltip": {
+    "description": "Tooltip para cerrar el menú"
+  },
+  "menuSectionExplore": "Explorar",
+  "@menuSectionExplore": {
+    "description": "Sección del menú lateral"
+  },
+  "menuSectionPreferences": "Preferencias",
+  "@menuSectionPreferences": {
+    "description": "Sección del menú lateral"
+  },
+  "menuCurrentRegion": "Región actual",
+  "@menuCurrentRegion": {
+    "description": "Etiqueta de la región actual en el menú"
+  },
+  "navHome": "Inicio",
+  "@navHome": {
+    "description": "Navegación: inicio"
+  },
+  "navCategories": "Categorías",
+  "@navCategories": {
+    "description": "Navegación: categorías"
+  },
+  "navFavorites": "Favoritos",
+  "@navFavorites": {
+    "description": "Navegación: favoritos"
+  },
+  "navSettings": "Configuración",
+  "@navSettings": {
+    "description": "Navegación: configuración"
+  },
+  "searchTooltip": "Buscar",
+  "@searchTooltip": {
+    "description": "Tooltip del botón de búsqueda"
+  },
+  "searchFieldLabel": "Buscar películas",
+  "@searchFieldLabel": {
+    "description": "Placeholder del campo de búsqueda"
+  },
+  "searchClearTooltip": "Limpiar búsqueda",
+  "@searchClearTooltip": {
+    "description": "Tooltip para limpiar la búsqueda"
+  },
+  "searchEmptyHint": "Escribe el título de una película",
+  "@searchEmptyHint": {
+    "description": "Ayuda cuando la búsqueda está vacía"
+  },
+  "searchNoResults": "No encontramos películas para «{query}»",
+  "@searchNoResults": {
+    "description": "Sin resultados de búsqueda",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "example": "Dune"
+      }
+    }
+  },
+  "featuredTitle": "Destacadas",
+  "@featuredTitle": {
+    "description": "Título del carrusel principal"
+  },
+  "nowPlayingTitle": "En cines",
+  "@nowPlayingTitle": {
+    "description": "Lista: en cines"
+  },
+  "upcomingTitle": "Próximamente",
+  "@upcomingTitle": {
+    "description": "Lista: próximamente"
+  },
+  "upcomingSubtitle": "En este mes",
+  "@upcomingSubtitle": {
+    "description": "Subtítulo de próximamente"
+  },
+  "popularTitle": "Populares",
+  "@popularTitle": {
+    "description": "Lista: populares"
+  },
+  "topRatedTitle": "Mejor calificadas",
+  "@topRatedTitle": {
+    "description": "Lista: mejor calificadas"
+  },
+  "topRatedSubtitle": "Desde siempre",
+  "@topRatedSubtitle": {
+    "description": "Subtítulo de mejor calificadas"
+  },
+  "carouselPrevious": "Película anterior",
+  "@carouselPrevious": {
+    "description": "Flecha < del carrusel"
+  },
+  "carouselNext": "Película siguiente",
+  "@carouselNext": {
+    "description": "Flecha > del carrusel"
+  },
+  "carouselPosition": "{current} de {total}",
+  "@carouselPosition": {
+    "description": "Posición en el carrusel",
+    "placeholders": {
+      "current": {
+        "type": "String",
+        "example": "3"
+      },
+      "total": {
+        "type": "String",
+        "example": "10"
+      }
+    }
+  },
+  "carouselTripleTapHint": "Toca tres veces una flecha para ir a la primera o a la última película",
+  "@carouselTripleTapHint": {
+    "description": "Texto de ayuda del carrusel"
+  },
+  "carouselJumpedFirst": "Primera película",
+  "@carouselJumpedFirst": {
+    "description": "Aviso al saltar a la primera película"
+  },
+  "carouselJumpedLast": "Última película",
+  "@carouselJumpedLast": {
+    "description": "Aviso al saltar a la última película"
+  },
+  "localizedTitleLabel": "Título localizado",
+  "@localizedTitleLabel": {
+    "description": "Etiqueta del título localizado"
+  },
+  "originalTitleLabel": "Título original",
+  "@originalTitleLabel": {
+    "description": "Etiqueta del título original"
+  },
+  "releaseDateLabel": "Estreno",
+  "@releaseDateLabel": {
+    "description": "Etiqueta de la fecha de estreno"
+  },
+  "releaseDateUnknown": "Por confirmar",
+  "@releaseDateUnknown": {
+    "description": "Fecha de estreno desconocida"
+  },
+  "votesCount": "{count} votos",
+  "@votesCount": {
+    "description": "Número de votos (ya formateado)",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1,2 mil"
+      }
+    }
+  },
+  "ratingSemantics": "Calificación: {rating} de 10",
+  "@ratingSemantics": {
+    "description": "Lectura accesible de la calificación",
+    "placeholders": {
+      "rating": {
+        "type": "String",
+        "example": "7,8"
+      }
+    }
+  },
+  "certificationLabel": "Clasificación",
+  "@certificationLabel": {
+    "description": "Etiqueta de la clasificación por edad"
+  },
+  "certificationUnavailable": "Clasificación no disponible",
+  "@certificationUnavailable": {
+    "description": "Sin clasificación para el país"
+  },
+  "certificationLoading": "Cargando clasificación…",
+  "@certificationLoading": {
+    "description": "Cargando la clasificación"
+  },
+  "certificationError": "No se pudo cargar la clasificación. Toca para reintentar.",
+  "@certificationError": {
+    "description": "Error al cargar la clasificación"
+  },
+  "viewDetails": "Ver detalles",
+  "@viewDetails": {
+    "description": "Botón para abrir el detalle"
+  },
+  "overviewTitle": "Sinopsis",
+  "@overviewTitle": {
+    "description": "Título de la sinopsis"
+  },
+  "overviewUnavailable": "No hay sinopsis disponible en este idioma.",
+  "@overviewUnavailable": {
+    "description": "Sin sinopsis en el idioma"
+  },
+  "genresTitle": "Géneros",
+  "@genresTitle": {
+    "description": "Título de géneros"
+  },
+  "castTitle": "Reparto",
+  "@castTitle": {
+    "description": "Título del reparto"
+  },
+  "castEmpty": "No hay información del reparto.",
+  "@castEmpty": {
+    "description": "Sin reparto"
+  },
+  "loaderPleaseWait": "Espere por favor",
+  "@loaderPleaseWait": {
+    "description": "Cargador"
+  },
+  "loaderLoading": "Cargando…",
+  "@loaderLoading": {
+    "description": "Cargador"
+  },
+  "loaderMessage1": "Cargando películas",
+  "@loaderMessage1": {
+    "description": "Mensaje del cargador"
+  },
+  "loaderMessage2": "Comprando palomitas de maíz",
+  "@loaderMessage2": {
+    "description": "Mensaje del cargador"
+  },
+  "loaderMessage3": "Cargando populares",
+  "@loaderMessage3": {
+    "description": "Mensaje del cargador"
+  },
+  "loaderMessage4": "Llamando a mi novia",
+  "@loaderMessage4": {
+    "description": "Mensaje del cargador"
+  },
+  "loaderMessage5": "Ya mero…",
+  "@loaderMessage5": {
+    "description": "Mensaje del cargador"
+  },
+  "loaderMessage6": "Esto está tardando más de lo esperado :(",
+  "@loaderMessage6": {
+    "description": "Mensaje del cargador"
+  },
+  "errorLoadMovies": "No pudimos cargar las películas",
+  "@errorLoadMovies": {
+    "description": "Error al cargar listas"
+  },
+  "errorLoadMovie": "No pudimos cargar esta película",
+  "@errorLoadMovie": {
+    "description": "Error al cargar una película"
+  },
+  "errorConnection": "Revisa tu conexión a internet e inténtalo de nuevo.",
+  "@errorConnection": {
+    "description": "Error de conexión"
+  },
+  "errorUnauthorized": "La clave de TMDB no es válida o falta en el archivo .env.",
+  "@errorUnauthorized": {
+    "description": "API key de TMDB inválida"
+  },
+  "errorServer": "El servicio de películas no está disponible en este momento.",
+  "@errorServer": {
+    "description": "Servicio no disponible"
+  },
+  "errorGeneric": "Algo salió mal. Inténtalo de nuevo.",
+  "@errorGeneric": {
+    "description": "Error genérico"
+  },
+  "retry": "Reintentar",
+  "@retry": {
+    "description": "Botón reintentar"
+  },
+  "favoritesEmptyTitle": "Aún no tienes favoritos",
+  "@favoritesEmptyTitle": {
+    "description": "Favoritos vacío"
+  },
+  "favoritesEmptyMessage": "Las películas que marques como favoritas aparecerán aquí.",
+  "@favoritesEmptyMessage": {
+    "description": "Favoritos vacío"
+  },
+  "categoriesEmptyTitle": "Muy pronto",
+  "@categoriesEmptyTitle": {
+    "description": "Categorías vacío"
+  },
+  "categoriesEmptyMessage": "Estamos preparando la exploración por categorías.",
+  "@categoriesEmptyMessage": {
+    "description": "Categorías vacío"
+  },
+  "goHome": "Ir al inicio",
+  "@goHome": {
+    "description": "Botón para volver al inicio"
+  },
+  "settingsHeadline": "Tu cine, tu idioma",
+  "@settingsHeadline": {
+    "description": "Título principal de configuración"
+  },
+  "settingsDescription": "Elige un país para ajustar el idioma de la aplicación, la cartelera regional de TMDB y las clasificaciones por edad.",
+  "@settingsDescription": {
+    "description": "Descripción de configuración"
+  },
+  "settingsRegionSection": "REGIÓN E IDIOMA",
+  "@settingsRegionSection": {
+    "description": "Encabezado de sección"
+  },
+  "settingsInfoNote": "El país define la región de consulta en TMDB, el idioma de toda la aplicación y el sistema de clasificación. Tu elección se guarda automáticamente en este dispositivo.",
+  "@settingsInfoNote": {
+    "description": "Nota informativa"
+  },
+  "settingsSelected": "Seleccionado",
+  "@settingsSelected": {
+    "description": "Estado seleccionado (accesibilidad)"
+  },
+  "settingsRegionChanged": "Región actualizada: {country}",
+  "@settingsRegionChanged": {
+    "description": "Mensaje de éxito al cambiar de país",
+    "placeholders": {
+      "country": {
+        "type": "String",
+        "example": "México"
+      }
+    }
+  },
+  "settingsRatingSystem": "Clasificación {system}",
+  "@settingsRatingSystem": {
+    "description": "Sistema de clasificación del país",
+    "placeholders": {
+      "system": {
+        "type": "String",
+        "example": "FSK"
+      }
+    }
+  },
+  "regionMX": "México",
+  "@regionMX": {
+    "description": "Nombre del país MX"
+  },
+  "regionUS": "Estados Unidos",
+  "@regionUS": {
+    "description": "Nombre del país US"
+  },
+  "regionDE": "Alemania",
+  "@regionDE": {
+    "description": "Nombre del país DE"
+  },
+  "regionFR": "Francia",
+  "@regionFR": {
+    "description": "Nombre del país FR"
+  },
+  "regionKR": "Corea del Sur",
+  "@regionKR": {
+    "description": "Nombre del país KR"
+  },
+  "regionJP": "Japón",
+  "@regionJP": {
+    "description": "Nombre del país JP"
+  },
+  "regionBR": "Brasil",
+  "@regionBR": {
+    "description": "Nombre del país BR"
+  },
+  "regionEG": "Egipto",
+  "@regionEG": {
+    "description": "Nombre del país EG"
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:cinemapedia/domain/datasources/movies_datasource.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
+import 'package:cinemapedia/domain/entities/movie_certification.dart';
 import 'package:cinemapedia/domain/repositories/movies_repository.dart';
 
 
@@ -37,5 +38,10 @@ class MovieRepositoryImpl extends MoviesRepository {
   @override
   Future<List<Movie>> searchMovies(String query) {
     return datasource.searchMovies(query);
+  }
+
+  @override
+  Future<MovieCertification> getCertification(String movieId) {
+    return datasource.getCertification(movieId);
   }
 }

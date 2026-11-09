@@ -1,4 +1,5 @@
 import 'package:cinemapedia/domain/entities/movie.dart';
+import 'package:cinemapedia/domain/entities/movie_certification.dart';
 
 
 abstract class MoviesDatasource {
@@ -14,4 +15,7 @@ abstract class MoviesDatasource {
   Future<Movie> getMovieById( String id );
 
   Future<List<Movie>> searchMovies( String query );
+
+  /// Clasificación por edad de la película en la región configurada.
+  Future<MovieCertification> getCertification( String movieId );
 }

@@ -34,16 +34,14 @@ class MovieMovieDB {
     factory MovieMovieDB.fromJson(Map<String, dynamic> json) => MovieMovieDB(
         adult: json["adult"] ?? false,
         backdropPath: json["backdrop_path"] ?? '',
-        genreIds: List<int>.from(json["genre_ids"].map((x) => x)),
+        genreIds: List<int>.from((json["genre_ids"] as List? ?? const []).map((x) => x)),
         id: json["id"],
         originalLanguage: json["original_language"] ?? '',
         originalTitle: json["original_title"] ?? '',
         overview: json["overview"] ?? '',
         popularity: json["popularity"]?.toDouble() ?? 0,
         posterPath: json["poster_path"] ?? '',
-        releaseDate: json["release_date"] != null && json["release_date"].toString().isNotEmpty
-          ?  DateTime.parse(json["release_date"])
-          : null,
+        releaseDate: DateTime.tryParse(json["release_date"]?.toString() ?? ''),
         title: json["title"] ?? 'No Title',
         video: json["video"] ?? false,
         voteAverage: json["vote_average"]?.toDouble() ?? 0,
