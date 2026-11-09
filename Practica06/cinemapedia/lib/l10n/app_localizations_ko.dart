@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for ko.
+/// The translations for Korean (`ko`).
 class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return '‘${query}’에 대한 영화를 찾지 못했어요';
+    return '‘$query’에 대한 영화를 찾지 못했어요';
   }
 
   @override
@@ -87,7 +87,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '${total}편 중 ${current}번째';
+    return '$total편 중 $current번째';
   }
 
   @override
@@ -113,12 +113,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return '${count}표';
+    return '$count표';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return '평점: 10점 만점에 ${rating}점';
+    return '평점: 10점 만점에 $rating점';
   }
 
   @override
@@ -213,12 +213,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String favoriteAdded(String title) {
-    return '‘${title}’을(를) 즐겨찾기에 추가했어요';
+    return '‘$title’을(를) 즐겨찾기에 추가했어요';
   }
 
   @override
   String favoriteRemoved(String title) {
-    return '‘${title}’을(를) 즐겨찾기에서 삭제했어요';
+    return '‘$title’을(를) 즐겨찾기에서 삭제했어요';
   }
 
   @override
@@ -226,7 +226,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String favoritesCount(String count) {
-    return '영화 ${count}편';
+    return '영화 $count편';
   }
 
   @override
@@ -242,25 +242,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsHeadline => '나의 영화, 나의 언어';
 
   @override
-  String get settingsDescription => '국가를 선택하면 앱 언어, TMDB 지역 상영 정보, 관람 등급이 함께 바뀌어요.';
+  String get settingsDescription =>
+      '국가를 선택하면 앱 언어, TMDB 지역 상영 정보, 관람 등급이 함께 바뀌어요.';
 
   @override
   String get settingsRegionSection => '지역 및 언어';
 
   @override
-  String get settingsInfoNote => '국가에 따라 TMDB 조회 지역, 앱 전체 언어, 등급 체계가 결정돼요. 선택한 내용은 이 기기에 자동으로 저장돼요.';
+  String get settingsInfoNote =>
+      '국가에 따라 TMDB 조회 지역, 앱 전체 언어, 등급 체계가 결정돼요. 선택한 내용은 이 기기에 자동으로 저장돼요.';
 
   @override
   String get settingsSelected => '선택됨';
 
   @override
   String settingsRegionChanged(String country) {
-    return '지역이 변경되었어요: ${country}';
+    return '지역이 변경되었어요: $country';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return '등급: ${system}';
+    return '등급: $system';
   }
 
   @override

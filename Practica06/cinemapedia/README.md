@@ -278,14 +278,14 @@ Las siguientes capturas ilustran las diferentes pantallas de la aplicación. Se 
       <img src="assets/evidencias/13.jpeg" alt="Evidencia de la búsqueda de películas" width="260">
     </td>
     <td align="center" width="50%">
-      <strong>Favoritos y categorías</strong><br><br>
-      <img src="assets/evidencias/14.jpeg" alt="Evidencia de las pantallas de favoritos y categorías" width="260">
+      <strong>Favoritos</strong><br><br>
+      <img src="assets/evidencias/14.jpeg" alt="Evidencia de las pantallas de favoritos" width="260">
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <strong>Error de conexión</strong><br><br>
-      <img src="assets/evidencias/15.jpeg" alt="Evidencia del mensaje de error de conexión con opción de reintentar" width="260">
+      <strong>Categorías</strong><br><br>
+      <img src="assets/evidencias/15.jpeg" alt="Evidencia de las pantallas de categorías" width="260">
     </td>
     <td align="center" width="50%">
       <strong>Icono instalado en Android</strong><br><br>

@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for ja.
+/// The translations for Japanese (`ja`).
 class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return '「${query}」に一致する映画は見つかりませんでした';
+    return '「$query」に一致する映画は見つかりませんでした';
   }
 
   @override
@@ -87,7 +87,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '${total}作品中${current}番目';
+    return '$total作品中$current番目';
   }
 
   @override
@@ -113,12 +113,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return '${count}票';
+    return '$count票';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return '評価: 10点中${rating}点';
+    return '評価: 10点中$rating点';
   }
 
   @override
@@ -213,12 +213,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String favoriteAdded(String title) {
-    return '「${title}」をお気に入りに追加しました';
+    return '「$title」をお気に入りに追加しました';
   }
 
   @override
   String favoriteRemoved(String title) {
-    return '「${title}」をお気に入りから削除しました';
+    return '「$title」をお気に入りから削除しました';
   }
 
   @override
@@ -226,7 +226,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String favoritesCount(String count) {
-    return '${count}作品';
+    return '$count作品';
   }
 
   @override
@@ -248,19 +248,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsRegionSection => '地域と言語';
 
   @override
-  String get settingsInfoNote => '国の設定によって、TMDBの検索地域、アプリ全体の言語、年齢区分の基準が決まります。選択内容はこの端末に自動で保存されます。';
+  String get settingsInfoNote =>
+      '国の設定によって、TMDBの検索地域、アプリ全体の言語、年齢区分の基準が決まります。選択内容はこの端末に自動で保存されます。';
 
   @override
   String get settingsSelected => '選択中';
 
   @override
   String settingsRegionChanged(String country) {
-    return '地域を変更しました: ${country}';
+    return '地域を変更しました: $country';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return '区分: ${system}';
+    return '区分: $system';
   }
 
   @override

@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for en.
+/// The translations for English (`en`).
 class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return 'No movies found for “${query}”';
+    return 'No movies found for “$query”';
   }
 
   @override
@@ -87,11 +87,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '${current} of ${total}';
+    return '$current of $total';
   }
 
   @override
-  String get carouselTripleTapHint => 'Tap an arrow three times to jump to the first or last movie';
+  String get carouselTripleTapHint =>
+      'Tap an arrow three times to jump to the first or last movie';
 
   @override
   String get carouselJumpedFirst => 'First movie';
@@ -113,12 +114,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return '${count} votes';
+    return '$count votes';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return 'Rating: ${rating} out of 10';
+    return 'Rating: $rating out of 10';
   }
 
   @override
@@ -131,7 +132,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get certificationLoading => 'Loading age rating…';
 
   @override
-  String get certificationError => 'Couldn’t load the age rating. Tap to retry.';
+  String get certificationError =>
+      'Couldn’t load the age rating. Tap to retry.';
 
   @override
   String get viewDetails => 'View details';
@@ -185,7 +187,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorConnection => 'Check your internet connection and try again.';
 
   @override
-  String get errorUnauthorized => 'The TMDB key is missing from .env or is invalid.';
+  String get errorUnauthorized =>
+      'The TMDB key is missing from .env or is invalid.';
 
   @override
   String get errorServer => 'The movie service is unavailable right now.';
@@ -200,7 +203,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesEmptyTitle => 'No favorites yet';
 
   @override
-  String get favoritesEmptyMessage => 'Movies you mark as favorites will appear here.';
+  String get favoritesEmptyMessage =>
+      'Movies you mark as favorites will appear here.';
 
   @override
   String get goHome => 'Go to home';
@@ -213,12 +217,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String favoriteAdded(String title) {
-    return '“${title}” added to favorites';
+    return '“$title” added to favorites';
   }
 
   @override
   String favoriteRemoved(String title) {
-    return '“${title}” removed from favorites';
+    return '“$title” removed from favorites';
   }
 
   @override
@@ -226,7 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String favoritesCount(String count) {
-    return '${count} movies';
+    return '$count movies';
   }
 
   @override
@@ -242,25 +246,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHeadline => 'Your cinema, your language';
 
   @override
-  String get settingsDescription => 'Choose a country to set the app language, the regional TMDB listings and age ratings.';
+  String get settingsDescription =>
+      'Choose a country to set the app language, the regional TMDB listings and age ratings.';
 
   @override
   String get settingsRegionSection => 'REGION & LANGUAGE';
 
   @override
-  String get settingsInfoNote => 'The country sets the TMDB query region, the language of the whole app and the rating system. Your choice is saved automatically on this device.';
+  String get settingsInfoNote =>
+      'The country sets the TMDB query region, the language of the whole app and the rating system. Your choice is saved automatically on this device.';
 
   @override
   String get settingsSelected => 'Selected';
 
   @override
   String settingsRegionChanged(String country) {
-    return 'Region updated: ${country}';
+    return 'Region updated: $country';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return 'Ratings: ${system}';
+    return 'Ratings: $system';
   }
 
   @override
