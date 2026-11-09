@@ -5,6 +5,7 @@ import 'package:cinemapedia/config/helpers/l10n_helpers.dart';
 import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/presentation/widgets/movies/certification_badge.dart';
+import 'package:cinemapedia/presentation/widgets/movies/favorite_button.dart';
 import 'package:cinemapedia/presentation/widgets/movies/star_rating.dart';
 
 /// Contenedor con la información de la película seleccionada en el carrusel.
@@ -159,10 +160,12 @@ class _PanelContent extends StatelessWidget {
             style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
 
-          if (onViewDetails != null)
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: TextButton(
+          Row(
+            children: [
+              FavoriteButton(movie: movie),
+              const Spacer(),
+              if (onViewDetails != null)
+              TextButton(
                 onPressed: onViewDetails,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -174,7 +177,8 @@ class _PanelContent extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
+            ],
+          ),
         ],
       ),
     );

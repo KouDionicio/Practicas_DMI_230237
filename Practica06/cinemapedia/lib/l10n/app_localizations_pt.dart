@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Portuguese (`pt`).
+/// The translations for pt.
 class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return 'Nenhum filme encontrado para “$query”';
+    return 'Nenhum filme encontrado para “${query}”';
   }
 
   @override
@@ -87,12 +87,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '$current de $total';
+    return '${current} de ${total}';
   }
 
   @override
-  String get carouselTripleTapHint =>
-      'Toque três vezes em uma seta para ir ao primeiro ou ao último filme';
+  String get carouselTripleTapHint => 'Toque três vezes em uma seta para ir ao primeiro ou ao último filme';
 
   @override
   String get carouselJumpedFirst => 'Primeiro filme';
@@ -114,12 +113,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return '$count votos';
+    return '${count} votos';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return 'Avaliação: $rating de 10';
+    return 'Avaliação: ${rating} de 10';
   }
 
   @override
@@ -132,8 +131,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get certificationLoading => 'Carregando classificação…';
 
   @override
-  String get certificationError =>
-      'Não foi possível carregar a classificação. Toque para tentar novamente.';
+  String get certificationError => 'Não foi possível carregar a classificação. Toque para tentar novamente.';
 
   @override
   String get viewDetails => 'Ver detalhes';
@@ -184,12 +182,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errorLoadMovie => 'Não foi possível carregar este filme';
 
   @override
-  String get errorConnection =>
-      'Verifique sua conexão com a internet e tente novamente.';
+  String get errorConnection => 'Verifique sua conexão com a internet e tente novamente.';
 
   @override
-  String get errorUnauthorized =>
-      'A chave do TMDB está ausente no arquivo .env ou é inválida.';
+  String get errorUnauthorized => 'A chave do TMDB está ausente no arquivo .env ou é inválida.';
 
   @override
   String get errorServer => 'O serviço de filmes está indisponível no momento.';
@@ -204,44 +200,67 @@ class AppLocalizationsPt extends AppLocalizations {
   String get favoritesEmptyTitle => 'Você ainda não tem favoritos';
 
   @override
-  String get favoritesEmptyMessage =>
-      'Os filmes que você marcar como favoritos aparecerão aqui.';
-
-  @override
-  String get categoriesEmptyTitle => 'Em breve';
-
-  @override
-  String get categoriesEmptyMessage =>
-      'Estamos preparando a navegação por categorias.';
+  String get favoritesEmptyMessage => 'Os filmes que você marcar como favoritos aparecerão aqui.';
 
   @override
   String get goHome => 'Ir para o início';
 
   @override
+  String get favoriteAdd => 'Adicionar aos favoritos';
+
+  @override
+  String get favoriteRemove => 'Remover dos favoritos';
+
+  @override
+  String favoriteAdded(String title) {
+    return '“${title}” adicionado aos favoritos';
+  }
+
+  @override
+  String favoriteRemoved(String title) {
+    return '“${title}” removido dos favoritos';
+  }
+
+  @override
+  String get undo => 'Desfazer';
+
+  @override
+  String favoritesCount(String count) {
+    return '${count} filmes';
+  }
+
+  @override
+  String get categoriesHint => 'Escolha um gênero';
+
+  @override
+  String get categoryEmpty => 'Não há filmes deste gênero na sua região.';
+
+  @override
+  String get errorLoadGenres => 'Não foi possível carregar as categorias';
+
+  @override
   String get settingsHeadline => 'Seu cinema, seu idioma';
 
   @override
-  String get settingsDescription =>
-      'Escolha um país para definir o idioma do aplicativo, a programação regional do TMDB e as classificações indicativas.';
+  String get settingsDescription => 'Escolha um país para definir o idioma do aplicativo, a programação regional do TMDB e as classificações indicativas.';
 
   @override
   String get settingsRegionSection => 'REGIÃO E IDIOMA';
 
   @override
-  String get settingsInfoNote =>
-      'O país define a região de consulta do TMDB, o idioma de todo o aplicativo e o sistema de classificação. Sua escolha é salva automaticamente neste dispositivo.';
+  String get settingsInfoNote => 'O país define a região de consulta do TMDB, o idioma de todo o aplicativo e o sistema de classificação. Sua escolha é salva automaticamente neste dispositivo.';
 
   @override
   String get settingsSelected => 'Selecionado';
 
   @override
   String settingsRegionChanged(String country) {
-    return 'Região atualizada: $country';
+    return 'Região atualizada: ${country}';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return 'Classificação $system';
+    return 'Classificação ${system}';
   }
 
   @override

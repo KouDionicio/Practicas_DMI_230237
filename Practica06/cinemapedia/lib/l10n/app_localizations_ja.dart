@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Japanese (`ja`).
+/// The translations for ja.
 class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return '「$query」に一致する映画は見つかりませんでした';
+    return '「${query}」に一致する映画は見つかりませんでした';
   }
 
   @override
@@ -87,7 +87,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '$total作品中$current番目';
+    return '${total}作品中${current}番目';
   }
 
   @override
@@ -113,12 +113,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return '$count票';
+    return '${count}票';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return '評価: 10点中$rating点';
+    return '評価: 10点中${rating}点';
   }
 
   @override
@@ -203,13 +203,40 @@ class AppLocalizationsJa extends AppLocalizations {
   String get favoritesEmptyMessage => 'お気に入りに追加した映画がここに表示されます。';
 
   @override
-  String get categoriesEmptyTitle => '準備中';
-
-  @override
-  String get categoriesEmptyMessage => 'カテゴリー別の閲覧機能を準備しています。';
-
-  @override
   String get goHome => 'ホームへ';
+
+  @override
+  String get favoriteAdd => 'お気に入りに追加';
+
+  @override
+  String get favoriteRemove => 'お気に入りから削除';
+
+  @override
+  String favoriteAdded(String title) {
+    return '「${title}」をお気に入りに追加しました';
+  }
+
+  @override
+  String favoriteRemoved(String title) {
+    return '「${title}」をお気に入りから削除しました';
+  }
+
+  @override
+  String get undo => '元に戻す';
+
+  @override
+  String favoritesCount(String count) {
+    return '${count}作品';
+  }
+
+  @override
+  String get categoriesHint => 'ジャンルを選択してください';
+
+  @override
+  String get categoryEmpty => 'この地域にはこのジャンルの映画がありません。';
+
+  @override
+  String get errorLoadGenres => 'カテゴリーを読み込めませんでした';
 
   @override
   String get settingsHeadline => 'あなたの映画を、あなたの言語で';
@@ -221,20 +248,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsRegionSection => '地域と言語';
 
   @override
-  String get settingsInfoNote =>
-      '国の設定によって、TMDBの検索地域、アプリ全体の言語、年齢区分の基準が決まります。選択内容はこの端末に自動で保存されます。';
+  String get settingsInfoNote => '国の設定によって、TMDBの検索地域、アプリ全体の言語、年齢区分の基準が決まります。選択内容はこの端末に自動で保存されます。';
 
   @override
   String get settingsSelected => '選択中';
 
   @override
   String settingsRegionChanged(String country) {
-    return '地域を変更しました: $country';
+    return '地域を変更しました: ${country}';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return '区分: $system';
+    return '区分: ${system}';
   }
 
   @override

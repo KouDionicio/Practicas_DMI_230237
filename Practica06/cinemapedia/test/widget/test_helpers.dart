@@ -7,6 +7,7 @@ import 'package:cinemapedia/config/helpers/l10n_helpers.dart';
 import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/domain/entities/movie_certification.dart';
+import 'package:cinemapedia/domain/entities/movie_genre.dart';
 import 'package:cinemapedia/domain/repositories/movies_repository.dart';
 import 'package:cinemapedia/l10n/app_localizations.dart';
 import 'package:cinemapedia/presentation/providers/providers.dart';
@@ -47,6 +48,13 @@ class FakeMoviesRepository extends MoviesRepository {
   Future<Movie> getMovieById(String id) async => fakeMovie(int.parse(id));
   @override
   Future<List<Movie>> searchMovies(String query) async => [];
+  @override
+  Future<List<MovieGenre>> getGenres() async => region == 'JP'
+      ? const [MovieGenre(id: 28, name: 'アクション'), MovieGenre(id: 35, name: 'コメディ')]
+      : const [MovieGenre(id: 28, name: 'Acción'), MovieGenre(id: 35, name: 'Comedia')];
+  @override
+  Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async =>
+      List.generate(6, (i) => fakeMovie(genreId * 1000 + page * 10 + i));
   @override
   Future<MovieCertification> getCertification(String movieId) async =>
       region == 'EG' ? MovieCertification.unavailable(region) : MovieCertification(countryCode: region, rating: '12');

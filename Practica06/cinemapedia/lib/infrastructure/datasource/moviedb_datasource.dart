@@ -3,6 +3,8 @@ import 'package:cinemapedia/infrastructure/models/moviedb/release_dates_response
 import 'package:cinemapedia/infrastructure/datasource/tmdb_client.dart';
 import 'package:cinemapedia/domain/datasources/movies_datasource.dart';
 import 'package:cinemapedia/domain/entities/movie_certification.dart';
+import 'package:cinemapedia/domain/entities/movie_genre.dart';
+import 'package:cinemapedia/infrastructure/models/moviedb/genres_response.dart';
 import 'package:cinemapedia/infrastructure/mappers/movie_mapper.dart';
 import 'package:cinemapedia/infrastructure/models/moviedb/moviedb_response.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
@@ -89,5 +91,26 @@ class MoviedbDatasource extends MoviesDatasource {
       ReleaseDatesResponse.fromJson(json),
       region,
     );
+  }
+
+  @override
+  Future<List<MovieGenre>> getGenres() async {
+    final json = await client.get('/genre/movie/list');
+    return GenresResponse.fromJson(json).genres
+        .where((genre) => genre.name.isNotEmpty)
+        .map((genre) => MovieGenre(id: genre.id, name: genre.name))
+        .toList();
+  }
+
+  @override
+  Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
+    final json = await client.get('/discover/movie', queryParameters: {
+      'with_genres': genreId,
+      'page': page,
+      'region': region,
+      'sort_by': 'popularity.desc',
+      'include_adult': false,
+    });
+    return _jsonToMovies(json);
   }
 }

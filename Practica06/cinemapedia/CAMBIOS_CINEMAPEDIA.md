@@ -67,3 +67,25 @@ Generado desde `icono.jfif`:
 - Adaptativo: `mipmap-anydpi-v26/*.xml` con fondo `#0A0D12`, capa frontal y capa monocroma para iconos temáticos de Android 13+
 - Splash nativo: `launch_background.xml` (antes de Android 12) y `values-v31/styles.xml` (API SplashScreen)
 - Assets de Flutter: `assets/icono/icono.png` y `assets/icono/icono_marca.png`
+
+## Favoritos y categorías (segunda entrega)
+
+**Favoritos.** Se guardan en el teléfono como JSON con SharedPreferences (clave `cinemapedia.favorites`), sin dependencias nuevas.
+
+- Botón de corazón en el detalle de película y en el panel del carrusel, con aviso traducido y la opción *Deshacer*.
+- Cuadrícula de favoritos con contador y estado vacío cuando no hay ninguno.
+- Los favoritos se conservan al cambiar de país. Al abrir uno, el detalle se pide de nuevo en el idioma actual.
+
+**Categorías.**
+
+- Los géneros se obtienen de `GET /genre/movie/list`, traducidos al idioma del país.
+- Las películas de cada género vienen de `GET /discover/movie` con `with_genres`, `region`, `sort_by=popularity.desc` e `include_adult=false`.
+- Scroll infinito con el mismo `MoviesNotifier` de las listas de Inicio, y errores con reintento.
+
+**Archivos nuevos:**
+
+- Dominio: `domain/entities/movie_genre.dart`, `domain/datasources/favorites_datasource.dart`, `domain/repositories/favorites_repository.dart`
+- Infraestructura: `infrastructure/models/moviedb/genres_response.dart`, `infrastructure/mappers/movie_storage_mapper.dart`, `infrastructure/datasource/shared_prefs_favorites_datasource.dart`, `infrastructure/repositories/favorites_repository_impl.dart`
+- Providers: `presentation/providers/storage/favorites_provider.dart`, `presentation/providers/movies/movies_by_genre_provider.dart`
+- Widgets: `presentation/widgets/movies/favorite_button.dart`, `presentation/widgets/movies/movie_poster_grid.dart`
+- Pruebas: `test/unit/movie_storage_mapper_test.dart`, `test/widget/favorites_and_categories_test.dart`

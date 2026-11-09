@@ -69,6 +69,8 @@ MoviedbDatasource _datasource(FakeAdapter adapter, {required String language, re
 }
 
 void main() {
+  genresAndDiscoverTests();
+
   group('MoviedbDatasource: parámetros regionales', () {
     test('las listas envían language y region del país seleccionado', () async {
       final adapter = FakeAdapter({'/movie/now_playing': _movieList});
@@ -181,6 +183,37 @@ void main() {
       expect(movie.title, equals('Película'));
       expect(movie.releaseDate, isNull);
       expect(movie.genreIds, equals(['Drama']));
+    });
+  });
+}
+
+void genresAndDiscoverTests() {
+  group('Categorías: géneros y discover', () {
+    test('géneros traducidos con el idioma del país', () async {
+      final adapter = FakeAdapter({'/genre/movie/list': {
+        'genres': [{'id': 28, 'name': '액션'}, {'id': 35, 'name': '코미디'}, {'id': 99, 'name': ''}],
+      }});
+      final genres = await _datasource(adapter, language: 'ko-KR', region: 'KR').getGenres();
+
+      expect(adapter.requests.single.path, equals('/3/genre/movie/list'));
+      expect(adapter.requests.single.queryParameters['language'], equals('ko-KR'));
+      expect(genres.map((g) => g.name).toList(), equals(['액션', '코미디'])); // vacío descartado
+    });
+
+    test('películas por género filtradas por región y ordenadas por popularidad', () async {
+      final adapter = FakeAdapter({'/discover/movie': _movieList});
+      final movies = await _datasource(adapter, language: 'pt-BR', region: 'BR')
+          .getMoviesByGenre(28, page: 3);
+
+      final query = adapter.requests.single.queryParameters;
+      expect(adapter.requests.single.path, equals('/3/discover/movie'));
+      expect(query['with_genres'], equals('28'));
+      expect(query['page'], equals('3'));
+      expect(query['region'], equals('BR'));
+      expect(query['language'], equals('pt-BR'));
+      expect(query['sort_by'], equals('popularity.desc'));
+      expect(query['include_adult'], equals('false'));
+      expect(movies.length, equals(1)); // la película sin póster se filtra
     });
   });
 }

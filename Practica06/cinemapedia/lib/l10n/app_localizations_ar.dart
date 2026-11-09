@@ -4,7 +4,7 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Arabic (`ar`).
+/// The translations for ar.
 class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
@@ -55,7 +55,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String searchNoResults(String query) {
-    return 'لم نعثر على أفلام لـ «$query»';
+    return 'لم نعثر على أفلام لـ «${query}»';
   }
 
   @override
@@ -87,12 +87,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String carouselPosition(String current, String total) {
-    return '$current من $total';
+    return '${current} من ${total}';
   }
 
   @override
-  String get carouselTripleTapHint =>
-      'انقر على السهم ثلاث مرات للانتقال إلى الفيلم الأول أو الأخير';
+  String get carouselTripleTapHint => 'انقر على السهم ثلاث مرات للانتقال إلى الفيلم الأول أو الأخير';
 
   @override
   String get carouselJumpedFirst => 'الفيلم الأول';
@@ -114,12 +113,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String votesCount(String count) {
-    return 'عدد الأصوات: $count';
+    return 'عدد الأصوات: ${count}';
   }
 
   @override
   String ratingSemantics(String rating) {
-    return 'التقييم: $rating من 10';
+    return 'التقييم: ${rating} من 10';
   }
 
   @override
@@ -132,8 +131,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get certificationLoading => 'جارٍ تحميل التصنيف العمري…';
 
   @override
-  String get certificationError =>
-      'تعذّر تحميل التصنيف العمري. انقر لإعادة المحاولة.';
+  String get certificationError => 'تعذّر تحميل التصنيف العمري. انقر لإعادة المحاولة.';
 
   @override
   String get viewDetails => 'عرض التفاصيل';
@@ -202,43 +200,67 @@ class AppLocalizationsAr extends AppLocalizations {
   String get favoritesEmptyTitle => 'لا توجد مفضلة بعد';
 
   @override
-  String get favoritesEmptyMessage =>
-      'ستظهر هنا الأفلام التي تضيفها إلى المفضلة.';
-
-  @override
-  String get categoriesEmptyTitle => 'قريبًا';
-
-  @override
-  String get categoriesEmptyMessage => 'نعمل على تجهيز التصفح حسب الفئات.';
+  String get favoritesEmptyMessage => 'ستظهر هنا الأفلام التي تضيفها إلى المفضلة.';
 
   @override
   String get goHome => 'الانتقال إلى الرئيسية';
 
   @override
+  String get favoriteAdd => 'إضافة إلى المفضلة';
+
+  @override
+  String get favoriteRemove => 'إزالة من المفضلة';
+
+  @override
+  String favoriteAdded(String title) {
+    return 'تمت إضافة «${title}» إلى المفضلة';
+  }
+
+  @override
+  String favoriteRemoved(String title) {
+    return 'تمت إزالة «${title}» من المفضلة';
+  }
+
+  @override
+  String get undo => 'تراجع';
+
+  @override
+  String favoritesCount(String count) {
+    return 'عدد الأفلام: ${count}';
+  }
+
+  @override
+  String get categoriesHint => 'اختر نوعًا';
+
+  @override
+  String get categoryEmpty => 'لا توجد أفلام من هذا النوع في منطقتك.';
+
+  @override
+  String get errorLoadGenres => 'تعذّر تحميل الفئات';
+
+  @override
   String get settingsHeadline => 'سينماك بلغتك';
 
   @override
-  String get settingsDescription =>
-      'اختر دولة لضبط لغة التطبيق وقائمة أفلام TMDB الإقليمية والتصنيفات العمرية.';
+  String get settingsDescription => 'اختر دولة لضبط لغة التطبيق وقائمة أفلام TMDB الإقليمية والتصنيفات العمرية.';
 
   @override
   String get settingsRegionSection => 'المنطقة واللغة';
 
   @override
-  String get settingsInfoNote =>
-      'تحدّد الدولة منطقة البحث في TMDB ولغة التطبيق بالكامل ونظام التصنيف العمري. يُحفظ اختيارك تلقائيًا على هذا الجهاز.';
+  String get settingsInfoNote => 'تحدّد الدولة منطقة البحث في TMDB ولغة التطبيق بالكامل ونظام التصنيف العمري. يُحفظ اختيارك تلقائيًا على هذا الجهاز.';
 
   @override
   String get settingsSelected => 'محدد';
 
   @override
   String settingsRegionChanged(String country) {
-    return 'تم تحديث المنطقة: $country';
+    return 'تم تحديث المنطقة: ${country}';
   }
 
   @override
   String settingsRatingSystem(String system) {
-    return 'التصنيف: $system';
+    return 'التصنيف: ${system}';
   }
 
   @override

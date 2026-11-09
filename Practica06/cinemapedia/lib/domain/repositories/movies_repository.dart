@@ -1,5 +1,6 @@
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/domain/entities/movie_certification.dart';
+import 'package:cinemapedia/domain/entities/movie_genre.dart';
 
 
 abstract class MoviesRepository {
@@ -18,4 +19,10 @@ abstract class MoviesRepository {
 
   /// Clasificación por edad de la película en la región configurada.
   Future<MovieCertification> getCertification( String movieId );
+
+  /// Géneros disponibles, traducidos al idioma configurado.
+  Future<List<MovieGenre>> getGenres();
+
+  /// Películas de un género en la región configurada (más populares primero).
+  Future<List<Movie>> getMoviesByGenre( int genreId, { int page = 1 } );
 }

@@ -276,17 +276,63 @@
   "@favoritesEmptyMessage": {
     "description": "Favoritos vacío"
   },
-  "categoriesEmptyTitle": "Muy pronto",
-  "@categoriesEmptyTitle": {
-    "description": "Categorías vacío"
-  },
-  "categoriesEmptyMessage": "Estamos preparando la exploración por categorías.",
-  "@categoriesEmptyMessage": {
-    "description": "Categorías vacío"
-  },
   "goHome": "Ir al inicio",
   "@goHome": {
     "description": "Botón para volver al inicio"
+  },
+  "favoriteAdd": "Agregar a favoritos",
+  "@favoriteAdd": {
+    "description": "Tooltip: agregar a favoritos"
+  },
+  "favoriteRemove": "Quitar de favoritos",
+  "@favoriteRemove": {
+    "description": "Tooltip: quitar de favoritos"
+  },
+  "favoriteAdded": "«{title}» se agregó a favoritos",
+  "@favoriteAdded": {
+    "description": "Mensaje al agregar un favorito",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Dune"
+      }
+    }
+  },
+  "favoriteRemoved": "«{title}» se quitó de favoritos",
+  "@favoriteRemoved": {
+    "description": "Mensaje al quitar un favorito",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Dune"
+      }
+    }
+  },
+  "undo": "Deshacer",
+  "@undo": {
+    "description": "Acción deshacer"
+  },
+  "favoritesCount": "{count} películas",
+  "@favoritesCount": {
+    "description": "Número de favoritos (ya formateado)",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "categoriesHint": "Elige un género",
+  "@categoriesHint": {
+    "description": "Ayuda sobre la fila de géneros"
+  },
+  "categoryEmpty": "No hay películas de este género en tu región.",
+  "@categoryEmpty": {
+    "description": "Género sin películas en la región"
+  },
+  "errorLoadGenres": "No pudimos cargar las categorías",
+  "@errorLoadGenres": {
+    "description": "Error al cargar los géneros"
   },
   "settingsHeadline": "Tu cine, tu idioma",
   "@settingsHeadline": {

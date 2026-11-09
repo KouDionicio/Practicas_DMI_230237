@@ -1,6 +1,8 @@
 export 'movies/certification_badge.dart';
+export 'movies/favorite_button.dart';
 export 'movies/movie_horizontal_listview.dart';
 export 'movies/movie_info_panel.dart';
+export 'movies/movie_poster_grid.dart';
 export 'movies/movies_slideshow.dart';
 export 'movies/star_rating.dart';
 export 'shared/app_logo.dart';
