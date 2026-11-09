@@ -1,0 +1,68 @@
+
+name: cinemapedia
+description: "A new Flutter project."
+# The following line prevents the package from accidentally being published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number is used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+# Dependencies specify other packages that your package needs in order for your package to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest versions available on pub.dev.
+dependencies:
+  flutter:
+    sdk: flutter
+  # Internacionalización oficial de Flutter (Material/Cupertino/Widgets en 8 idiomas).
+  flutter_localizations:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  flutter_dotenv: ^6.0.1
+  go_router: ^17.2.3
+  dio: ^5.11.1
+  flutter_riverpod: ^3.3.2
+  animate_do: ^5.1.0
+  card_swiper: ^3.0.1
+  intl: ^0.20.2
+  state_notifier: ^1.0.0
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below is included as a recommended set of lints.
+  # It is activated in the analysis_options.yaml file.
+  flutter_lints: ^5.0.0
+
+# The following section is specific to Flutter packages.
+flutter:
+  # Includes the Material Icons font.
+  uses-material-design: true
+
+  # Genera lib/l10n/app_localizations*.dart a partir de los archivos .arb (ver l10n.yaml).
+  generate: true
+
+  assets:
+    # Environment variables.
+    - .env
+    # Icono oficial de Cinemapedia (splash, menú lateral, barra superior).
+    - assets/icono/
