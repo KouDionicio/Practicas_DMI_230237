@@ -1,0 +1,448 @@
+{
+    "schema_version":  1,
+    "diagram_type":  "architecture",
+    "meta":  {
+                 "title":  "Práctica 06 · Cinemapedia | Arquitectura por capas",
+                 "quality_profile":  "showcase",
+                 "repository":  {
+                                    "url":  "https://github.com/KouDionicio/Practicas_DMI_230237",
+                                    "revision":  "dc78590aa4d599c8b4e497a6db626699ea3fd5da"
+                                },
+                 "visual_preset":  "classic",
+                 "views":  [
+                               {
+                                   "id":  "presentation",
+                                   "label":  "PresentaciÃƒÂ³n",
+                                   "focus":  [
+                                                 "app",
+                                                 "navigation",
+                                                 "ui",
+                                                 "providers"
+                                             ],
+                                   "note":  "La app inicia el router y las pantallas reaccionan a providers Riverpod."
+                               },
+                               {
+                                   "id":  "movie-flow",
+                                   "label":  "Consulta de pelÃƒÂ­culas",
+                                   "focus":  [
+                                                 "providers",
+                                                 "movie-repo",
+                                                 "movie-source",
+                                                 "tmdb",
+                                                 "models"
+                                             ],
+                                   "note":  "Los providers consultan el contrato; la implementaciÃƒÂ³n llega a TMDB y mapea sus respuestas."
+                               },
+                               {
+                                   "id":  "regional-state",
+                                   "label":  "RegiÃƒÂ³n y localizaciÃƒÂ³n",
+                                   "focus":  [
+                                                 "region",
+                                                 "preferences",
+                                                 "providers",
+                                                 "tmdb",
+                                                 "localization"
+                                             ],
+                                   "note":  "La regiÃƒÂ³n persistida selecciona locale de interfaz y parÃƒÂ¡metros language/region de TMDB."
+                               },
+                               {
+                                   "id":  "domain-boundary",
+                                   "label":  "Contratos de dominio",
+                                   "focus":  [
+                                                 "contracts",
+                                                 "entities",
+                                                 "movie-repo",
+                                                 "movie-source",
+                                                 "preferences"
+                                             ],
+                                   "note":  "Dominio declara contratos y entidades; infraestructura proporciona sus implementaciones."
+                               }
+                           ],
+                 "legend":  {
+                                "mode":  "all",
+                                "entries":  {
+                                                "frontend":  {
+                                                                 "label":  "PresentaciÃƒÂ³n"
+                                                             },
+                                                "backend":  {
+                                                                "label":  "Dominio y lÃƒÂ³gica"
+                                                            },
+                                                "database":  {
+                                                                 "label":  "Persistencia"
+                                                             },
+                                                "cloud":  {
+                                                              "label":  "Servicios externos"
+                                                          },
+                                                "security":  {
+                                                                 "label":  "ConfiguraciÃƒÂ³n sensible"
+                                                             }
+                                            }
+                            },
+                 "viewBox":  [
+                                 1070,
+                                 680
+                             ]
+             },
+    "components":  [
+                       {
+                           "id":  "app",
+                           "type":  "frontend",
+                           "label":  "main.dart · Cinemapedia",
+                           "sublabel":  "Flutter · Riverpod · MaterialApp",
+                           "tag":  "inicio",
+                           "pos":  [
+                                       30,
+                                       10
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/main.dart",
+                                               "label":  "Bootstrap"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "navigation",
+                           "type":  "frontend",
+                           "label":  "GoRouter",
+                           "sublabel":  "Rutas de pantallas",
+                           "tag":  "navegación",
+                           "pos":  [
+                                       30,
+                                       116
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/config/router/app_router.dart",
+                                               "label":  "Rutas"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "ui",
+                           "type":  "frontend",
+                           "label":  "Screens · Views · Widgets",
+                           "sublabel":  "Inicio · película · ajustes · búsqueda",
+                           "tag":  "presentación",
+                           "pos":  [
+                                       30,
+                                       222
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/presentation/screens/movies/home_screen.dart",
+                                               "label":  "Pantallas"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "providers",
+                           "type":  "backend",
+                           "label":  "Providers Riverpod",
+                           "sublabel":  "Películas · actores · favoritos",
+                           "tag":  "estado",
+                           "pos":  [
+                                       30,
+                                       328
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/presentation/providers/providers.dart",
+                                               "label":  "Providers"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "region",
+                           "type":  "frontend",
+                           "label":  "AppRegionNotifier",
+                           "sublabel":  "País · idioma · región",
+                           "tag":  "preferencias",
+                           "pos":  [
+                                       30,
+                                       434
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/presentation/providers/settings/app_region_provider.dart",
+                                               "label":  "RegiÃƒÂ³n"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "contracts",
+                           "type":  "backend",
+                           "label":  "Contratos de dominio",
+                           "sublabel":  "Repositories · datasources",
+                           "tag":  "abstracciones",
+                           "pos":  [
+                                       280,
+                                       328
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/domain/repositories/movies_repository.dart",
+                                               "label":  "Repositorios"
+                                           },
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/domain/datasources/movies_datasource.dart",
+                                               "label":  "Datasources"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "entities",
+                           "type":  "backend",
+                           "label":  "Entidades de dominio",
+                           "sublabel":  "Movie · Actor · Genre · Rating",
+                           "tag":  "modelos",
+                           "pos":  [
+                                       280,
+                                       540
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/domain/entities/movie.dart",
+                                               "label":  "Entidades"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "movie-repo",
+                           "type":  "backend",
+                           "label":  "Repositories concretos",
+                           "sublabel":  "Movie · Actor · Favorites",
+                           "tag":  "infraestructura",
+                           "pos":  [
+                                       530,
+                                       328
+                                   ],
+                           "size":  [
+                                        250,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/repositories/movie_repository_impl.dart",
+                                               "label":  "Implementaciones"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "movie-source",
+                           "type":  "backend",
+                           "label":  "Datasources + TmdbClient",
+                           "sublabel":  "TMDB · Dio · dotenv · SharedPrefs",
+                           "tag":  "datos",
+                           "pos":  [
+                                       530,
+                                       434
+                                   ],
+                           "size":  [
+                                        250,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/datasource/moviedb_datasource.dart",
+                                               "label":  "OrÃƒÂ­genes"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "models",
+                           "type":  "backend",
+                           "label":  "Models + Mappers",
+                           "sublabel":  "JSON TMDB ↔ entidades",
+                           "tag":  "adaptación",
+                           "pos":  [
+                                       530,
+                                       540
+                                   ],
+                           "size":  [
+                                        250,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/models/moviedb/movie_moviedb.dart",
+                                               "label":  "Modelos"
+                                           },
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/mappers/movie_mapper.dart",
+                                               "label":  "Mappers"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "tmdb",
+                           "type":  "cloud",
+                           "label":  "The Movie Database",
+                           "sublabel":  "API REST · películas · créditos",
+                           "tag":  "language + region",
+                           "pos":  [
+                                       810,
+                                       434
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/datasource/moviedb_datasource.dart",
+                                               "label":  "IntegraciÃƒÂ³n TMDB"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "preferences",
+                           "type":  "database",
+                           "label":  "SharedPreferences",
+                           "sublabel":  "País · idioma · favoritos",
+                           "tag":  "persistencia local",
+                           "pos":  [
+                                       810,
+                                       540
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/infrastructure/datasource/shared_prefs_favorites_datasource.dart",
+                                               "label":  "Favoritos"
+                                           }
+                                       ]
+                       },
+                       {
+                           "id":  "localization",
+                           "type":  "frontend",
+                           "label":  "Localización + tema",
+                           "sublabel":  "8 idiomas · ARB · RTL árabe",
+                           "tag":  "interfaz",
+                           "pos":  [
+                                       30,
+                                       540
+                                   ],
+                           "size":  [
+                                        220,
+                                        82
+                                    ],
+                           "sources":  [
+                                           {
+                                               "path":  "Practica06/cinemapedia/lib/l10n/app_es.arb",
+                                               "label":  "Traducciones"
+                                           }
+                                       ]
+                       }
+                   ],
+    "connections":  [
+                        {
+                            "from":  "app",
+                            "to":  "navigation",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "navigation",
+                            "to":  "ui",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "ui",
+                            "to":  "providers",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "region",
+                            "to":  "providers",
+                            "fromSide":  "top",
+                            "toSide":  "bottom",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "region",
+                            "to":  "localization",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "providers",
+                            "to":  "contracts",
+                            "fromSide":  "right",
+                            "toSide":  "left",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "movie-repo",
+                            "to":  "contracts",
+                            "fromSide":  "left",
+                            "toSide":  "right",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "movie-repo",
+                            "to":  "movie-source",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "contracts",
+                            "to":  "entities",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "movie-source",
+                            "to":  "models",
+                            "fromSide":  "bottom",
+                            "toSide":  "top",
+                            "route":  "straight"
+                        },
+                        {
+                            "from":  "movie-source",
+                            "to":  "tmdb",
+                            "fromSide":  "right",
+                            "toSide":  "left",
+                            "route":  "straight"
+                        }
+                    ]
+}
