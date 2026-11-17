@@ -53,6 +53,7 @@ En las prácticas que lo requieren también se utilizan herramientas y paquetes 
 | 03 | [Yes, No, Maybe — Chat con API de Respuestas Automáticas](Practica03/yes_no_app/README.md) | Aplicación de chat que consulta la API de yesno.wtf y muestra respuestas Sí, No o Tal vez con sus GIF correspondientes. | 30 | Completada |
 | 04 | [TokTik — Feed de videos cortos](Practica04/toktik/README.md) | Aplicación Flutter con un feed vertical de videos, navegación mediante gestos y funcionalidades de reproducción. | 30 | Completada |
 | 05 | [Widgets App](Practica05/widget_app/README.md) | Aplicación demostrativa de componentes de Material Design 3, navegación con GoRouter, gestión de estado con Riverpod y animaciones. | 40 | Completada |
+| 06 | [Cinemapedia](Practica06/cinemapedia/README.md) | Aplicación demostrativa de componentes de Material Design 3, navegación con GoRouter, gestión de estado con Riverpod y animaciones. | 100 | Completada |
 
 > **Nota:** Mantén actualizado el estado de cada práctica de acuerdo con su implementación y validación reales.
 
