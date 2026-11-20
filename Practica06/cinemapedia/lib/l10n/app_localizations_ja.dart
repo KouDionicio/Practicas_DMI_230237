@@ -287,4 +287,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get regionEG => 'エジプト';
+
+  @override
+  String get navSeries => 'TVシリーズ';
+
+  @override
+  String get seriesAiringTodayTitle => '本日放送';
+
+  @override
+  String get seriesOnTheAirTitle => '放送中';
+
+  @override
+  String get seriesOnTheAirSubtitle => '今後7日間';
+
+  @override
+  String get seriesPopularTitle => '人気シリーズ';
+
+  @override
+  String get seriesTopRatedTitle => '高評価';
+
+  @override
+  String get seriesPrevious => '前のシリーズ';
+
+  @override
+  String get seriesNext => '次のシリーズ';
+
+  @override
+  String get seriesJumpedFirst => '最初のシリーズ';
+
+  @override
+  String get seriesJumpedLast => '最後のシリーズ';
+
+  @override
+  String get seriesTripleTapHint => '矢印を3回タップすると最初または最後のシリーズに移動します';
+
+  @override
+  String get firstAirDateLabel => '初回放送';
+
+  @override
+  String get seasonsLabel => 'シーズン';
+
+  @override
+  String get episodesLabel => 'エピソード';
+
+  @override
+  String get networksLabel => '放送局';
+
+  @override
+  String get errorLoadSeries => 'シリーズを読み込めませんでした';
+
+  @override
+  String get errorLoadSerie => 'このシリーズを読み込めませんでした';
 }

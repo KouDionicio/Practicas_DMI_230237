@@ -8,6 +8,9 @@ import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/domain/entities/movie_certification.dart';
 import 'package:cinemapedia/domain/entities/movie_genre.dart';
+import 'package:cinemapedia/domain/entities/actor.dart';
+import 'package:cinemapedia/domain/entities/tv_series.dart';
+import 'package:cinemapedia/domain/repositories/tv_series_repository.dart';
 import 'package:cinemapedia/domain/repositories/movies_repository.dart';
 import 'package:cinemapedia/l10n/app_localizations.dart';
 import 'package:cinemapedia/presentation/providers/providers.dart';
@@ -60,6 +63,50 @@ class FakeMoviesRepository extends MoviesRepository {
       region == 'EG' ? MovieCertification.unavailable(region) : MovieCertification(countryCode: region, rating: '12');
 }
 
+TvSeries fakeSeries(int id, {String region = 'MX'}) => TvSeries(
+      id: id,
+      name: region == 'JP' ? 'シリーズ $id' : 'Series $id',
+      originalName: 'Original series $id',
+      originalLanguage: 'en',
+      overview: 'Series overview $id',
+      posterPath: 'https://example.com/tv$id.jpg',
+      backdropPath: 'https://example.com/tvb$id.jpg',
+      genreIds: const ['Drama'],
+      popularity: 50,
+      voteAverage: 8.2,
+      voteCount: 900,
+      firstAirDate: DateTime(2024, 3, 1),
+      numberOfSeasons: 3,
+      numberOfEpisodes: 24,
+      networks: const ['Network X'],
+    );
+
+/// Repositorio de series en memoria: no hace peticiones de red.
+class FakeTvSeriesRepository extends TvSeriesRepository {
+  final String region;
+  FakeTvSeriesRepository(this.region);
+
+  List<TvSeries> _page(int offset, int page) =>
+      List.generate(8, (i) => fakeSeries(offset + page * 100 + i + 1, region: region));
+
+  @override
+  Future<List<TvSeries>> getAiringToday({int page = 1}) async => _page(10000, page);
+  @override
+  Future<List<TvSeries>> getOnTheAir({int page = 1}) async => _page(20000, page);
+  @override
+  Future<List<TvSeries>> getPopular({int page = 1}) async => _page(30000, page);
+  @override
+  Future<List<TvSeries>> getTopRated({int page = 1}) async => _page(40000, page);
+  @override
+  Future<TvSeries> getSeriesById(String id) async => fakeSeries(int.parse(id), region: region);
+  @override
+  Future<List<Actor>> getCast(String seriesId) async =>
+      [Actor(id: 1, name: 'Actor 1', profilePath: 'https://example.com/a1.jpg', character: 'Role 1')];
+  @override
+  Future<MovieCertification> getContentRating(String seriesId) async =>
+      region == 'EG' ? MovieCertification.unavailable(region) : MovieCertification(countryCode: region, rating: 'TV-14');
+}
+
 Future<List<Override>> testOverrides({Map<String, Object> prefs = const {}}) async {
   SharedPreferences.setMockInitialValues(prefs);
   final instance = await SharedPreferences.getInstance();
@@ -67,6 +114,9 @@ Future<List<Override>> testOverrides({Map<String, Object> prefs = const {}}) asy
     sharedPreferencesProvider.overrideWithValue(instance),
     movieRepositoryProvider.overrideWith(
       (ref) => FakeMoviesRepository(ref.watch(appRegionProvider).code),
+    ),
+    tvSeriesRepositoryProvider.overrideWith(
+      (ref) => FakeTvSeriesRepository(ref.watch(appRegionProvider).code),
     ),
   ];
 }

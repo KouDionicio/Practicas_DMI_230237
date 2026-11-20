@@ -86,5 +86,22 @@
   "regionKR": "كوريا الجنوبية",
   "regionJP": "اليابان",
   "regionBR": "البرازيل",
-  "regionEG": "مصر"
+  "regionEG": "مصر",
+  "navSeries": "المسلسلات",
+  "seriesAiringTodayTitle": "تُعرض اليوم",
+  "seriesOnTheAirTitle": "قيد العرض",
+  "seriesOnTheAirSubtitle": "الأيام السبعة القادمة",
+  "seriesPopularTitle": "الأكثر شعبية",
+  "seriesTopRatedTitle": "الأعلى تقييمًا",
+  "seriesPrevious": "المسلسل السابق",
+  "seriesNext": "المسلسل التالي",
+  "seriesJumpedFirst": "المسلسل الأول",
+  "seriesJumpedLast": "المسلسل الأخير",
+  "seriesTripleTapHint": "انقر على السهم ثلاث مرات للانتقال إلى المسلسل الأول أو الأخير",
+  "firstAirDateLabel": "أول عرض",
+  "seasonsLabel": "المواسم",
+  "episodesLabel": "الحلقات",
+  "networksLabel": "القناة",
+  "errorLoadSeries": "تعذّر تحميل المسلسلات",
+  "errorLoadSerie": "تعذّر تحميل هذا المسلسل"
 }

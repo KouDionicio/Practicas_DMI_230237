@@ -86,5 +86,22 @@
   "regionKR": "대한민국",
   "regionJP": "일본",
   "regionBR": "브라질",
-  "regionEG": "이집트"
+  "regionEG": "이집트",
+  "navSeries": "TV 시리즈",
+  "seriesAiringTodayTitle": "오늘 방영",
+  "seriesOnTheAirTitle": "방영 중",
+  "seriesOnTheAirSubtitle": "향후 7일",
+  "seriesPopularTitle": "인기 시리즈",
+  "seriesTopRatedTitle": "최고 평점",
+  "seriesPrevious": "이전 시리즈",
+  "seriesNext": "다음 시리즈",
+  "seriesJumpedFirst": "첫 번째 시리즈",
+  "seriesJumpedLast": "마지막 시리즈",
+  "seriesTripleTapHint": "화살표를 세 번 누르면 첫 번째 또는 마지막 시리즈로 이동해요",
+  "firstAirDateLabel": "첫 방영",
+  "seasonsLabel": "시즌",
+  "episodesLabel": "에피소드",
+  "networksLabel": "방송사",
+  "errorLoadSeries": "시리즈를 불러오지 못했어요",
+  "errorLoadSerie": "이 시리즈를 불러오지 못했어요"
 }

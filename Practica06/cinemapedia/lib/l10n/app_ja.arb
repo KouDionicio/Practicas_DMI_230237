@@ -86,5 +86,22 @@
   "regionKR": "韓国",
   "regionJP": "日本",
   "regionBR": "ブラジル",
-  "regionEG": "エジプト"
+  "regionEG": "エジプト",
+  "navSeries": "TVシリーズ",
+  "seriesAiringTodayTitle": "本日放送",
+  "seriesOnTheAirTitle": "放送中",
+  "seriesOnTheAirSubtitle": "今後7日間",
+  "seriesPopularTitle": "人気シリーズ",
+  "seriesTopRatedTitle": "高評価",
+  "seriesPrevious": "前のシリーズ",
+  "seriesNext": "次のシリーズ",
+  "seriesJumpedFirst": "最初のシリーズ",
+  "seriesJumpedLast": "最後のシリーズ",
+  "seriesTripleTapHint": "矢印を3回タップすると最初または最後のシリーズに移動します",
+  "firstAirDateLabel": "初回放送",
+  "seasonsLabel": "シーズン",
+  "episodesLabel": "エピソード",
+  "networksLabel": "放送局",
+  "errorLoadSeries": "シリーズを読み込めませんでした",
+  "errorLoadSerie": "このシリーズを読み込めませんでした"
 }

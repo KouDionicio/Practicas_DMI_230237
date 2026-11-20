@@ -8,5 +8,7 @@ export 'movies/movies_providers.dart';
 export 'movies/movies_repository_provider.dart';
 export 'movies/movies_slideshow_provider.dart';
 export 'search/search_movies_provider.dart';
+export 'series/tv_series_providers.dart';
+export 'series/tv_series_repository_provider.dart';
 export 'settings/app_region_provider.dart';
 export 'storage/favorites_provider.dart';

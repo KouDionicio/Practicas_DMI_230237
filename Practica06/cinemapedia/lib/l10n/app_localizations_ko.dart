@@ -288,4 +288,55 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get regionEG => '이집트';
+
+  @override
+  String get navSeries => 'TV 시리즈';
+
+  @override
+  String get seriesAiringTodayTitle => '오늘 방영';
+
+  @override
+  String get seriesOnTheAirTitle => '방영 중';
+
+  @override
+  String get seriesOnTheAirSubtitle => '향후 7일';
+
+  @override
+  String get seriesPopularTitle => '인기 시리즈';
+
+  @override
+  String get seriesTopRatedTitle => '최고 평점';
+
+  @override
+  String get seriesPrevious => '이전 시리즈';
+
+  @override
+  String get seriesNext => '다음 시리즈';
+
+  @override
+  String get seriesJumpedFirst => '첫 번째 시리즈';
+
+  @override
+  String get seriesJumpedLast => '마지막 시리즈';
+
+  @override
+  String get seriesTripleTapHint => '화살표를 세 번 누르면 첫 번째 또는 마지막 시리즈로 이동해요';
+
+  @override
+  String get firstAirDateLabel => '첫 방영';
+
+  @override
+  String get seasonsLabel => '시즌';
+
+  @override
+  String get episodesLabel => '에피소드';
+
+  @override
+  String get networksLabel => '방송사';
+
+  @override
+  String get errorLoadSeries => '시리즈를 불러오지 못했어요';
+
+  @override
+  String get errorLoadSerie => '이 시리즈를 불러오지 못했어요';
 }

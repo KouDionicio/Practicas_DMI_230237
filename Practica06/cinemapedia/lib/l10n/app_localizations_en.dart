@@ -292,4 +292,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get regionEG => 'Egypt';
+
+  @override
+  String get navSeries => 'TV Shows';
+
+  @override
+  String get seriesAiringTodayTitle => 'Airing today';
+
+  @override
+  String get seriesOnTheAirTitle => 'On the air';
+
+  @override
+  String get seriesOnTheAirSubtitle => 'Next 7 days';
+
+  @override
+  String get seriesPopularTitle => 'Popular';
+
+  @override
+  String get seriesTopRatedTitle => 'Top rated';
+
+  @override
+  String get seriesPrevious => 'Previous show';
+
+  @override
+  String get seriesNext => 'Next show';
+
+  @override
+  String get seriesJumpedFirst => 'First show';
+
+  @override
+  String get seriesJumpedLast => 'Last show';
+
+  @override
+  String get seriesTripleTapHint =>
+      'Tap an arrow three times to jump to the first or last show';
+
+  @override
+  String get firstAirDateLabel => 'First aired';
+
+  @override
+  String get seasonsLabel => 'Seasons';
+
+  @override
+  String get episodesLabel => 'Episodes';
+
+  @override
+  String get networksLabel => 'Network';
+
+  @override
+  String get errorLoadSeries => 'We couldn’t load the TV shows';
+
+  @override
+  String get errorLoadSerie => 'We couldn’t load this TV show';
 }

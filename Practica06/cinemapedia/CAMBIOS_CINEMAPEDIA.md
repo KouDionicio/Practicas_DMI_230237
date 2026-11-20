@@ -89,3 +89,18 @@ Generado desde `icono.jfif`:
 - Providers: `presentation/providers/storage/favorites_provider.dart`, `presentation/providers/movies/movies_by_genre_provider.dart`
 - Widgets: `presentation/widgets/movies/favorite_button.dart`, `presentation/widgets/movies/movie_poster_grid.dart`
 - Pruebas: `test/unit/movie_storage_mapper_test.dart`, `test/widget/favorites_and_categories_test.dart`
+
+## Series y regreso automático a Inicio (tercera entrega)
+
+**Series.** Nueva pestaña (índice 3, `/home/3`) en la barra inferior y en el menú lateral. Tiene la misma estructura que Inicio: carrusel destacado con flechas y triple pulsación, panel de información y cuatro listas con scroll infinito.
+
+- Listas: Al aire hoy, En emisión, Populares y Mejor calificadas.
+- Detalle en `/home/3/series/:id`: temporadas, episodios, cadena, géneros y reparto.
+- Endpoints de TMDB:
+  - `/tv/airing_today` y `/tv/on_the_air`, con `language` y `timezone` del país.
+  - `/tv/popular` y `/tv/top_rated`, con `language`.
+  - `/tv/{id}`, `/tv/{id}/credits` y `/tv/{id}/content_ratings`.
+- TMDB no acepta `region` en las listas de series; el país se aplica mediante la zona horaria (`config/constants/tv_timezones.dart`) y la clasificación de contenido, que solo toma el país seleccionado.
+- Favoritos y búsqueda siguen siendo solo de películas, sin cambios.
+
+**Regreso a Inicio.** Al elegir otro país en Configuración se guarda la región, se aplica el idioma y, tras 350 ms para que se vea la animación de la tarjeta, se navega con `context.go('/home/0')`. `go` reemplaza la pila de navegación, así que no quedan pantallas duplicadas. Si se toca el país ya seleccionado, no se navega.

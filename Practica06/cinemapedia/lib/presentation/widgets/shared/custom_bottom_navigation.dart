@@ -42,6 +42,11 @@ class CustomBottomNavigation extends StatelessWidget {
           activeIcon: const Icon( Icons.favorite_rounded ),
           label: l10n.navFavorites
         ),
+        BottomNavigationBarItem(
+          icon: const Icon( Icons.live_tv_outlined ),
+          activeIcon: const Icon( Icons.live_tv_rounded ),
+          label: l10n.navSeries
+        ),
       ]
     );
   }

@@ -295,4 +295,56 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get regionEG => 'Égypte';
+
+  @override
+  String get navSeries => 'Séries';
+
+  @override
+  String get seriesAiringTodayTitle => 'Diffusées aujourd’hui';
+
+  @override
+  String get seriesOnTheAirTitle => 'En cours de diffusion';
+
+  @override
+  String get seriesOnTheAirSubtitle => '7 prochains jours';
+
+  @override
+  String get seriesPopularTitle => 'Populaires';
+
+  @override
+  String get seriesTopRatedTitle => 'Les mieux notées';
+
+  @override
+  String get seriesPrevious => 'Série précédente';
+
+  @override
+  String get seriesNext => 'Série suivante';
+
+  @override
+  String get seriesJumpedFirst => 'Première série';
+
+  @override
+  String get seriesJumpedLast => 'Dernière série';
+
+  @override
+  String get seriesTripleTapHint =>
+      'Touchez trois fois une flèche pour aller à la première ou à la dernière série';
+
+  @override
+  String get firstAirDateLabel => 'Première diffusion';
+
+  @override
+  String get seasonsLabel => 'Saisons';
+
+  @override
+  String get episodesLabel => 'Épisodes';
+
+  @override
+  String get networksLabel => 'Chaîne';
+
+  @override
+  String get errorLoadSeries => 'Impossible de charger les séries';
+
+  @override
+  String get errorLoadSerie => 'Impossible de charger cette série';
 }

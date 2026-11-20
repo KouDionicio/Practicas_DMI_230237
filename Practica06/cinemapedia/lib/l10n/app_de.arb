@@ -86,5 +86,22 @@
   "regionKR": "Südkorea",
   "regionJP": "Japan",
   "regionBR": "Brasilien",
-  "regionEG": "Ägypten"
+  "regionEG": "Ägypten",
+  "navSeries": "Serien",
+  "seriesAiringTodayTitle": "Heute im TV",
+  "seriesOnTheAirTitle": "Laufende Serien",
+  "seriesOnTheAirSubtitle": "Nächste 7 Tage",
+  "seriesPopularTitle": "Beliebt",
+  "seriesTopRatedTitle": "Bestbewertet",
+  "seriesPrevious": "Vorherige Serie",
+  "seriesNext": "Nächste Serie",
+  "seriesJumpedFirst": "Erste Serie",
+  "seriesJumpedLast": "Letzte Serie",
+  "seriesTripleTapHint": "Tippe dreimal auf einen Pfeil, um zur ersten oder letzten Serie zu springen",
+  "firstAirDateLabel": "Erstausstrahlung",
+  "seasonsLabel": "Staffeln",
+  "episodesLabel": "Episoden",
+  "networksLabel": "Sender",
+  "errorLoadSeries": "Die Serien konnten nicht geladen werden",
+  "errorLoadSerie": "Diese Serie konnte nicht geladen werden"
 }

@@ -405,5 +405,73 @@
   "regionEG": "Egipto",
   "@regionEG": {
     "description": "Nombre del país EG"
+  },
+  "navSeries": "Series",
+  "@navSeries": {
+    "description": "Navegación: series"
+  },
+  "seriesAiringTodayTitle": "Al aire hoy",
+  "@seriesAiringTodayTitle": {
+    "description": "Lista: series que emiten hoy"
+  },
+  "seriesOnTheAirTitle": "En emisión",
+  "@seriesOnTheAirTitle": {
+    "description": "Lista: series en emisión"
+  },
+  "seriesOnTheAirSubtitle": "Próximos 7 días",
+  "@seriesOnTheAirSubtitle": {
+    "description": "Subtítulo de series en emisión"
+  },
+  "seriesPopularTitle": "Populares",
+  "@seriesPopularTitle": {
+    "description": "Lista: series populares"
+  },
+  "seriesTopRatedTitle": "Mejor calificadas",
+  "@seriesTopRatedTitle": {
+    "description": "Lista: series mejor calificadas"
+  },
+  "seriesPrevious": "Serie anterior",
+  "@seriesPrevious": {
+    "description": "Flecha < del carrusel de series"
+  },
+  "seriesNext": "Serie siguiente",
+  "@seriesNext": {
+    "description": "Flecha > del carrusel de series"
+  },
+  "seriesJumpedFirst": "Primera serie",
+  "@seriesJumpedFirst": {
+    "description": "Aviso al saltar a la primera serie"
+  },
+  "seriesJumpedLast": "Última serie",
+  "@seriesJumpedLast": {
+    "description": "Aviso al saltar a la última serie"
+  },
+  "seriesTripleTapHint": "Toca tres veces una flecha para ir a la primera o a la última serie",
+  "@seriesTripleTapHint": {
+    "description": "Ayuda del carrusel de series"
+  },
+  "firstAirDateLabel": "Primera emisión",
+  "@firstAirDateLabel": {
+    "description": "Etiqueta de la primera emisión"
+  },
+  "seasonsLabel": "Temporadas",
+  "@seasonsLabel": {
+    "description": "Etiqueta del número de temporadas"
+  },
+  "episodesLabel": "Episodios",
+  "@episodesLabel": {
+    "description": "Etiqueta del número de episodios"
+  },
+  "networksLabel": "Cadena",
+  "@networksLabel": {
+    "description": "Etiqueta de la cadena de televisión"
+  },
+  "errorLoadSeries": "No pudimos cargar las series",
+  "@errorLoadSeries": {
+    "description": "Error al cargar las listas de series"
+  },
+  "errorLoadSerie": "No pudimos cargar esta serie",
+  "@errorLoadSerie": {
+    "description": "Error al cargar una serie"
   }
 }

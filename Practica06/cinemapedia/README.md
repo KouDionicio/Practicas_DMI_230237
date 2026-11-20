@@ -205,6 +205,13 @@ Los diagramas de arquitectura se encuentran en la carpeta `docs/` de la raíz de
 - [Pantallas, rutas y estado](https://koudionicio.github.io/Practicas_DMI_230237/practica06/cinemapedia/architecture/pantallas.html)
 - [Menú de diagramas de las prácticas](https://koudionicio.github.io/Practicas_DMI_230237/diagramas/)
 
+### Prueba en Appetize
+
+La aplicación puede ejecutarse y probarse directamente desde el navegador mediante Appetize, sin necesidad de instalarla físicamente en un dispositivo Android.
+
+- **[Probar Cinemapedia en Appetize](https://appetize.io/app/b_l7nm743yadzynyhlxyikso2rom)**
+
+
 La publicación utiliza GitHub Pages. Comprueba los enlaces después de desplegar los cambios, ya que las rutas deben coincidir con los archivos publicados.
 
 ##  Evidencias de ejecución

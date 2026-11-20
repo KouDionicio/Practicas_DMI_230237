@@ -8,7 +8,7 @@ import 'package:cinemapedia/presentation/views/views.dart';
 class HomeScreen extends StatelessWidget {
 
   static const name = 'home-screen';
-  static const pageCount = 3;
+  static const pageCount = 4;
   final int pageIndex;
 
   const HomeScreen({
@@ -20,6 +20,7 @@ class HomeScreen extends StatelessWidget {
     HomeView(),
     CategoriesView(),
     FavoritesView(),
+    SeriesView(),
   ];
 
   @override

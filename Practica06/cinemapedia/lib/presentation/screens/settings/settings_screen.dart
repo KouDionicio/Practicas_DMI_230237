@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:cinemapedia/config/constants/app_regions.dart';
 import 'package:cinemapedia/config/helpers/l10n_helpers.dart';
@@ -15,6 +16,13 @@ class SettingsScreen extends ConsumerWidget {
 
   const SettingsScreen({super.key});
 
+  /// Pausa breve para que se vea la animación de la tarjeta seleccionada
+  /// antes de volver a Inicio.
+  static const redirectDelay = Duration(milliseconds: 350);
+
+  /// Guarda la región, aplica el nuevo idioma en toda la app y redirige a
+  /// Inicio. `go` reemplaza la pila de navegación, así que no quedan pantallas
+  /// de configuración duplicadas debajo.
   Future<void> _select(BuildContext context, WidgetRef ref, AppRegion region) async {
     if (ref.read(appRegionProvider) == region) return;
     HapticFeedback.selectionClick();
@@ -38,6 +46,11 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
       ));
+
+    await Future<void>.delayed(redirectDelay);
+    // Si el usuario ya salió (o eligió otro país y se navegó), no se repite.
+    if (!context.mounted) return;
+    context.go('/home/0');
   }
 
   @override

@@ -631,6 +631,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Egipto'**
   String get regionEG;
+
+  /// Navegación: series
+  ///
+  /// In es, this message translates to:
+  /// **'Series'**
+  String get navSeries;
+
+  /// Lista: series que emiten hoy
+  ///
+  /// In es, this message translates to:
+  /// **'Al aire hoy'**
+  String get seriesAiringTodayTitle;
+
+  /// Lista: series en emisión
+  ///
+  /// In es, this message translates to:
+  /// **'En emisión'**
+  String get seriesOnTheAirTitle;
+
+  /// Subtítulo de series en emisión
+  ///
+  /// In es, this message translates to:
+  /// **'Próximos 7 días'**
+  String get seriesOnTheAirSubtitle;
+
+  /// Lista: series populares
+  ///
+  /// In es, this message translates to:
+  /// **'Populares'**
+  String get seriesPopularTitle;
+
+  /// Lista: series mejor calificadas
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor calificadas'**
+  String get seriesTopRatedTitle;
+
+  /// Flecha < del carrusel de series
+  ///
+  /// In es, this message translates to:
+  /// **'Serie anterior'**
+  String get seriesPrevious;
+
+  /// Flecha > del carrusel de series
+  ///
+  /// In es, this message translates to:
+  /// **'Serie siguiente'**
+  String get seriesNext;
+
+  /// Aviso al saltar a la primera serie
+  ///
+  /// In es, this message translates to:
+  /// **'Primera serie'**
+  String get seriesJumpedFirst;
+
+  /// Aviso al saltar a la última serie
+  ///
+  /// In es, this message translates to:
+  /// **'Última serie'**
+  String get seriesJumpedLast;
+
+  /// Ayuda del carrusel de series
+  ///
+  /// In es, this message translates to:
+  /// **'Toca tres veces una flecha para ir a la primera o a la última serie'**
+  String get seriesTripleTapHint;
+
+  /// Etiqueta de la primera emisión
+  ///
+  /// In es, this message translates to:
+  /// **'Primera emisión'**
+  String get firstAirDateLabel;
+
+  /// Etiqueta del número de temporadas
+  ///
+  /// In es, this message translates to:
+  /// **'Temporadas'**
+  String get seasonsLabel;
+
+  /// Etiqueta del número de episodios
+  ///
+  /// In es, this message translates to:
+  /// **'Episodios'**
+  String get episodesLabel;
+
+  /// Etiqueta de la cadena de televisión
+  ///
+  /// In es, this message translates to:
+  /// **'Cadena'**
+  String get networksLabel;
+
+  /// Error al cargar las listas de series
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar las series'**
+  String get errorLoadSeries;
+
+  /// Error al cargar una serie
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar esta serie'**
+  String get errorLoadSerie;
 }
 
 class _AppLocalizationsDelegate

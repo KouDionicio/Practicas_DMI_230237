@@ -47,7 +47,7 @@ class SideMenu extends ConsumerWidget {
 
   const SideMenu({super.key, required this.currentIndex});
 
-  static const _settingsIndex = 3;
+  static const _settingsIndex = 4;
 
   void _onDestinationSelected(BuildContext context, int index) {
     Scaffold.of(context).closeDrawer();
@@ -125,6 +125,11 @@ class SideMenu extends ConsumerWidget {
           icon: const Icon(Icons.favorite_outline_rounded),
           selectedIcon: const Icon(Icons.favorite_rounded),
           label: Text(l10n.navFavorites),
+        ),
+        NavigationDrawerDestination(
+          icon: const Icon(Icons.live_tv_outlined),
+          selectedIcon: const Icon(Icons.live_tv_rounded),
+          label: Text(l10n.navSeries),
         ),
 
         const Padding(

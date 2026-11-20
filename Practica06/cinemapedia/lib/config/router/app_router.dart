@@ -4,8 +4,9 @@ import 'package:cinemapedia/presentation/screens/screens.dart';
 /// Rutas de Cinemapedia.
 ///
 /// * `/`                       → pantalla de carga (inicialización).
-/// * `/home/:page`             → Inicio (0), Categorías (1), Favoritos (2).
+/// * `/home/:page`             → Inicio (0), Categorías (1), Favoritos (2), Series (3).
 /// * `/home/:page/movie/:id`   → detalle de película.
+/// * `/home/:page/series/:id`  → detalle de serie.
 /// * `/settings`               → configuración de país e idioma.
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -31,6 +32,14 @@ final appRouter = GoRouter(
           builder: (context, state) {
             final movieId = state.pathParameters['id'] ?? 'no-id';
             return MovieScreen(movieId: movieId);
+          },
+        ),
+        GoRoute(
+          path: 'series/:id',
+          name: SeriesScreen.name,
+          builder: (context, state) {
+            final seriesId = state.pathParameters['id'] ?? 'no-id';
+            return SeriesScreen(seriesId: seriesId);
           },
         ),
       ],

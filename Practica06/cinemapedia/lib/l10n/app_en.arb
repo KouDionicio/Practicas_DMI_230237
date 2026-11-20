@@ -86,5 +86,22 @@
   "regionKR": "South Korea",
   "regionJP": "Japan",
   "regionBR": "Brazil",
-  "regionEG": "Egypt"
+  "regionEG": "Egypt",
+  "navSeries": "TV Shows",
+  "seriesAiringTodayTitle": "Airing today",
+  "seriesOnTheAirTitle": "On the air",
+  "seriesOnTheAirSubtitle": "Next 7 days",
+  "seriesPopularTitle": "Popular",
+  "seriesTopRatedTitle": "Top rated",
+  "seriesPrevious": "Previous show",
+  "seriesNext": "Next show",
+  "seriesJumpedFirst": "First show",
+  "seriesJumpedLast": "Last show",
+  "seriesTripleTapHint": "Tap an arrow three times to jump to the first or last show",
+  "firstAirDateLabel": "First aired",
+  "seasonsLabel": "Seasons",
+  "episodesLabel": "Episodes",
+  "networksLabel": "Network",
+  "errorLoadSeries": "We couldn’t load the TV shows",
+  "errorLoadSerie": "We couldn’t load this TV show"
 }

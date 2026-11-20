@@ -291,4 +291,56 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get regionEG => 'مصر';
+
+  @override
+  String get navSeries => 'المسلسلات';
+
+  @override
+  String get seriesAiringTodayTitle => 'تُعرض اليوم';
+
+  @override
+  String get seriesOnTheAirTitle => 'قيد العرض';
+
+  @override
+  String get seriesOnTheAirSubtitle => 'الأيام السبعة القادمة';
+
+  @override
+  String get seriesPopularTitle => 'الأكثر شعبية';
+
+  @override
+  String get seriesTopRatedTitle => 'الأعلى تقييمًا';
+
+  @override
+  String get seriesPrevious => 'المسلسل السابق';
+
+  @override
+  String get seriesNext => 'المسلسل التالي';
+
+  @override
+  String get seriesJumpedFirst => 'المسلسل الأول';
+
+  @override
+  String get seriesJumpedLast => 'المسلسل الأخير';
+
+  @override
+  String get seriesTripleTapHint =>
+      'انقر على السهم ثلاث مرات للانتقال إلى المسلسل الأول أو الأخير';
+
+  @override
+  String get firstAirDateLabel => 'أول عرض';
+
+  @override
+  String get seasonsLabel => 'المواسم';
+
+  @override
+  String get episodesLabel => 'الحلقات';
+
+  @override
+  String get networksLabel => 'القناة';
+
+  @override
+  String get errorLoadSeries => 'تعذّر تحميل المسلسلات';
+
+  @override
+  String get errorLoadSerie => 'تعذّر تحميل هذا المسلسل';
 }
